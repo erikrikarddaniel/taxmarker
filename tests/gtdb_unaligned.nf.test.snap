@@ -3,12 +3,12 @@
         "content": [
             {
                 "CHECKALIGNED": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "CHECKNAMECONSISTENCY": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
@@ -52,8 +52,8 @@
                     "python": "3.12.12"
                 },
                 "SATIVALOOSPLIT": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "SATIVASCORE": {
                     "python": "3.11.10"
@@ -66,9 +66,9 @@
                 }
             }
         ],
-        "timestamp": "2026-08-02T12:10:59.75539972",
+        "timestamp": "2026-09-16T17:02:46.08662725",
         "meta": {
-            "nf-test": "0.9.5",
+            "nf-test": "0.9.4",
             "nextflow": "26.04.6"
         }
     }

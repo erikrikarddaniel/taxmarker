@@ -22,6 +22,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Fixed`
 
+- Bumped `nft-utils` to `1.2.0`, whose `removeNextflowVersion()` now sorts both the outer and inner software-versions maps deterministically before snapshotting -- the previous `0.0.3` only sorted the outer map, so identical version content could compare as a spurious `Different Snapshot` failure across CI runs purely due to inner key order. Regenerated all pipeline-level snapshots to match ([#NN](https://github.com/nf-core/taxmarker/pull/NN))
 - Conda environments now pull `biopython` from `conda-forge` instead of `bioconda`, whose build stops at 1.70: `-profile conda` failed resolving `bioconda::biopython=1.84` since bioconda never published a matching version ([#NN](https://github.com/nf-core/taxmarker/pull/NN))
 - `CHECKNAMECONSISTENCY` now rewrites any character outside a safe set (was a small, growing blocklist), preventing real-world sequence identifiers (e.g. GTDB's `ACCESSION~CONTIG` names) from desyncing between the alignment/taxonomy and the tree IQTREE builds, which silently mangles the same characters in leaf names ([#NN](https://github.com/nf-core/taxmarker/pull/NN))
 - `IQTREE`'s model search is now restricted to the GTR family (`-mset GTR`): ModelFinder could otherwise pick a model name (e.g. `K2P`) that EPA-ng's `--model` doesn't recognise, aborting placement ([#NN](https://github.com/nf-core/taxmarker/pull/NN))

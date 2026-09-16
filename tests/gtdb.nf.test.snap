@@ -3,12 +3,12 @@
         "content": [
             {
                 "CHECKALIGNED": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "CHECKNAMECONSISTENCY": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
@@ -26,8 +26,8 @@
                     "python": "3.12.12"
                 },
                 "SATIVALOOSPLIT": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "SATIVASCORE": {
                     "python": "3.11.10"
@@ -40,9 +40,9 @@
                 }
             }
         ],
-        "timestamp": "2026-08-02T08:33:42.853852069",
+        "timestamp": "2026-09-16T16:47:38.072910694",
         "meta": {
-            "nf-test": "0.9.5",
+            "nf-test": "0.9.4",
             "nextflow": "26.04.6"
         }
     },
@@ -50,12 +50,12 @@
         "content": [
             {
                 "CHECKALIGNED": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "CHECKNAMECONSISTENCY": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
@@ -82,8 +82,8 @@
                     "python": "3.12.12"
                 },
                 "SATIVALOOSPLIT": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "SATIVASCORE": {
                     "python": "3.11.10"
@@ -96,9 +96,9 @@
                 }
             }
         ],
-        "timestamp": "2026-08-02T08:35:31.367699209",
+        "timestamp": "2026-09-16T16:50:49.974440093",
         "meta": {
-            "nf-test": "0.9.5",
+            "nf-test": "0.9.4",
             "nextflow": "26.04.6"
         }
     },
@@ -106,12 +106,12 @@
         "content": [
             {
                 "CHECKALIGNED": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "CHECKNAMECONSISTENCY": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
@@ -136,9 +136,9 @@
                 }
             }
         ],
-        "timestamp": "2026-08-02T15:02:03.8280175",
+        "timestamp": "2026-09-16T16:54:41.910156657",
         "meta": {
-            "nf-test": "0.9.5",
+            "nf-test": "0.9.4",
             "nextflow": "26.04.6"
         }
     },
@@ -146,12 +146,12 @@
         "content": [
             {
                 "CHECKALIGNED": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "CHECKNAMECONSISTENCY": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
@@ -178,8 +178,8 @@
                     "python": "3.12.12"
                 },
                 "SATIVALOOSPLIT": {
-                    "python": "3.12.12",
-                    "biopython": 1.84
+                    "biopython": 1.84,
+                    "python": "3.12.12"
                 },
                 "SATIVASCORE": {
                     "python": "3.11.10"
@@ -192,9 +192,9 @@
                 }
             }
         ],
-        "timestamp": "2026-08-02T08:37:21.353144706",
+        "timestamp": "2026-09-16T16:53:54.661951459",
         "meta": {
-            "nf-test": "0.9.5",
+            "nf-test": "0.9.4",
             "nextflow": "26.04.6"
         }
     }
