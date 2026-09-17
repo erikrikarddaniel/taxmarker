@@ -9,6 +9,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Added`
 
+- New `--seqgrep` parameter (backed by the official `seqkit/grep` module) to keep only `--sequences` records matching a pattern before anything else runs, e.g. to restrict a shared/combined reference set to one taxon (used by the `test_full` profile against GTDB's own multi-domain `ssu_all` distribution) (by @erikrikarddaniel) ([#NN](https://github.com/nf-core/taxmarker/pull/NN))
 - Optional `raxtax`-based prefilter ahead of the EPA-ng placement stage: quickly self-classifies the reference set and reports severely mislabeled sequences directly, skipping the more expensive placement step for them ([#19](https://github.com/nf-core/taxmarker/pull/19))
 - `test_gtdb` profile and pipeline-level tests using a curated, real archaeal 16S dataset from GTDB, exercising the pipeline on full-length real-world sequences rather than the small structural fixtures used elsewhere ([#19](https://github.com/nf-core/taxmarker/pull/19))
 - Unaligned `--sequences` input is now supported: detected automatically (no separate mode-switch parameter) and aligned via `hmmalign` against an HMM profile (`--hmm`, optionally `--hmm_name` to pick one profile out of a multi-profile database) before continuing through the rest of the pipeline as normal ([#19](https://github.com/nf-core/taxmarker/pull/19))
@@ -23,6 +24,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Fixed`
 
+- Taxonomy derived from `--sequences` header text no longer includes a trailing bracketed metadata block (e.g. GTDB's own distribution's `locus_tag`/`location` annotations), which previously made records of the same taxon carry different declared taxonomy; gzipped `--sequences` input is now also handled correctly (by @erikrikarddaniel) ([#NN](https://github.com/nf-core/taxmarker/pull/NN))
 - Fixed a missing confidence-threshold gate in the new `sativaepang/misreport` module (see the `RAxML-NG`/`sativa-epang` entry above): every `.mis` row was written to `mislabels.tsv` unconditionally, instead of only rows clearing a `--min-lwr` threshold (default `0.5`, matching the previous `SATIVASCORE` module's behaviour, settable via `ext.args`) ([#19](https://github.com/nf-core/taxmarker/pull/19))
 - Fixed `sativaepang/misreport`'s `mismatch_rank` column rendering as the literal string `None` for a flagged sequence whose original and proposed taxonomy paths agree over their shared length but differ only in depth ([#19](https://github.com/nf-core/taxmarker/pull/19))
 - Fixed a `publishDir` collision between `SATIVAEPANG_LOOTASKS` and `SATIVAEPANG_LOOPLACE` (both published a same-named `*.l1o_tasks` under the shared `sativaepang/` directory, silently overwriting `LOOTASKS`'s own output) by giving each its own subdirectory; renamed the `SATIVAEPANGMISREPORT` process to `SATIVAEPANG_MISREPORT` so it correctly joins the shared `sativaepang/` group like its sibling modules, instead of getting its own fragmented directory; corrected the `--skip_sativa` regression-guard test, which had been checking directory names that never actually existed under either code path ([#19](https://github.com/nf-core/taxmarker/pull/19))
@@ -40,6 +42,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 | Tool         | Previous version | New version |
 | ------------ | ---------------- | ----------- |
+| seqkit       |                  | 2.13.0      |
 | HMMER        |                  | 3.4         |
 | RAxML-NG     |                  | 2.0.3       |
 | sativa-epang |                  | 0.10.0      |

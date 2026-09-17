@@ -9,6 +9,7 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_taxmarker_pipeline'
 include { RESOLVETAXONOMY        } from '../modules/local/resolvetaxonomy/main'
+include { SEQKIT_GREP            } from '../modules/nf-core/seqkit/grep/main'
 include { CHECKNAMECONSISTENCY   } from '../modules/local/checknameconsistency/main'
 include { EMBOSS_SEQRET          } from '../modules/nf-core/emboss/seqret/main'
 include { ENSURE_ALIGNED         } from '../subworkflows/local/ensure_aligned'
@@ -28,6 +29,7 @@ workflow TAXMARKER {
     take:
     ch_taxonomy        // channel: taxonomy file, or [] if not provided (derived from --sequences headers instead)
     ch_sequences       // channel: sequences file, aligned or not
+    seqgrep            // value:   keep only --sequences records whose header matches this pattern, or null/empty to skip filtering
     skip_raxtax        // value:   skip the raxtax prefilter?
     skip_gapfilter     // value:   skip the gap filter (already-aligned input)?
     skip_profile_cover // value:   skip the profile-coverage filter (hmmalign-derived input)?
@@ -75,6 +77,18 @@ workflow TAXMARKER {
         )
 
     //
+    // MODULE: SEQKIT_GREP (optional, --seqgrep to enable)
+    //
+    // Keep only matching --sequences records before anything else runs, e.g. to
+    // restrict a combined multi-taxon reference set to the records wanted.
+    //
+    def ch_sequences_for_resolve = ch_sequences
+    if (seqgrep) {
+        SEQKIT_GREP(ch_sequences.map { [ [ id: 'user-alignment' ], it ] }, [], '')
+        ch_sequences_for_resolve = SEQKIT_GREP.out.filter.map { _meta, fasta -> fasta }
+    }
+
+    //
     // MODULE: RESOLVETAXONOMY
     //
     // Resolve taxonomy from an explicit --taxonomy file if given; otherwise derive it
@@ -89,7 +103,7 @@ workflow TAXMARKER {
         // list Nextflow recognises as "optional path input, absent" when it's one
         // element of a freshly-built tuple, as opposed to a channel item in its own
         // right (which .combine() would silently flatten away).
-        ch_taxonomy.combine(ch_sequences).map { tax, seq -> [ [ id: 'user-alignment' ], tax ?: [], seq ] }
+        ch_taxonomy.combine(ch_sequences_for_resolve).map { tax, seq -> [ [ id: 'user-alignment' ], tax ?: [], seq ] }
     )
     RESOLVETAXONOMY.out.warnings.subscribe { _meta, warnings_file ->
         def text = warnings_file.text.trim()
