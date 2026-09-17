@@ -18,6 +18,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Changed`
 
+- `SATIVA`'s reference-tree and leave-one-out placement/scoring implementation swapped from `IQTREE` + a home-grown `SATIVALOOSPLIT`/`EPANG_PLACE`/`SATIVASCORE` chain to `RAxML-NG` (via the new local `taxonomy2phylogeny` subworkflow) and Auguste Gardette's [`sativa-epang`](https://github.com/Aaramis/sativa-epang) fork's own staged leave-one-out pipeline (`sativaepang/reference` -> `lootasks` -> `looplace` -> `looscore`), translated back into the pipeline's existing `mislabels.tsv`/`summary.txt` schema by a new `sativaepang/misreport` module. New `--taxcode` parameter (default `bac`) selects sativa-epang's taxonomic-code convention (bac/bot/zoo/vir). Functionally equivalent to [nf-core/modules#12977](https://github.com/nf-core/modules/pull/12977) and [#12910](https://github.com/nf-core/modules/pull/12910), built here as local pipeline components instead of waiting on their upstream review; both PRs remain open ([#NN](https://github.com/nf-core/taxmarker/pull/NN))
 - `--alignment` renamed to `--sequences`, reflecting that it may be aligned or unaligned (auto-detected; see the unaligned-input entry above) ([#NN](https://github.com/nf-core/taxmarker/pull/NN))
 
 ### `Fixed`
@@ -32,8 +33,12 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Dependencies`
 
-| Tool  | Previous version | New version |
-| ----- | ---------------- | ----------- |
-| HMMER |                  | 3.4         |
+| Tool         | Previous version | New version |
+| ------------ | ---------------- | ----------- |
+| HMMER        |                  | 3.4         |
+| RAxML-NG     |                  | 2.0.3       |
+| sativa-epang |                  | 0.10.0      |
+| IQTREE       | 2.4.0            |             |
+| EPA-ng       | 0.3.8            |             |
 
 ### `Deprecated`

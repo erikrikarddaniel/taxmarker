@@ -13,24 +13,29 @@
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
                 },
-                "EPANG_PLACE": {
-                    "epa-ng": "0.3.8"
-                },
                 "GAPFILTER": {
                     "python": "3.12.12"
                 },
-                "IQTREE": {
-                    "iqtree": "2.4.0"
+                "RAXMLNG_SEARCH": {
+                    "raxmlng": "2.0.3"
                 },
                 "RESOLVETAXONOMY": {
                     "python": "3.12.12"
                 },
-                "SATIVALOOSPLIT": {
-                    "biopython": 1.84,
-                    "python": "3.12.12"
-                },
-                "SATIVASCORE": {
+                "SATIVAEPANGMISREPORT": {
                     "python": "3.11.10"
+                },
+                "SATIVAEPANG_LOOPLACE": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_LOOSCORE": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_LOOTASKS": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_REFERENCE": {
+                    "sativaepang": "0.10.0"
                 },
                 "TAXONOMYTREE": {
                     "python": "3.11.10"
@@ -40,7 +45,7 @@
                 }
             }
         ],
-        "timestamp": "2026-09-16T16:47:38.072910694",
+        "timestamp": "2026-09-17T08:24:12.083998222",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"
@@ -60,14 +65,11 @@
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
                 },
-                "EPANG_PLACE": {
-                    "epa-ng": "0.3.8"
-                },
                 "GAPFILTER": {
                     "python": "3.12.12"
                 },
-                "IQTREE": {
-                    "iqtree": "2.4.0"
+                "RAXMLNG_SEARCH": {
+                    "raxmlng": "2.0.3"
                 },
                 "RAXTAX": {
                     "raxtax": "1.6.0"
@@ -81,12 +83,20 @@
                 "RESOLVETAXONOMY": {
                     "python": "3.12.12"
                 },
-                "SATIVALOOSPLIT": {
-                    "biopython": 1.84,
-                    "python": "3.12.12"
-                },
-                "SATIVASCORE": {
+                "SATIVAEPANGMISREPORT": {
                     "python": "3.11.10"
+                },
+                "SATIVAEPANG_LOOPLACE": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_LOOSCORE": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_LOOTASKS": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_REFERENCE": {
+                    "sativaepang": "0.10.0"
                 },
                 "TAXONOMYTREE": {
                     "python": "3.11.10"
@@ -96,7 +106,7 @@
                 }
             }
         ],
-        "timestamp": "2026-09-16T16:50:49.974440093",
+        "timestamp": "2026-09-17T08:10:07.776163821",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"
@@ -156,14 +166,11 @@
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
                 },
-                "EPANG_PLACE": {
-                    "epa-ng": "0.3.8"
-                },
                 "GAPFILTER": {
                     "python": "3.12.12"
                 },
-                "IQTREE": {
-                    "iqtree": "2.4.0"
+                "RAXMLNG_SEARCH": {
+                    "raxmlng": "2.0.3"
                 },
                 "RAXTAX": {
                     "raxtax": "1.6.0"
@@ -177,12 +184,20 @@
                 "RESOLVETAXONOMY": {
                     "python": "3.12.12"
                 },
-                "SATIVALOOSPLIT": {
-                    "biopython": 1.84,
-                    "python": "3.12.12"
-                },
-                "SATIVASCORE": {
+                "SATIVAEPANGMISREPORT": {
                     "python": "3.11.10"
+                },
+                "SATIVAEPANG_LOOPLACE": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_LOOSCORE": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_LOOTASKS": {
+                    "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_REFERENCE": {
+                    "sativaepang": "0.10.0"
                 },
                 "TAXONOMYTREE": {
                     "python": "3.11.10"
@@ -192,7 +207,7 @@
                 }
             }
         ],
-        "timestamp": "2026-09-16T16:53:54.661951459",
+        "timestamp": "2026-09-17T08:11:15.718800522",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"

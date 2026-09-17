@@ -1,12 +1,19 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SATIVA - Semi-Automatic Taxonomy Improvement and Validation Algorithm
-    Reverse-engineered from https://github.com/amkozlov/sativa
+    Reverse-engineered from https://github.com/amkozlov/sativa, now delegating the
+    reference-tree build to RAxML-NG and leave-one-out placement/scoring to Auguste
+    Gardette's sativa-epang fork (https://github.com/Aaramis/sativa-epang), which
+    replaces the original tool's RAxML placement engine with EPA-ng.
 
     Workflow:
-      1. Build a taxonomy-constrained ML reference tree   (epa_trainer.py)
-      2. Classify every sequence via leave-one-out EPA    (epa_classifier.py)
-      3. Score placements, report mismatches              (mislabels_handler.py)
+      1. Build a taxonomy-constrained ML reference tree     (taxonomy2phylogeny)
+      2. Build a sativa-epang reference from that tree      (sativaepang/reference)
+      3. Deal the reference into leave-one-out folds        (sativaepang/lootasks)
+      4. Place every fold via EPA-ng                        (sativaepang/looplace)
+      5. Score placements, report mismatches                (sativaepang/looscore)
+      6. Translate the .mis report into this pipeline's own
+         mislabels.tsv/summary.txt schema                   (sativaepang/misreport)
 
 main.nf
   └── PIPELINE_INITIALISATION   (subworkflows/local/utils_nfcore_taxmarker_pipeline/main.nf)
@@ -25,20 +32,19 @@ main.nf
   └── PIPELINE_COMPLETION        (subworkflows/local/utils_nfcore_taxmarker_pipeline/main.nf)
         sends email / completion summary
 
-    Required nf-core modules (install before use):
-      nf-core modules install raxmlng/search
-      nf-core modules install raxmlng/evaluate
-      nf-core modules install epang/hmmbuild
-      nf-core modules install epang/place
-      nf-core modules install emboss/seqret
+    This is functionally equivalent to nf-core/modules#12977 (taxonomy2phylogeny) and
+    #12910 (sativaepang/*), built here as local pipeline components instead of waiting
+    on their upstream review -- both PRs stay open, kept as-is, for possible later
+    promotion.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { TAXONOMYTREE   } from '../../../modules/local/taxonomytree/main'
-include { IQTREE         } from '../../../modules/nf-core/iqtree/main'
-include { SATIVALOOSPLIT } from '../../../modules/local/sativaloosplit/main'
-include { SATIVASCORE    } from '../../../modules/local/sativascore/main'
-include { EPANG_PLACE    } from '../../../modules/nf-core/epang/place/main'
+include { TAXONOMY2PHYLOGENY      } from '../taxonomy2phylogeny/main'
+include { SATIVAEPANG_REFERENCE   } from '../../../modules/local/sativaepang/reference/main'
+include { SATIVAEPANG_LOOTASKS    } from '../../../modules/local/sativaepang/lootasks/main'
+include { SATIVAEPANG_LOOPLACE    } from '../../../modules/local/sativaepang/looplace/main'
+include { SATIVAEPANG_LOOSCORE    } from '../../../modules/local/sativaepang/looscore/main'
+include { SATIVAEPANGMISREPORT    } from '../../../modules/local/sativaepang/misreport/main'
 
 // ─── Subworkflow ──────────────────────────────────────────────────────────────
 
@@ -57,8 +63,9 @@ workflow SATIVA {
                   //   FASTA and, if it arrived unaligned, aligned via hmmalign, both
                   //   by the caller (workflows/sativa.nf; see EMBOSS_SEQRET and
                   //   ENSURE_ALIGNED there) before this subworkflow ever sees it.
-                  //   Both IQTREE and SATIVALOOSPLIT read it directly.
                   //   Sequence IDs must match the first column of ch_taxonomy.
+
+    taxcode       // value:   sativa-epang taxonomic code: bac/bot/zoo/vir
 
     ch_ref_tree   // channel: [ val(meta), path(tree.nwk) ]
                   //   Pre-built reference tree. Pass Channel.empty() to build one.
@@ -67,129 +74,72 @@ workflow SATIVA {
                   //   RAxML-NG model file matching ch_ref_tree. Channel.empty() if none.
 
     main:
-//    def ch_versions = channel.empty()
-
     // ch_alignment is already FASTA (normalised once by the caller); give it a meta
     // for the joins/tuples below.
     def ch_alignment_meta = ch_alignment.map { [ [ id: 'user-alignment' ], it ] }
 
-    // ── Phase 1: Reference tree construction (epa_trainer) ────────────────────
+    // ── Phase 1: Reference tree construction ───────────────────────────────────
     //
     // Build a multifurcating guide tree from taxonomy strings, then run RAxML-NG
-    // with that tree as a topology constraint.  Multiple independent searches are
-    // controlled via ext.args (e.g. "--searches 10").  The best-scoring tree is
-    // then model-optimised.  The resulting tree + model are reusable across runs
-    // (pass via ch_ref_tree / ch_ref_model to skip this phase).
-
-    TAXONOMYTREE(ch_taxonomy.map { it -> [ [ id: 'guide-tree' ], it ] })
-
-    IQTREE(
-        ch_alignment_meta.map { meta, aln -> [ meta, aln, [] ] },           // Alignment
-        [],                                                                 // tree_te
-        [],                                                                 // lmclust
-        [],                                                                 // mdef
-        [],                                                                 // partitions_equal
-        [],                                                                 // partitions_proportional
-        [],                                                                 // partitions_unlinked
-        [],                                                                 // guide_tree
-        [],                                                                 // sitefreq_in
-        TAXONOMYTREE.out.guide_tree.map { _meta, tree -> tree },            // constraint_tree
-        [],                                                                 // trees_z
-        [],                                                                 // suptree
-        []                                                                  // trees_rf
-    )
+    // with that tree as a topology constraint and its own automatic model testing
+    // (MOOSE, triggered by "DNA" for these nucleotide marker genes). The resulting
+    // tree + model are reusable across runs (pass via ch_ref_tree / ch_ref_model to
+    // skip this phase).
 
     // TODO: give externally supplied ch_ref_tree / ch_ref_model precedence over what
     // we just built, once main.nf actually exposes a way to pass them in (currently
     // always called with `[]`, so mixing them in here would inject a spurious
     // empty-list item into the channel).
-    def ch_tree = IQTREE.out.phylogeny
+    def ch_taxonomy_meta = ch_taxonomy.map { [ [ id: 'user-alignment' ], it ] }
+    TAXONOMY2PHYLOGENY(
+        ch_taxonomy_meta
+            .join(ch_alignment_meta)
+            .map { meta, taxonomy, alignment -> [ meta, taxonomy, alignment, 'DNA' ] }
+    )
 
-    // IQTREE doesn't emit a separate model file; the chosen substitution model is
-    // only reported in its run log (e.g. "Best-fit model: GTR+F+I chosen according
-    // to BIC"), so parse it out of there instead. Absent under -stub-run, where the
-    // log is just an empty touched file.
-    def ch_model = IQTREE.out.log.map { meta, log ->
-        def matcher = log.text =~ /Best-fit model: (.*) chosen according to/
-        [ meta, matcher.find() ? matcher.group(1) : null ]
-    }
+    def ch_tree  = TAXONOMY2PHYLOGENY.out.tree
+    def ch_model = TAXONOMY2PHYLOGENY.out.model
 
-//    // ── Phase 2: HMM profile ──────────────────────────────────────────────────
-//    //
-//    // EPA-ng uses an HMM profile built from the reference MSA to re-align each
-//    // LOO query sequence before placement.  Corresponds to the hmmbuild call in
-//    // epa_trainer.py.  Skipped for now: pipeline input is already an aligned MSA,
-//    // so EPA-ng can be run directly (--query is pre-aligned) without a profile.
-//    // Revisit if/when unaligned input becomes a supported entry point.
-//
-//    EPANG_HMMBUILD(ch_alignment)
-//    ch_versions = ch_versions.mix(EPANG_HMMBUILD.out.versions)
-//
-    // ── Phase 3: Leave-one-out scatter (epa_classifier) ────────────────────────
+    // ── Phase 2: sativa-epang reference + leave-one-out scatter ────────────────
     //
-    // Split the full MSA + reference tree into N independent (query, reference,
-    // tree) triples, one per held-out sequence.  This is the computationally
-    // dominant phase; the fan-out means Nextflow schedules up to N EPA-ng jobs
-    // simultaneously once wired to EPANG_PLACE below.
+    // Hand the RAxML-NG tree+model to sativa-epang via -reftree/-refmodel, skipping
+    // its own constrained RAxML search entirely. Joined by meta.id (not paired
+    // positionally) before splitting back into sativaepang/reference's three
+    // positional inputs, since -reftree/-refmodel carry no meta of their own -- see
+    // this project's own Nextflow channel-joining doctrine.
+    def ch_reference_input = ch_alignment_meta
+        .join(ch_taxonomy_meta)
+        .map { meta, alignment, taxonomy -> [ meta, alignment, taxonomy, taxcode ] }
+        .join(ch_tree)
+        .join(ch_model)
+    // ch_reference_input: [ meta, alignment, taxonomy, taxcode, reftree, refmodel ]
 
-    SATIVALOOSPLIT(ch_alignment_meta.join(ch_tree))
+    SATIVAEPANG_REFERENCE(
+        ch_reference_input.map { meta, alignment, taxonomy, taxcode_item, _reftree, _refmodel -> [ meta, alignment, taxonomy, taxcode_item ] },
+        ch_reference_input.map { meta, _alignment, _taxonomy, _taxcode, reftree, _refmodel -> reftree },
+        ch_reference_input.map { meta, _alignment, _taxonomy, _taxcode, _reftree, refmodel -> refmodel }
+    )
 
-    // SATIVALOOSPLIT emits one tuple per input dataset, with the query/reference/tree
-    // outputs as same-length file lists (one entry per held-out sequence).  .transpose()
-    // unpacks that into one channel item per sequence, but every unpacked item still
-    // carries the same meta as the parent call — so a running counter (embedded by the
-    // module in each file's basename) is folded into meta.id here to keep the N items
-    // distinct downstream (e.g. for EPANG_PLACE and later grouping/joins).
-    def ch_loo = SATIVALOOSPLIT.out.loo
-        .transpose()
-        .map { meta, queryaln, referencealn, referencetree ->
-            def counter = queryaln.baseName.tokenize('_')[0]
-            [ meta + [ id: "${meta.id}_${counter}" ], queryaln, referencealn, referencetree ]
-        }
+    SATIVAEPANG_LOOTASKS(SATIVAEPANG_REFERENCE.out.refjson)
 
-    // epa-ng refuses to run without an explicit --model (see ext.args in
-    // conf/modules.config); fold the IQTREE-derived model string into each split's
-    // meta so the config closure can read it. ch_model holds a single item per
-    // input dataset, so .combine() broadcasts it across all N ch_loo items.
-    // NB: combine directly on the [meta, model] tuples rather than unwrapping model
-    // into its own .map() first — under -stub-run (or any run where the regex finds
-    // no match) model is null, and a bare null returned from .map() is silently
-    // dropped by Nextflow, which would empty out this channel entirely.
-    def ch_loo_with_model = ch_loo
-        .combine(ch_model)
-        .map { meta, queryaln, referencealn, referencetree, _model_meta, model ->
-            [ meta + [ model: model ], queryaln, referencealn, referencetree ]
-        }
+    SATIVAEPANG_LOOPLACE(SATIVAEPANG_LOOTASKS.out.taskdir)
 
-    // Place each held-out sequence back into its pruned reference tree.  No HMM
-    // profile needed: query/reference alignments are both subsets of the same
-    // input MSA, so they already share the same column coordinate space.
-    EPANG_PLACE(ch_loo_with_model, [], [])
-
-    // ── Phase 4: Gather and score (mislabels_handler) ──────────────────────────
+    // ── Phase 3: Score and report ───────────────────────────────────────────────
     //
-    // Collect all N per-sequence jplace files back into one item per input dataset,
-    // then compare each EPA classification to the original taxonomy label.
+    // refjson and the placed taskdir come from opposite ends of the chain, with no
+    // other guaranteed correlation -- join explicitly rather than relying on
+    // emission order.
+    SATIVAEPANG_LOOSCORE(
+        SATIVAEPANG_REFERENCE.out.refjson.join(SATIVAEPANG_LOOPLACE.out.taskdir)
+    )
 
-    def ch_score_input = EPANG_PLACE.out.jplace
-        // meta carries both the per-sequence counter suffix added after SATIVALOOSPLIT's
-        // transpose (e.g. "user-alignment_0001") and the 'model' key folded in above for
-        // epa-ng's ext.args; rebuild a bare [id:...] meta (strip the counter and drop
-        // 'model') rather than merging, so it matches ch_taxonomy's meta below exactly
-        // and .join() doesn't silently match nothing.
-        .map { meta, jplace -> [ [ id: meta.id.tokenize('_')[0..-2].join('_') ], jplace ] }
-        .groupTuple()
-        // ch_taxonomy is a bare file channel (see take: above); give it the same
-        // 'user-alignment' meta used elsewhere so it lines up with ch_score_input.
-        .join(ch_taxonomy.map { [ [ id: 'user-alignment' ], it ] })
-
-    SATIVASCORE(ch_score_input)
+    SATIVAEPANGMISREPORT(
+        SATIVAEPANG_LOOSCORE.out.mis.join(SATIVAEPANG_LOOPLACE.out.taskdir)
+    )
 
     emit:
-    mislabels = SATIVASCORE.out.mislabels   // [ meta, tsv ]  putative mislabels, ranked
-    summary   = SATIVASCORE.out.summary     // [ meta, txt ]  run statistics
-    tree      = ch_tree                     // [ meta, nwk ]  reference tree (cache for reuse)
-    model     = ch_model                    // [ meta, txt ]  IQTREE model  (cache for reuse)
-    loo       = ch_loo                      // [ meta, queryaln, referencealn, referencetree ]  per-sequence LOO triples
-    jplace    = EPANG_PLACE.out.jplace      // [ meta, jplace.gz ]  per-sequence EPA-ng placement result
+    mislabels = SATIVAEPANGMISREPORT.out.mislabels // [ meta, tsv ]  putative mislabels, ranked
+    summary   = SATIVAEPANGMISREPORT.out.summary   // [ meta, txt ]  run statistics
+    tree      = ch_tree                            // [ meta, nwk ]  reference tree (cache for reuse)
+    model     = ch_model                           // [ meta, txt ]  RAxML-NG model  (cache for reuse)
 }

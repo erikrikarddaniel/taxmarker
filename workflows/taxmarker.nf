@@ -32,6 +32,7 @@ workflow TAXMARKER {
     skip_gapfilter     // value:   skip the gap filter (already-aligned input)?
     skip_profile_cover // value:   skip the profile-coverage filter (hmmalign-derived input)?
     skip_sativa        // value:   skip the phylogenetic placement subworkflow entirely?
+    taxcode            // value:   taxonomic code for sativa-epang (bac/bot/zoo/vir)
     hmm                // value:   path to an HMM profile database, or null/empty if not needed
     hmm_name           // value:   name of a specific profile within hmm, or null/empty
     multiqc_config
@@ -233,7 +234,7 @@ workflow TAXMARKER {
     def ch_sativa_mislabels
     def run_sativa = !skip_sativa.toString().toBoolean()
     if (run_sativa) {
-        SWF_SATIVA(ch_taxonomy_for_sativa, ch_alignment_for_sativa, [], [])
+        SWF_SATIVA(ch_taxonomy_for_sativa, ch_alignment_for_sativa, taxcode, [], [])
         ch_sativa_mislabels = SWF_SATIVA.out.mislabels
     } else {
         ch_sativa_mislabels = channel.empty()

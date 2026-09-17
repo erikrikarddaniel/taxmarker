@@ -49,7 +49,7 @@ nextflow_pipeline {
         then {
             assert workflow.success
 
-            def summary = path("$outputDir/sativascore/user-alignment.summary.txt").text
+            def summary = path("$outputDir/sativaepangmisreport/user-alignment.summary.txt").text
 
             assertAll(
                 // Regression guard for the GAPFILTER-vs-hmmalign bug (HMMER_ESLALIMASK
@@ -80,7 +80,7 @@ nextflow_pipeline {
         then {
             assert workflow.success
 
-            def summary = path("$outputDir/sativascore/user-alignment.summary.txt").text
+            def summary = path("$outputDir/sativaepangmisreport/user-alignment.summary.txt").text
 
             assertAll(
                 // Regression guard: --skip_gapfilter is set here for the branch that

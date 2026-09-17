@@ -84,6 +84,13 @@
                     "help_text": "Turns the rest of the pipeline into a general-purpose taxonomy-resolution/alignment/prefilter QC tool: taxonomy resolution, name-consistency checking, optional alignment (via hmmalign) and gap/profile-coverage filtering, and the optional raxtax prefilter all still run as configured. The final mislabels report then contains only raxtax-flagged mislabels (or is empty if --skip_raxtax is also set) -- no EPA-ng-based placement is performed. The cleaned, filtered alignment and taxonomy are still published, under whichever upstream step (raxtax prefilter, gap/profile-coverage filter, or name-consistency check) produced them last.",
                     "fa_icon": "fas fa-forward"
                 },
+                "taxcode": {
+                    "type": "string",
+                    "default": "bac",
+                    "enum": ["bac", "bot", "zoo", "vir"],
+                    "description": "Taxonomic code of the input data, passed to sativa-epang: bac(teriological), bot(anical), zoo(logical) or vir(ological). Governs its nomenclature-revision suggestions.",
+                    "fa_icon": "fas fa-dna"
+                },
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",

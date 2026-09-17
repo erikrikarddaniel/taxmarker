@@ -1,0 +1,85 @@
+nextflow_process {
+
+    name "Test Process SATIVAEPANGMISREPORT"
+    script "../main.nf"
+    process "SATIVAEPANGMISREPORT"
+
+    tag "modules"
+    tag "modules_local"
+    tag "taxmarker"
+    tag "sativaepang"
+    tag "sativaepang/misreport"
+
+    // A real .mis file and manifest.json are tiny and entirely generic (no
+    // taxmarker-specific content), so both are constructed inline here rather than
+    // adding fixtures to test-datasets -- .mis format confirmed against a real
+    // sativa-epang run (SeqID, MislabeledLevel, OriginalLabel, ProposedLabel,
+    // Confidence, OriginalTaxonomyPath, ProposedTaxonomyPath, PerRankConfidence).
+    test("one flagged sequence") {
+
+        when {
+            process {
+                """
+                def misFile = File.createTempFile('test', '.mis')
+                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\n' +
+                    'GB_GCA_014728835.1~WJKY01000087.1\\tPhylum\\tp__Nanoarchaeota\\tp__Halobacteriota\\t1.000\\td__Archaea;p__Nanoarchaeota;c__Nanoarchaeia\\td__Archaea;p__Halobacteriota;c__Methanoliparia\\t1.000;1.000\\n'
+                def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
+                taskdir.mkdirs()
+                new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 3}'
+                input[0] = [ [ id:'test' ], file(misFile.toString()), file(taskdir.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def mislabels = path(process.out.mislabels[0][1]).text
+            def summary   = path(process.out.summary[0][1]).text
+
+            assertAll(
+                { assert mislabels.contains('GB_GCA_014728835.1~WJKY01000087.1') },
+                { assert mislabels.contains('d__Archaea;p__Nanoarchaeota;c__Nanoarchaeia') },
+                { assert mislabels.contains('d__Archaea;p__Halobacteriota;c__Methanoliparia') },
+                // First differing token between original/proposed paths is index 2
+                // (kingdom d__Archaea matches, phylum differs), 1-based.
+                { assert mislabels.contains('\t2\tsativa') },
+                { assert summary.contains('sequences scored: 3') },
+                { assert summary.contains('putative mislabels: 1') },
+                { assert process.out.versions }
+            )
+        }
+
+    }
+
+    test("no flagged sequences") {
+
+        when {
+            process {
+                """
+                def misFile = File.createTempFile('test', '.mis')
+                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\n'
+                def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
+                taskdir.mkdirs()
+                new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 5}'
+                input[0] = [ [ id:'test' ], file(misFile.toString()), file(taskdir.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def mislabels = path(process.out.mislabels[0][1]).text
+            def summary   = path(process.out.summary[0][1]).text
+
+            assertAll(
+                { assert mislabels.readLines().size() == 1 },
+                { assert summary.contains('sequences scored: 5') },
+                { assert summary.contains('putative mislabels: 0') },
+            )
+        }
+
+    }
+
+}
