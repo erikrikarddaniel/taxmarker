@@ -115,7 +115,7 @@ PYEOF
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.resolved.tax ${prefix}.resolved.${sequences.extension} ${prefix}.warnings.txt
+    touch ${prefix}.resolved.tax ${prefix}.resolved.${resolvedExtension(sequences)} ${prefix}.warnings.txt
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python3 --version | sed 's/Python //')
