@@ -14,8 +14,8 @@ workflow TAXONOMY2PHYLOGENY {
     // RAXMLNG_SEARCH's tree_constraint is a bare path, not a [meta, path] tuple, so it
     // can't be paired with the right alignment by a plain .map() off TAXONOMYTREE's own
     // output -- .join() first, on the shared meta, then re-project the single joined
-    // channel into RAXMLNG_SEARCH's separate positional inputs, so both stay correctly
-    // paired regardless of the two processes' relative completion order.
+    // channel into RAXMLNG_SEARCH's separate positional inputs. That keeps both correctly
+    // paired regardless of the two processes' relative completion order under concurrency.
     def ch_search_input = ch_taxonomy_alignment
         .map { meta, taxonomy, alignment, raxmlng_model -> [ meta, alignment, raxmlng_model ] }
         .join(TAXONOMYTREE.out.guide_tree)

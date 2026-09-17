@@ -1,10 +1,11 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SATIVA - Semi-Automatic Taxonomy Improvement and Validation Algorithm
-    Reverse-engineered from https://github.com/amkozlov/sativa, now delegating the
-    reference-tree build to RAxML-NG and leave-one-out placement/scoring to Auguste
-    Gardette's sativa-epang fork (https://github.com/Aaramis/sativa-epang), which
-    replaces the original tool's RAxML placement engine with EPA-ng.
+    Algorithm originally from https://github.com/amkozlov/sativa. Builds a
+    taxonomy-constrained ML reference tree with RAxML-NG, then delegates
+    leave-one-out placement/scoring to Auguste Gardette's sativa-epang fork
+    (https://github.com/Aaramis/sativa-epang), which places every held-out
+    sequence via EPA-ng.
 
     Workflow:
       1. Build a taxonomy-constrained ML reference tree     (taxonomy2phylogeny)
@@ -31,11 +32,6 @@ main.nf
               └── MULTIQC         (modules/nf-core/multiqc/)
   └── PIPELINE_COMPLETION        (subworkflows/local/utils_nfcore_taxmarker_pipeline/main.nf)
         sends email / completion summary
-
-    This is functionally equivalent to nf-core/modules#12977 (taxonomy2phylogeny) and
-    #12910 (sativaepang/*), built here as local pipeline components instead of waiting
-    on their upstream review -- both PRs stay open, kept as-is, for possible later
-    promotion.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
