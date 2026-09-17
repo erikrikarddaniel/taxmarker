@@ -45,6 +45,11 @@
                         "branch": "master",
                         "git_sha": "bfc020fb46e321f4b8b78d113780285629ccfb51",
                         "installed_by": ["modules"]
+                    },
+                    "seqkit/grep": {
+                        "branch": "master",
+                        "git_sha": "504cddfc189c20124336b8f2c88cc97dbd543928",
+                        "installed_by": ["modules"]
                     }
                 }
             },
