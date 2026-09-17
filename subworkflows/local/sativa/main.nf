@@ -44,7 +44,7 @@ include { SATIVAEPANG_REFERENCE   } from '../../../modules/local/sativaepang/ref
 include { SATIVAEPANG_LOOTASKS    } from '../../../modules/local/sativaepang/lootasks/main'
 include { SATIVAEPANG_LOOPLACE    } from '../../../modules/local/sativaepang/looplace/main'
 include { SATIVAEPANG_LOOSCORE    } from '../../../modules/local/sativaepang/looscore/main'
-include { SATIVAEPANGMISREPORT    } from '../../../modules/local/sativaepang/misreport/main'
+include { SATIVAEPANG_MISREPORT   } from '../../../modules/local/sativaepang/misreport/main'
 
 // ─── Subworkflow ──────────────────────────────────────────────────────────────
 
@@ -133,13 +133,13 @@ workflow SATIVA {
         SATIVAEPANG_REFERENCE.out.refjson.join(SATIVAEPANG_LOOPLACE.out.taskdir)
     )
 
-    SATIVAEPANGMISREPORT(
+    SATIVAEPANG_MISREPORT(
         SATIVAEPANG_LOOSCORE.out.mis.join(SATIVAEPANG_LOOPLACE.out.taskdir)
     )
 
     emit:
-    mislabels = SATIVAEPANGMISREPORT.out.mislabels // [ meta, tsv ]  putative mislabels, ranked
-    summary   = SATIVAEPANGMISREPORT.out.summary   // [ meta, txt ]  run statistics
+    mislabels = SATIVAEPANG_MISREPORT.out.mislabels // [ meta, tsv ]  putative mislabels, ranked
+    summary   = SATIVAEPANG_MISREPORT.out.summary   // [ meta, txt ]  run statistics
     tree      = ch_tree                            // [ meta, nwk ]  reference tree (cache for reuse)
     model     = ch_model                           // [ meta, txt ]  RAxML-NG model  (cache for reuse)
 }

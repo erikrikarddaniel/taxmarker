@@ -8,7 +8,7 @@ process SATIVAEPANG_LOOSCORE {
         'quay.io/biocontainers/sativa-epang:0.10.0--py314hab16a5f_0' }"
 
     input:
-    tuple val(meta), path(refjson), path(taskdir)
+    tuple val(meta), path(refjson), path(taskdir, stageAs: "input")
 
     output:
     tuple val(meta), path("*.mis"), emit: mis
@@ -26,7 +26,7 @@ process SATIVAEPANG_LOOSCORE {
         -r ${refjson} \\
         -n ${prefix} \\
         -o . \\
-        -taskdir ${taskdir} \\
+        -taskdir input \\
         ${args}
     """
 

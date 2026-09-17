@@ -22,9 +22,6 @@
                 "RESOLVETAXONOMY": {
                     "python": "3.12.12"
                 },
-                "SATIVAEPANGMISREPORT": {
-                    "python": "3.11.10"
-                },
                 "SATIVAEPANG_LOOPLACE": {
                     "sativaepang": "0.10.0"
                 },
@@ -33,6 +30,9 @@
                 },
                 "SATIVAEPANG_LOOTASKS": {
                     "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_MISREPORT": {
+                    "python": "3.11.10"
                 },
                 "SATIVAEPANG_REFERENCE": {
                     "sativaepang": "0.10.0"
@@ -45,7 +45,7 @@
                 }
             }
         ],
-        "timestamp": "2026-09-17T08:24:12.083998222",
+        "timestamp": "2026-09-17T10:03:37.346109407",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"
@@ -83,9 +83,6 @@
                 "RESOLVETAXONOMY": {
                     "python": "3.12.12"
                 },
-                "SATIVAEPANGMISREPORT": {
-                    "python": "3.11.10"
-                },
                 "SATIVAEPANG_LOOPLACE": {
                     "sativaepang": "0.10.0"
                 },
@@ -94,6 +91,9 @@
                 },
                 "SATIVAEPANG_LOOTASKS": {
                     "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_MISREPORT": {
+                    "python": "3.11.10"
                 },
                 "SATIVAEPANG_REFERENCE": {
                     "sativaepang": "0.10.0"
@@ -106,7 +106,7 @@
                 }
             }
         ],
-        "timestamp": "2026-09-17T08:10:07.776163821",
+        "timestamp": "2026-09-17T09:51:53.831528763",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"
@@ -184,9 +184,6 @@
                 "RESOLVETAXONOMY": {
                     "python": "3.12.12"
                 },
-                "SATIVAEPANGMISREPORT": {
-                    "python": "3.11.10"
-                },
                 "SATIVAEPANG_LOOPLACE": {
                     "sativaepang": "0.10.0"
                 },
@@ -195,6 +192,9 @@
                 },
                 "SATIVAEPANG_LOOTASKS": {
                     "sativaepang": "0.10.0"
+                },
+                "SATIVAEPANG_MISREPORT": {
+                    "python": "3.11.10"
                 },
                 "SATIVAEPANG_REFERENCE": {
                     "sativaepang": "0.10.0"
@@ -207,7 +207,7 @@
                 }
             }
         ],
-        "timestamp": "2026-09-17T08:11:15.718800522",
+        "timestamp": "2026-09-17T09:53:10.058035561",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"

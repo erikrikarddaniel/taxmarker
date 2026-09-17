@@ -2,7 +2,9 @@ name: "sativaepang_misreport"
 description: |
   Translate sativa-epang's `-stage loo-score` `.mis` report into the pipeline's own
   `*.mislabels.tsv` / `*.summary.txt` schema, matching the one the pipeline's raxtax
-  prefilter also produces, so both sources merge into one final report.
+  prefilter also produces, so both sources merge into one final report. A row is only
+  reported as a mislabel when its confidence clears `--min-lwr` (default 0.5, settable
+  via `ext.args`) -- rows below the threshold still count toward "sequences scored".
 keywords:
   - phylogenetics
   - taxonomy

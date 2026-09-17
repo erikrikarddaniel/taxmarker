@@ -1,8 +1,8 @@
 nextflow_process {
 
-    name "Test Process SATIVAEPANGMISREPORT"
+    name "Test Process SATIVAEPANG_MISREPORT"
     script "../main.nf"
-    process "SATIVAEPANGMISREPORT"
+    process "SATIVAEPANG_MISREPORT"
 
     tag "modules"
     tag "modules_local"
@@ -77,6 +77,74 @@ nextflow_process {
                 { assert mislabels.readLines().size() == 1 },
                 { assert summary.contains('sequences scored: 5') },
                 { assert summary.contains('putative mislabels: 0') },
+            )
+        }
+
+    }
+
+    test("below-threshold confidence excluded from mislabels but still scored") {
+
+        when {
+            process {
+                """
+                def misFile = File.createTempFile('test', '.mis')
+                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\n' +
+                    'above\\tPhylum\\tp__A\\tp__B\\t0.900\\td__X;p__A\\td__X;p__B\\t1.000;0.900\\n' +
+                    'below\\tPhylum\\tp__A\\tp__C\\t0.100\\td__X;p__A\\td__X;p__C\\t1.000;0.100\\n'
+                def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
+                taskdir.mkdirs()
+                new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 2}'
+                input[0] = [ [ id:'test' ], file(misFile.toString()), file(taskdir.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def mislabels = path(process.out.mislabels[0][1]).text
+            def summary   = path(process.out.summary[0][1]).text
+
+            assertAll(
+                // default --min-lwr is 0.5: "above" (0.9) is reported, "below" (0.1) is not
+                { assert mislabels.contains('above') },
+                { assert !mislabels.contains('below') },
+                { assert summary.contains('sequences scored: 2') },
+                { assert summary.contains('putative mislabels: 1') },
+            )
+        }
+
+    }
+
+    test("taxonomy paths differ only in depth -- mismatch_rank is never null") {
+
+        when {
+            process {
+                """
+                def misFile = File.createTempFile('test', '.mis')
+                // Original path is a strict prefix of the proposed one (agrees over
+                // its shared length, differs only in depth) -- sativa-epang still
+                // flags it (it's in .mis at all), so mismatch_rank must resolve to
+                // the first rank beyond the shared prefix, not stay unset.
+                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\n' +
+                    'shallow\\tSpecies\\td__X;p__A\\td__X;p__A;c__B\\t0.900\\td__X;p__A\\td__X;p__A;c__B\\t1.000;1.000\\n'
+                def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
+                taskdir.mkdirs()
+                new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 1}'
+                input[0] = [ [ id:'test' ], file(misFile.toString()), file(taskdir.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def mislabels = path(process.out.mislabels[0][1]).text
+
+            assertAll(
+                { assert !mislabels.contains('\tNone\t') },
+                // Shared prefix is 2 ranks (d__X;p__A), so the mismatch is at rank 3.
+                { assert mislabels.contains('\t3\tsativa') },
             )
         }
 

@@ -18,7 +18,7 @@ nextflow_pipeline {
             assert workflow.success
 
             def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
-            def summary   = path("$outputDir/sativaepangmisreport/user-alignment.summary.txt").text
+            def summary   = path("$outputDir/sativaepang/user-alignment.summary.txt").text
 
             assertAll(
                 // Every sequence goes through EPA-ng placement and scoring directly;
@@ -118,11 +118,12 @@ nextflow_pipeline {
                 // prefilter QC run, without the much more expensive EPA-ng-based step.
                 { assert !new File("$outputDir/taxonomytree").exists() },
                 { assert !new File("$outputDir/raxmlng").exists() },
-                { assert !new File("$outputDir/sativaepangreference").exists() },
-                { assert !new File("$outputDir/sativaepanglootasks").exists() },
-                { assert !new File("$outputDir/sativaepanglooplace").exists() },
-                { assert !new File("$outputDir/sativaepanglooscore").exists() },
-                { assert !new File("$outputDir/sativaepangmisreport").exists() },
+                // reference/looscore/misreport share the default sativaepang/ group;
+                // lootasks/looplace each get their own explicit subdirectory (see
+                // conf/modules.config -- both publish a *.l1o_tasks with the same name).
+                { assert !new File("$outputDir/sativaepang").exists() },
+                { assert !new File("$outputDir/sativaepang/lootasks").exists() },
+                { assert !new File("$outputDir/sativaepang/looplace").exists() },
                 { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_sativa_skipped") },
             )
         }
