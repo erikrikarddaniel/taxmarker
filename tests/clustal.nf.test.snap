@@ -371,7 +371,6 @@
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
                 "user-alignment.raxml.bestModel:md5,e4951d026583d088cab27fa6b283e0de",
                 "user-alignment.raxml.bestTree:md5,827abbbf1d0d1d899fa5baf74232e50f",
-                "user-alignment.raxml.log:md5,c608637ecfa137d86c9335594d96e765",
                 "user-alignment.raxml.mlTrees:md5,836242746cf5bb00bcc643dfe40bb826",
                 "user-alignment.raxml.startTree:md5,db7a9f3bc7cd31f23d1ae008181b193f",
                 "user-alignment.resolved.aln:md5,472b9c04745fbae25485a58673c56386",
@@ -607,12 +606,11 @@
                 "user-alignment.mis:md5,ba82090e76ff09b712aaef81347be20f",
                 "user-alignment.mislabels.tsv:md5,a14d8978f3bee72c8c9a10195cd06f07",
                 "user-alignment.model:md5,e4951d026583d088cab27fa6b283e0de",
-                "user-alignment.refjson:md5,e9c362d4efb837f1ef81314ce04d49e9",
                 "user-alignment.summary.txt:md5,ac13396bae7956ddbb0e24acee54c836",
                 "user-alignment.guide.nwk:md5,d02bbee02826f3322e3833fc86702e44"
             ]
         ],
-        "timestamp": "2026-09-17T10:00:35.00664853",
+        "timestamp": "2026-09-17T11:35:30.662397228",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"
