@@ -33,14 +33,11 @@ sativascore/user-alignment.summary.txt
 # built directly from sativascore/user-alignment.mislabels.tsv above.
 mislabels/user-alignment.mislabels.tsv
 
-# RAxML-NG's own .log echoes its full invocation, including the absolute staged-input
-# paths under Nextflow's per-run work directory -- these differ between any two separate
-# runs regardless of engine/Nextflow version, even though the tree/model outputs
-# themselves (bestTree/bestModel/mlTrees/startTree) are reproducible (cpus = 1 pin, see
-# conf/modules.config). Existence/naming still checked via stable_path.
+# RAxML-NG's own .log echoes its invocation, including staged-input paths under
+# Nextflow's per-run work directory -- differs between separate runs even though the
+# tree/model outputs themselves are reproducible (cpus = 1, see conf/modules.config).
 raxmlng/user-alignment.raxml.log
 
-# sativaepang/reference's refjson embeds its own build invocation
-# (metadata.invocation_epac), absolute working-directory paths and all -- not
-# byte-reproducible across separate runs even with identical scientific content.
+# refjson embeds its own build invocation (absolute working-directory paths and
+# all) -- not byte-reproducible across runs even with identical content.
 sativaepang/user-alignment.refjson
