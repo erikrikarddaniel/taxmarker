@@ -36,8 +36,8 @@ Using evolutionary placement, it identifies sequences in the alignment that do n
 
 > [!NOTE]
 > The diagram and list below describe the pipeline's current **aim**, not everything that's implemented yet.
-> Today's pipeline builds the reference tree with IQTREE (not RAxML-NG) and runs leave-one-out placement and scoring as separate `EPANG_PLACE`/`SATIVASCORE` steps (not yet consolidated into a single `sativa-epang` call); the reference-export step doesn't exist yet either.
-> See the [nf-core/taxmarker proposal](https://github.com/nf-core/proposals/issues/165) and issues [#8](https://github.com/erikrikarddaniel/nf-core-sativa/issues/8) (RAxML-NG swap) and [#9](https://github.com/erikrikarddaniel/nf-core-sativa/issues/9) (reference export) for current status.
+> The reference-export step doesn't exist yet.
+> See the [nf-core/taxmarker proposal](https://github.com/nf-core/proposals/issues/165) and issue [#9](https://github.com/erikrikarddaniel/nf-core-sativa/issues/9) (reference export) for current status.
 
 1. Resolve taxonomy: from `--taxonomy` if given, otherwise derived from `--sequences` record headers instead (GTDB-style: `>id taxonomy;string`); if both are present, the file wins, with a warning rather than silently ignoring the header text
 2. Check that names in the two are consistent and do not contain problematic characters

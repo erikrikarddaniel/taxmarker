@@ -46,7 +46,7 @@ nextflow_process {
                 { assert mislabels.contains('\t2\tsativa') },
                 { assert summary.contains('sequences scored: 3') },
                 { assert summary.contains('putative mislabels: 1') },
-                { assert process.out.versions }
+                { assert snapshot(sanitizeOutput(process.out)).match() }
             )
         }
 
@@ -77,6 +77,7 @@ nextflow_process {
                 { assert mislabels.readLines().size() == 1 },
                 { assert summary.contains('sequences scored: 5') },
                 { assert summary.contains('putative mislabels: 0') },
+                { assert snapshot(sanitizeOutput(process.out)).match() }
             )
         }
 
@@ -111,6 +112,7 @@ nextflow_process {
                 { assert !mislabels.contains('below') },
                 { assert summary.contains('sequences scored: 2') },
                 { assert summary.contains('putative mislabels: 1') },
+                { assert snapshot(sanitizeOutput(process.out)).match() }
             )
         }
 
@@ -145,6 +147,7 @@ nextflow_process {
                 { assert !mislabels.contains('\tNone\t') },
                 // Shared prefix is 2 ranks (d__X;p__A), so the mismatch is at rank 3.
                 { assert mislabels.contains('\t3\tsativa') },
+                { assert snapshot(sanitizeOutput(process.out)).match() }
             )
         }
 

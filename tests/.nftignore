@@ -19,3 +19,8 @@ raxmlng/user-alignment.raxml.log
 # refjson embeds its own build invocation (absolute working-directory paths and
 # all) -- not byte-reproducible across runs even with identical content.
 sativaepang/user-alignment.refjson
+
+# Per-fold EPA-ng logs carry "Elapsed Time: Ns", not reproducible across runs
+# on machines of different speed; the fold fastas are already hashed under
+# lootasks/, so nothing is lost by skipping the rest of looplace/'s output.
+sativaepang/looplace/**

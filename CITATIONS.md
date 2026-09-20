@@ -18,6 +18,18 @@
 
 > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
+- [RAxML-NG](https://pubmed.ncbi.nlm.nih.gov/31070718/)
+
+> Kozlov AM, Darriba D, Flouri T, Morel B, Stamatakis A. RAxML-NG: a fast, scalable and user-friendly tool for maximum likelihood phylogenetic inference. Bioinformatics. 2019 Nov 1;35(21):4453-4455. doi: 10.1093/bioinformatics/btz305. PubMed PMID: 31070718.
+
+- [EPA-ng](https://pubmed.ncbi.nlm.nih.gov/30165689/)
+
+> Barbera P, Kozlov AM, Czech L, Morel B, Darriba D, Flouri T, Stamatakis A. EPA-ng: Massively Parallel Evolutionary Placement of Genetic Sequences. Syst Biol. 2019 Mar 1;68(2):365-369. doi: 10.1093/sysbio/syy054. PubMed PMID: 30165689.
+
+- [sativa-epang](https://github.com/Aaramis/sativa-epang)
+
+> Consolidated leave-one-out placement and scoring wrapper around RAxML-NG and EPA-ng, used by this pipeline's `sativaepang/*` modules.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

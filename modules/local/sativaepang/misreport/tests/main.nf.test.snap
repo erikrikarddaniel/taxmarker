@@ -1,0 +1,122 @@
+{
+    "no flagged sequences": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,48a47ad1d396f3459a95291cbf9c478c"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,20397a5f5f206332a48d61a883d934cf"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-20T14:47:44.21973693",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    },
+    "taxonomy paths differ only in depth -- mismatch_rank is never null": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,7440abf6427e085e1575eccf03fa7019"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,9d7c1930faaca73281a46b9b704e7de4"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-20T14:48:09.35240447",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    },
+    "below-threshold confidence excluded from mislabels but still scored": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,4652c9ee898f45aa1bb06c876b4e11b1"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,1f7bc16eec726bb9f08beed2666a34fd"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-20T14:47:58.069162673",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    },
+    "one flagged sequence": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,6c0b12e905b3a56764519989491258b4"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,4dbe2b6191f101721d6acc09c2aa5637"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-20T14:47:31.35174478",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    }
+}
