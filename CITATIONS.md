@@ -10,13 +10,17 @@
 
 ## Pipeline tools
 
-- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
-
-> Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
-
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
 > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
+
+- [HMMER](https://pubmed.ncbi.nlm.nih.gov/22039361/)
+
+> Eddy SR. Accelerated Profile HMM Searches. PLoS Comput Biol. 2011 Oct 20;7(10):e1002195. doi: 10.1371/journal.pcbi.1002195. PubMed PMID: 22039361.
+
+- [raxtax](https://pubmed.ncbi.nlm.nih.gov/41259660/)
+
+> Wahl NA, Koutsovoulos G, Bettisworth B, Stamatakis A. raxtax: a k-mer-based non-Bayesian taxonomic classifier. Bioinformatics. 2025 Dec;41(12):btaf620. doi: 10.1093/bioinformatics/btaf620. PubMed PMID: 41259660.
 
 - [RAxML-NG](https://pubmed.ncbi.nlm.nih.gov/31070718/)
 

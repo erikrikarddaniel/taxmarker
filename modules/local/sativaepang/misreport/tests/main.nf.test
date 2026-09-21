@@ -153,4 +153,29 @@ nextflow_process {
 
     }
 
+    test("stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                def misFile = File.createTempFile('test', '.mis')
+                def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
+                taskdir.mkdirs()
+                new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 3}'
+                input[0] = [ [ id:'test' ], file(misFile.toString()), file(taskdir.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assertAll(
+                { assert snapshot(sanitizeOutput(process.out)).match() }
+            )
+        }
+
+    }
+
 }

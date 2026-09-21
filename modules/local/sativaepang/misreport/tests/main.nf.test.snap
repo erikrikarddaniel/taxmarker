@@ -89,6 +89,36 @@
             "nextflow": "26.04.6"
         }
     },
+    "stub": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-21T21:38:39.121541118",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    },
     "one flagged sequence": {
         "content": [
             {
