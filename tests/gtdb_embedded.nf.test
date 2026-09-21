@@ -18,7 +18,7 @@ nextflow_pipeline {
             assert workflow.success
 
             def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
-            def summary   = path("$outputDir/sativascore/user-alignment.summary.txt").text
+            def summary   = path("$outputDir/sativaepang/user-alignment.summary.txt").text
 
             assertAll(
                 // No --taxonomy given: RESOLVETAXONOMY derived it from the combined

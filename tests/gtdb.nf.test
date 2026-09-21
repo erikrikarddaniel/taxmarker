@@ -18,18 +18,16 @@ nextflow_pipeline {
             assert workflow.success
 
             def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
-            def summary   = path("$outputDir/sativascore/user-alignment.summary.txt").text
+            def summary   = path("$outputDir/sativaepang/user-alignment.summary.txt").text
 
             assertAll(
-                // Every sequence goes through EPA-ng placement and SATIVASCORE directly;
+                // Every sequence goes through EPA-ng placement and scoring directly;
                 // no raxtax step runs at all.
                 { assert !new File("$outputDir/raxtaxformat").exists() },
-                // 121 real sequences minus the 16 that fall below GAPFILTER's default
-                // min_nongap threshold (0.3) in this taxonomically broad alignment.
-                { assert summary.contains('sequences scored: 105') },
                 // DupHaloA/DupSulfoA is a deliberate swapped-label pair (maximally
-                // divergent phyla) -- an unambiguous positive control that SATIVASCORE's
+                // divergent phyla) -- an unambiguous positive control that sativa-epang's
                 // full phylogenetic placement must catch even without raxtax's help.
+                { assert summary.contains('putative mislabels: 2') },
                 { assert mislabels.contains('DupHaloA') },
                 { assert mislabels.contains('DupSulfoA') },
                 { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_raxtax_disabled") },
@@ -119,10 +117,13 @@ nextflow_pipeline {
                 // whole point of --skip_sativa -- a pure taxonomy-resolution/alignment/
                 // prefilter QC run, without the much more expensive EPA-ng-based step.
                 { assert !new File("$outputDir/taxonomytree").exists() },
-                { assert !new File("$outputDir/iqtree").exists() },
-                { assert !new File("$outputDir/sativaloosplit").exists() },
-                { assert !new File("$outputDir/epang").exists() },
-                { assert !new File("$outputDir/sativascore").exists() },
+                { assert !new File("$outputDir/raxmlng").exists() },
+                // reference/looscore/misreport share the default sativaepang/ group;
+                // lootasks/looplace each get their own explicit subdirectory (see
+                // conf/modules.config -- both publish a *.l1o_tasks with the same name).
+                { assert !new File("$outputDir/sativaepang").exists() },
+                { assert !new File("$outputDir/sativaepang/lootasks").exists() },
+                { assert !new File("$outputDir/sativaepang/looplace").exists() },
                 { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_sativa_skipped") },
             )
         }
