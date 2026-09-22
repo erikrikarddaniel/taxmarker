@@ -45,15 +45,11 @@
 %% directives. The connecting flow lines and section titles remain unambiguous;
 %% revisit if a future nf-metro version supports correct numbering with explicit grids.
 %%
-%% NOTE (2026-08-27): this reflects the TARGET architecture for the nf-core/taxmarker
-%% proposal (IQTREE -> RAxML-NG; SATIVALOOSPLIT+EPANG_PLACE+SATIVASCORE consolidated
-%% into one call to Auguste Gardette's sativa-epang fork; new CLASSIFIEREXPORT step
-%% emitting ranked reference FASTA files for downstream classifiers -- e.g. DADA2's
-%% assignTaxonomy/addSpecies is one example consumer, not the only one), not what's
-%% implemented yet. RAxML-NG swap has an issue filed; the sativa-epang consolidation is
-%% blocked pending a conda recipe / buildable container for that fork; CLASSIFIEREXPORT's
-%% design (ranking rule, exact per-taxon counts, output format) is still to be discussed.
-%% Revert/update this note once these land. Pipeline title uses the provisional
+%% NOTE (2026-09-22): RAxML-NG + sativa-epang are implemented (#19); only
+%% CLASSIFIEREXPORT (new step emitting ranked reference FASTA files for downstream
+%% classifiers -- e.g. DADA2's assignTaxonomy/addSpecies is one example consumer, not
+%% the only one) remains TARGET architecture, not yet implemented (see #9/#13).
+%% Revert/update this note once it lands. Pipeline title uses the provisional
 %% nf-core/taxmarker name (not yet finalised) -- see project memory project_pipeline_rename.
 %%
 
