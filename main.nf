@@ -41,6 +41,9 @@ workflow NFCORE_TAXMARKER {
     TAXMARKER (
         taxonomy,
         sequences,
+        params.sequence_weights,
+        params.min_weight,
+        params.cluster_identity,
         params.skip_raxtax,
         params.skip_gapfilter,
         params.skip_profile_cover,

@@ -24,10 +24,14 @@ nextflow_pipeline {
                 // No --taxonomy given: RESOLVETAXONOMY derived it from the combined
                 // fixture's own GTDB-style headers instead.
                 { assert new File("$outputDir/resolvetaxonomy").exists() },
-                // Same 121 real sequences minus the 16 that fall below GAPFILTER's
-                // default min_nongap threshold (0.3), as with the two-file test_gtdb
-                // profile -- confirms the derived taxonomy carries the same content.
-                { assert summary.contains('sequences scored: 105') },
+                // This fixture's 121 real sequences are heavily duplicated per species
+                // (only 10 unique species overall), so WEIGHTED_CLUSTERING's default
+                // (100% identity, uniform weight) collapses most of that duplication to
+                // one representative per (cluster, taxon) before GAPFILTER even runs --
+                // the intended effect of nf-core/taxmarker#15, not a regression.
+                // Confirmed stable on this fixture; not hand-derivable like the old
+                // "121 minus N" arithmetic since vsearch's greedy clustering isn't.
+                { assert summary.contains('sequences scored: 56') },
                 // Same DupHaloA/DupSulfoA positive control as test_gtdb, caught via
                 // the taxonomy derived from headers rather than a separate file.
                 { assert mislabels.contains('DupHaloA') },

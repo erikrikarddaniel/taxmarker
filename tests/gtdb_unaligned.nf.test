@@ -59,9 +59,17 @@ nextflow_pipeline {
                 // non-gap-proportion metric badly enough to lose nearly everything even at
                 // low thresholds. Once measured against match-state columns only, real
                 // coverage splits cleanly bimodal (partial sequences cluster below ~0.80,
-                // essentially complete ones above ~0.90) -- 121 real sequences minus the 25
-                // that genuinely fall below the default min_profile_cover (0.8).
-                { assert summary.contains('sequences scored: 96') },
+                // essentially complete ones above ~0.90).
+                //
+                // This fixture's 121 real sequences are heavily duplicated per species
+                // (e.g. 29 Haloferax volcanii, 25 Saccharolobus islandicus genomes --
+                // only 10 unique species overall), so WEIGHTED_CLUSTERING's default
+                // (100% identity, uniform weight) collapses most of that duplication to
+                // one representative per (cluster, taxon) before PROFILECOVER even runs
+                // -- the intended effect of nf-core/taxmarker#15, not a regression.
+                // Confirmed stable on this fixture; not hand-derivable like the old
+                // "121 minus N" arithmetic since vsearch's greedy clustering isn't.
+                { assert summary.contains('sequences scored: 49') },
             )
         }
 
@@ -98,7 +106,7 @@ nextflow_pipeline {
                 // tree". Same expected outcome as the "raxtax disabled" test above
                 // (skip_gapfilter is a no-op for this branch either way) proves the
                 // stray item is gone.
-                { assert summary.contains('sequences scored: 96') },
+                { assert summary.contains('sequences scored: 49') },
             )
         }
 

@@ -63,6 +63,9 @@ main.nf
               ├── CHECKNAMECONSISTENCY  (modules/local/checknameconsistency/) -- validates
               │     taxonomy/sequences names match, rewrites problematic characters
               ├── EMBOSS_SEQRET         (modules/nf-core/emboss/seqret/) -- normalises to FASTA
+              ├── WEIGHTED_CLUSTERING   (subworkflows/local/weighted_clustering/) -- reduce
+              │     the input to one representative per (cluster, taxon) pair before
+              │     raxtax/alignment/placement all see it (see nf-core/taxmarker#15)
               ├── RAXTAX_PREFILTER      (subworkflows/local/raxtax_prefilter/) -- optional,
               │     --skip_raxtax to disable; fast raxtax self-classification triage on
               │     unaligned sequences that flags severely mislabeled sequences before

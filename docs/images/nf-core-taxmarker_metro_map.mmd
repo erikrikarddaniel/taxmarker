@@ -80,6 +80,7 @@
 %%metro process: resolvetaxonomy | RESOLVETAXONOMY
 %%metro process: checkname | CHECKNAMECONSISTENCY
 %%metro process: emboss | EMBOSS_SEQRET
+%%metro process: weightedclustering | WEIGHTED_CLUSTERING:.*
 %%metro process: checkaligned | ENSURE_ALIGNED:CHECKALIGNED
 %%metro process: hmmalign | ENSURE_ALIGNED:(HMMER_.*|GUNZIP)
 %%metro process: gapfilter | GAPFILTER
@@ -104,12 +105,14 @@ graph LR
 
     subgraph align [Alignment]
         emboss[EMBOSS_SEQRET]
+        weightedclustering[WEIGHTED_CLUSTERING]
         raxtax[RAXTAX_PREFILTER]
         checkaligned[CHECKALIGNED]
         hmm_in[ ]
         hmmalign[HMMALIGN]
         mislabels_raxtax_out[ ]
-        emboss -->|main| raxtax
+        emboss -->|main| weightedclustering
+        weightedclustering -->|main| raxtax
         raxtax -->|main| checkaligned
         raxtax -->|raxtax_flagged| mislabels_raxtax_out
         hmm_in -->|unaligned| hmmalign

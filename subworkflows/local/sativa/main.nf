@@ -23,6 +23,9 @@ main.nf
               ├── RESOLVETAXONOMY       (modules/local/resolvetaxonomy/)
               ├── CHECKNAMECONSISTENCY  (modules/local/checknameconsistency/)
               ├── EMBOSS_SEQRET         (modules/nf-core/emboss/seqret/) -- normalises to FASTA
+              ├── WEIGHTED_CLUSTERING   (subworkflows/local/weighted_clustering/) -- reduce
+              │     the input to one representative per (cluster, taxon) pair before
+              │     raxtax/alignment/placement all see it (see nf-core/taxmarker#15)
               ├── RAXTAX_PREFILTER      (subworkflows/local/raxtax_prefilter/) -- optional,
               │     params.skip_raxtax to disable; fast self-classification triage on
               │     unaligned sequences that drops severely mislabeled sequences before
