@@ -122,6 +122,37 @@ workflow TAXMARKER {
     def ch_sequences_fasta = EMBOSS_SEQRET.out.outseq.map { _meta, seq -> seq }
 
     //
+    // SUBWORKFLOW: RAXTAX_PREFILTER (optional, skip_raxtax to disable)
+    //
+    // Fast raxtax self-classification prefilter ahead of the expensive alignment and
+    // EPA-ng-based placement below. Runs on unaligned sequences (raxtax classifies
+    // plain sequences, never needs an alignment) so sequences it flags skip alignment
+    // entirely instead of only skipping placement. They never reach SWF_SATIVA --
+    // they're reported directly via ch_raxtax_mislabels instead.
+    //
+    def ch_taxonomy_for_alignment
+    def ch_sequences_for_alignment
+    def ch_raxtax_mislabels
+    // Coerce explicitly: a CLI-supplied `--skip_raxtax false` arrives as the *string*
+    // "false", and Groovy's `!"false"` is false (any non-empty string is truthy) --
+    // .toBoolean() parses both real Booleans and "true"/"false" strings correctly.
+    // Confirmed empirically that nf-schema's cli_typecast (enabled just above, in
+    // PIPELINE_INITIALISATION) validates the string against the boolean schema type but
+    // does not itself replace params.skip_raxtax with a real Boolean, so this is still
+    // needed even with cli_typecast on.
+    def run_raxtax = !skip_raxtax.toString().toBoolean()
+    if (run_raxtax) {
+        RAXTAX_PREFILTER(ch_taxonomy_checked, ch_sequences_fasta)
+        ch_taxonomy_for_alignment  = RAXTAX_PREFILTER.out.taxonomy
+        ch_sequences_for_alignment = RAXTAX_PREFILTER.out.sequences
+        ch_raxtax_mislabels        = RAXTAX_PREFILTER.out.mislabels
+    } else {
+        ch_taxonomy_for_alignment  = ch_taxonomy_checked
+        ch_sequences_for_alignment = ch_sequences_fasta
+        ch_raxtax_mislabels        = channel.empty()
+    }
+
+    //
     // SUBWORKFLOW: ENSURE_ALIGNED
     //
     // Transparently accepts unaligned input too, with no separate mode-switch param:
@@ -129,7 +160,7 @@ workflow TAXMARKER {
     // via hmmalign against the hmm/hmm_name profile before continuing. Only past this
     // point is the data actually guaranteed to be an alignment.
     //
-    ENSURE_ALIGNED(ch_sequences_fasta, hmm, hmm_name)
+    ENSURE_ALIGNED(ch_sequences_for_alignment, hmm, hmm_name)
 
     //
     // MODULE: GAPFILTER + PROFILECOVER (each optional, own skip flag)
@@ -144,26 +175,25 @@ workflow TAXMARKER {
     def ch_taxonomy_gapfiltered
     def ch_alignment_gapfiltered
     // Coerce explicitly: a CLI-supplied `--skip_gapfilter false` arrives as the
-    // *string* "false" -- see the analogous skip_raxtax coercion below for why
+    // *string* "false" -- see the analogous skip_raxtax coercion above for why
     // .toString().toBoolean() is needed even with nf-schema's cli_typecast enabled.
     def run_gapfilter = !skip_gapfilter.toString().toBoolean()
     if (run_gapfilter) {
         GAPFILTER(
-            ch_taxonomy_checked.combine(ENSURE_ALIGNED.out.alignment_passthrough).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
+            ch_taxonomy_for_alignment.combine(ENSURE_ALIGNED.out.alignment_passthrough).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
         )
         ch_taxonomy_gapfiltered  = GAPFILTER.out.taxonomy.map { _meta, tax -> tax }
         ch_alignment_gapfiltered = GAPFILTER.out.alignment.map { _meta, aln -> aln }
     } else {
-        // ch_taxonomy_checked alone would still emit its one item even when
+        // ch_taxonomy_for_alignment alone would still emit its one item even when
         // alignment_passthrough is empty (e.g. unaligned input took the hmm branch
         // instead), desyncing this pair's cardinality -- 1 taxonomy item vs 0
-        // alignment items -- which then corrupts the .mix()/.join() below (the stray
-        // taxonomy item pairs with the *other* branch's real alignment downstream in
-        // RAXTAX_PREFILTER, leaking the full unfiltered taxonomy through paired with
-        // a filtered alignment). Gate it by the same alignment channel instead, so it
-        // collapses to 0 items exactly when alignment_passthrough does.
+        // alignment items -- which then corrupts the .mix() below (the stray taxonomy
+        // item pairs with the *other* branch's real alignment downstream). Gate it by
+        // the same alignment channel instead, so it collapses to 0 items exactly when
+        // alignment_passthrough does.
         ch_alignment_gapfiltered = ENSURE_ALIGNED.out.alignment_passthrough
-        ch_taxonomy_gapfiltered  = ch_taxonomy_checked.combine(ch_alignment_gapfiltered).map { tax, _aln -> tax }
+        ch_taxonomy_gapfiltered  = ch_taxonomy_for_alignment.combine(ch_alignment_gapfiltered).map { tax, _aln -> tax }
     }
 
     def ch_taxonomy_covfiltered
@@ -171,51 +201,22 @@ workflow TAXMARKER {
     def run_profile_cover = !skip_profile_cover.toString().toBoolean()
     if (run_profile_cover) {
         PROFILECOVER(
-            ch_taxonomy_checked.combine(ENSURE_ALIGNED.out.alignment_from_hmm).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
+            ch_taxonomy_for_alignment.combine(ENSURE_ALIGNED.out.alignment_from_hmm).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
         )
         ch_taxonomy_covfiltered  = PROFILECOVER.out.taxonomy.map { _meta, tax -> tax }
         ch_alignment_covfiltered = PROFILECOVER.out.alignment.map { _meta, aln -> aln }
     } else {
         // See the analogous gapfilter comment above -- same cardinality-gating fix.
         ch_alignment_covfiltered = ENSURE_ALIGNED.out.alignment_from_hmm
-        ch_taxonomy_covfiltered  = ch_taxonomy_checked.combine(ch_alignment_covfiltered).map { tax, _aln -> tax }
+        ch_taxonomy_covfiltered  = ch_taxonomy_for_alignment.combine(ch_alignment_covfiltered).map { tax, _aln -> tax }
     }
 
     // Exactly one of ENSURE_ALIGNED's two branches ever has content for a given run
     // (CHECKALIGNED classifies the whole input as aligned-or-not, never a mix), so
     // .mix() here just recombines whichever branch actually ran with the other's
     // always-empty channel.
-    def ch_taxonomy_for_raxtax  = ch_taxonomy_gapfiltered.mix(ch_taxonomy_covfiltered)
-    def ch_alignment_for_raxtax = ch_alignment_gapfiltered.mix(ch_alignment_covfiltered)
-
-    //
-    // SUBWORKFLOW: RAXTAX_PREFILTER (optional, skip_raxtax to disable)
-    //
-    // Fast raxtax self-classification prefilter ahead of the expensive EPA-ng-based
-    // placement below. Sequences it flags never reach SWF_SATIVA -- they're reported
-    // directly via ch_raxtax_mislabels instead.
-    //
-    def ch_taxonomy_for_sativa
-    def ch_alignment_for_sativa
-    def ch_raxtax_mislabels
-    // Coerce explicitly: a CLI-supplied `--skip_raxtax false` arrives as the *string*
-    // "false", and Groovy's `!"false"` is false (any non-empty string is truthy) --
-    // .toBoolean() parses both real Booleans and "true"/"false" strings correctly.
-    // Confirmed empirically that nf-schema's cli_typecast (enabled just above, in
-    // PIPELINE_INITIALISATION) validates the string against the boolean schema type but
-    // does not itself replace params.skip_raxtax with a real Boolean, so this is still
-    // needed even with cli_typecast on.
-    def run_raxtax = !skip_raxtax.toString().toBoolean()
-    if (run_raxtax) {
-        RAXTAX_PREFILTER(ch_taxonomy_for_raxtax, ch_alignment_for_raxtax)
-        ch_taxonomy_for_sativa  = RAXTAX_PREFILTER.out.taxonomy
-        ch_alignment_for_sativa = RAXTAX_PREFILTER.out.alignment
-        ch_raxtax_mislabels     = RAXTAX_PREFILTER.out.mislabels
-    } else {
-        ch_taxonomy_for_sativa  = ch_taxonomy_for_raxtax
-        ch_alignment_for_sativa = ch_alignment_for_raxtax
-        ch_raxtax_mislabels     = channel.empty()
-    }
+    def ch_taxonomy_for_sativa  = ch_taxonomy_gapfiltered.mix(ch_taxonomy_covfiltered)
+    def ch_alignment_for_sativa = ch_alignment_gapfiltered.mix(ch_alignment_covfiltered)
 
     //
     // SUBWORKFLOW: SATIVA (optional, skip_sativa to disable)

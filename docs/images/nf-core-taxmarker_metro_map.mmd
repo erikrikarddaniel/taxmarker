@@ -104,10 +104,14 @@ graph LR
 
     subgraph align [Alignment]
         emboss[EMBOSS_SEQRET]
+        raxtax[RAXTAX_PREFILTER]
         checkaligned[CHECKALIGNED]
         hmm_in[ ]
         hmmalign[HMMALIGN]
-        emboss -->|main| checkaligned
+        mislabels_raxtax_out[ ]
+        emboss -->|main| raxtax
+        raxtax -->|main| checkaligned
+        raxtax -->|raxtax_flagged| mislabels_raxtax_out
         hmm_in -->|unaligned| hmmalign
         checkaligned -->|unaligned| hmmalign
     end
@@ -115,11 +119,6 @@ graph LR
     subgraph filter [Filtering]
         gapfilter[GAPFILTER]
         profilecover[PROFILECOVER]
-        raxtax[RAXTAX_PREFILTER]
-        mislabels_raxtax_out[ ]
-        gapfilter -->|main| raxtax
-        profilecover -->|unaligned| raxtax
-        raxtax -->|raxtax_flagged| mislabels_raxtax_out
     end
 
     subgraph sativa [SATIVA subworkflow]
@@ -147,6 +146,7 @@ graph LR
     checkname -->|main| emboss
     checkaligned -->|main| gapfilter
     hmmalign -->|unaligned| profilecover
-    raxtax -->|main| taxonomytree
+    gapfilter -->|main| taxonomytree
+    profilecover -->|unaligned| taxonomytree
     sativaepang -->|main| classifierexport
     classifierexport -->|main| multiqc
