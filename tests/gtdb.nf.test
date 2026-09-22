@@ -112,6 +112,12 @@ nextflow_pipeline {
                 { assert new File("$outputDir/raxtaxformat").exists() },
                 { assert mislabels =~ /DupHaloA[^\n]*\traxtax/ },
                 { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
+                // raxtax now runs before GAPFILTER, so it judges every sequence
+                // directly (including ones GAPFILTER would otherwise have quietly
+                // excluded as too short/incomplete to place). 3 sequences that used
+                // to land in excluded.tsv now land here as raxtax taxonomic calls
+                // instead: 9 mislabels without the reorder, 12 with it.
+                { assert mislabels.readLines().size() - 1 == 12 },
                 // ...but the phylogenetic placement subworkflow never runs at all: no
                 // reference tree, no leave-one-out placement, no scoring. This is the
                 // whole point of --skip_sativa -- a pure taxonomy-resolution/alignment/
