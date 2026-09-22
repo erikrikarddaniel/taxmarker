@@ -63,19 +63,19 @@ main.nf
               ├── CHECKNAMECONSISTENCY  (modules/local/checknameconsistency/) -- validates
               │     taxonomy/sequences names match, rewrites problematic characters
               ├── EMBOSS_SEQRET         (modules/nf-core/emboss/seqret/) -- normalises to FASTA
+              ├── RAXTAX_PREFILTER      (subworkflows/local/raxtax_prefilter/) -- optional,
+              │     --skip_raxtax to disable; fast raxtax self-classification triage on
+              │     unaligned sequences that flags severely mislabeled sequences before
+              │     alignment and the expensive placement step
               ├── ENSURE_ALIGNED        (subworkflows/local/ensure_aligned/) -- transparently
               │     aligns unaligned input via hmmalign (--hmm/--hmm_name); already-aligned
               │     input passes through unchanged
               ├── GAPFILTER / PROFILECOVER (modules/local/{gapfilter,profilecover}/) --
               │     drop sequences too short/incomplete to place reliably (whichever of
               │     ENSURE_ALIGNED's two branches ran); each has its own skip flag
-              ├── RAXTAX_PREFILTER      (subworkflows/local/raxtax_prefilter/) -- optional,
-              │     --skip_raxtax to disable; fast raxtax self-classification triage that
-              │     flags severely mislabeled sequences before the expensive placement step
               ├── SATIVA (subworkflows/local/sativa/) -- optional, --skip_sativa to disable;
-              │     builds the reference tree (IQTREE, being swapped for RAxML-NG -- see
-              │     issue #8), leave-one-out places every sequence via EPA-ng, and scores
-              │     each one (SATIVASCORE) to flag likely mislabels
+              │     builds the reference tree with RAxML-NG, delegates leave-one-out
+              │     placement/scoring to Auguste Gardette's sativa-epang fork (EPA-ng-based)
               └── MULTIQC               (modules/nf-core/multiqc/)
   └── PIPELINE_COMPLETION        (subworkflows/local/utils_nfcore_taxmarker_pipeline/main.nf)
         sends email / completion summary

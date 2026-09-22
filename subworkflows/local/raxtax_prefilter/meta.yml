@@ -2,17 +2,17 @@
 name: "raxtax_prefilter"
 description: |
   Fast raxtax-based self-classification prefilter ahead of the pipeline's expensive
-  EPA-ng leave-one-out placement stage. Normalises the alignment, degaps and formats it
-  for raxtax, self-classifies (database == query), and drops sequences whose best hit
-  disagrees with the declared taxonomy at params.raxtax_filter_rank -- reporting them
-  directly as mislabels instead of passing them on for placement.
+  EPA-ng leave-one-out placement stage. Runs on unaligned sequences, already normalised
+  to FASTA by the caller: degaps and formats them for raxtax, self-classifies
+  (database == query), and drops sequences whose best hit disagrees with the declared
+  taxonomy at params.raxtax_filter_rank -- reporting them directly as mislabels instead
+  of passing them on for alignment and placement.
 keywords:
   - taxonomy
   - raxtax
   - prefilter
   - taxmarker
 components:
-  - emboss/seqret
   - raxtaxformat
   - raxtax
   - raxtaxfilter
@@ -23,11 +23,11 @@ input:
         Declared taxonomy labels
         Structure: path(taxonomy.tsv), seq_name<TAB>rank1;rank2;...
       pattern: "*.{tax,tsv}"
-  - ch_alignment:
+  - ch_sequences:
       type: file
       description: |
-        Aligned, labeled sequences
-        Structure: path(alignment), FASTA, Clustal or PHYLIP (auto-detected)
+        Labeled sequences, aligned or not
+        Structure: path(sequences), FASTA, Clustal or PHYLIP (auto-detected)
       pattern: "*"
 output:
   - taxonomy:
@@ -36,11 +36,11 @@ output:
         Declared taxonomy for sequences NOT flagged by raxtax
         Structure: path(taxonomy.tsv)
       pattern: "*.filtered.tax"
-  - alignment:
+  - sequences:
       type: file
       description: |
-        Alignment (FASTA) subset to sequences NOT flagged by raxtax
-        Structure: path(alignment.fasta)
+        Sequences (FASTA) subset to those NOT flagged by raxtax
+        Structure: path(sequences.fasta)
       pattern: "*.filtered.fasta"
   - mislabels:
       type: file

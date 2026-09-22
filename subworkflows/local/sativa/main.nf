@@ -20,14 +20,17 @@ main.nf
   └── PIPELINE_INITIALISATION   (subworkflows/local/utils_nfcore_taxmarker_pipeline/main.nf)
   └── NFCORE_TAXMARKER
         └── TAXMARKER            (workflows/taxmarker.nf)  ← main logic lives here
+              ├── RESOLVETAXONOMY       (modules/local/resolvetaxonomy/)
               ├── CHECKNAMECONSISTENCY  (modules/local/checknameconsistency/)
+              ├── EMBOSS_SEQRET         (modules/nf-core/emboss/seqret/) -- normalises to FASTA
+              ├── RAXTAX_PREFILTER      (subworkflows/local/raxtax_prefilter/) -- optional,
+              │     params.skip_raxtax to disable; fast self-classification triage on
+              │     unaligned sequences that drops severely mislabeled sequences before
+              │     alignment, reporting them directly instead
               ├── ENSURE_ALIGNED        (subworkflows/local/ensure_aligned/) -- transparently
               │     aligns unaligned input via hmmalign (params.hmm); already-aligned
               │     input passes through unchanged
-              ├── RAXTAX_PREFILTER      (subworkflows/local/raxtax_prefilter/) -- optional,
-              │     params.skip_raxtax to disable; fast self-classification triage that
-              │     drops severely mislabeled sequences before this subworkflow ever sees
-              │     them, reporting them directly instead
+              ├── GAPFILTER / PROFILECOVER (modules/local/{gapfilter,profilecover}/)
               ├── SATIVA (this subworkflow)
               └── MULTIQC         (modules/nf-core/multiqc/)
   └── PIPELINE_COMPLETION        (subworkflows/local/utils_nfcore_taxmarker_pipeline/main.nf)
