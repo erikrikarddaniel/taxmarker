@@ -43,6 +43,12 @@
                     "description": "Name of the specific profile to use from --hmm, if that database holds more than one (e.g. Barrnap's databases hold one profile per rRNA gene).",
                     "fa_icon": "fas fa-tag"
                 },
+                "seqgrep": {
+                    "type": "string",
+                    "description": "Keep only --sequences records whose whole FASTA header matches this pattern, dropping the rest before anything else runs.",
+                    "help_text": "Passed to `seqkit grep -n -r -p`, so it's a regular expression matched against each record's whole header line (id plus any trailing text), not just the id. Useful for restricting a shared/combined reference set -- e.g. GTDB's own ssu_all distribution, which covers more than one domain in a single file -- to just the records wanted, by matching against embedded text such as `d__Archaea`.",
+                    "fa_icon": "fas fa-filter"
+                },
                 "skip_raxtax": {
                     "type": "boolean",
                     "description": "Skip the raxtax prefilter and run every sequence straight through the full EPA-ng-based placement pipeline.",

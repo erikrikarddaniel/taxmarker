@@ -1,3 +1,9 @@
+// Output is always plain text (SeqIO.write never re-compresses), so a gzipped
+// input's real extension is one level in from its name, not its outer `.gz`.
+def resolvedExtension(seq) {
+    seq.name.endsWith('.gz') ? seq.name.tokenize('.')[-2] : seq.extension
+}
+
 process RESOLVETAXONOMY {
     tag "$meta.id"
     label 'process_low'
@@ -11,10 +17,10 @@ process RESOLVETAXONOMY {
     tuple val(meta), path(taxonomy), path(sequences)
 
     output:
-    tuple val(meta), path("*.resolved.tax"),                  emit: taxonomy
-    tuple val(meta), path("*.resolved.${sequences.extension}"), emit: sequences
-    tuple val(meta), path("*.warnings.txt"),                  emit: warnings
-    path "versions.yml",                                      emit: versions, topic: versions
+    tuple val(meta), path("*.resolved.tax"),                     emit: taxonomy
+    tuple val(meta), path("*.resolved.${resolvedExtension(sequences)}"), emit: sequences
+    tuple val(meta), path("*.warnings.txt"),                     emit: warnings
+    path "versions.yml",                                         emit: versions, topic: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,17 +32,22 @@ process RESOLVETAXONOMY {
     // file given" from a real one, without ever interpolating the literal text "[]"
     // into the command line.
     def taxonomy_in = taxonomy ? "${taxonomy}" : ''
+    def sequences_ext = resolvedExtension(sequences)
     """
-    python3 - "${taxonomy_in}" "${sequences}" "${prefix}.resolved.tax" "${prefix}.resolved.${sequences.extension}" "${prefix}.warnings.txt" << 'PYEOF'
+    python3 - "${taxonomy_in}" "${sequences}" "${prefix}.resolved.tax" "${prefix}.resolved.${sequences_ext}" "${prefix}.warnings.txt" << 'PYEOF'
+import gzip
 import sys
 from Bio import SeqIO
 
 taxonomy_in, sequences_in, taxonomy_out, sequences_out, warnings_out = sys.argv[1:6]
 
+def opener(path):
+    return gzip.open(path, 'rt') if path.endswith('.gz') else open(path)
+
 # Format sniffed from content (FASTA, Clustal or PHYLIP -- --sequences can be any of
 # these; this runs before the pipeline's own EMBOSS_SEQRET normalisation to FASTA).
 # Matches CHECKNAMECONSISTENCY's own sniffing logic, which runs right after this.
-with open(sequences_in) as fh:
+with opener(sequences_in) as fh:
     first_line = next((l.strip() for l in fh if l.strip()), '')
 if first_line.startswith('>'):
     sequences_format = 'fasta'
@@ -45,14 +56,20 @@ elif first_line.upper().startswith('CLUSTAL'):
 else:
     sequences_format = 'phylip-relaxed'
 
-records = list(SeqIO.parse(sequences_in, sequences_format))
+with opener(sequences_in) as fh:
+    records = list(SeqIO.parse(fh, sequences_format))
 warnings = []
 
 def embedded_taxonomy(record):
     # record.description is the *whole* header line (id + any trailing text);
     # record.id is just its first token -- GTDB's own single-file convention puts
-    # the taxonomy string right after the id, space-separated.
-    return record.description[len(record.id):].strip()
+    # the taxonomy string right after the id, space-separated. A trailing
+    # `[key=value] [key=value] ...` block (e.g. GTDB's own ssu_all distribution
+    # appends locus_tag/location/ssu_len/contig_len this way) is dropped too --
+    # otherwise two records of the same taxon end up with different declared
+    # taxonomy, since this metadata varies per record.
+    text = record.description[len(record.id):].strip()
+    return text.split(' [', 1)[0]
 
 if taxonomy_in:
     # An explicit --taxonomy file always wins. Warn (not fail) -- surfaced by the
@@ -98,7 +115,7 @@ PYEOF
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.resolved.tax ${prefix}.resolved.${sequences.extension} ${prefix}.warnings.txt
+    touch ${prefix}.resolved.tax ${prefix}.resolved.${resolvedExtension(sequences)} ${prefix}.warnings.txt
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python3 --version | sed 's/Python //')

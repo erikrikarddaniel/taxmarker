@@ -4,8 +4,9 @@ description: |
   Resolve the taxonomy for a set of sequences: use an explicit --taxonomy file if one
   is given (warning, not silently ignoring, if the sequences also carry embedded
   taxonomy text); otherwise derive taxonomy from each sequence's own FASTA header,
-  GTDB-style (`>id taxonomy;string`). Headers are always stripped down to a bare id
-  in the output sequences, regardless of which taxonomy source was used.
+  GTDB-style (`>id taxonomy;string`), dropping a trailing bracketed metadata block if
+  present. Headers are always stripped down to a bare id in the output sequences,
+  regardless of which taxonomy source was used. Accepts gzipped --sequences input.
 keywords:
   - taxonomy
   - fasta

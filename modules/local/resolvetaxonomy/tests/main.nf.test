@@ -106,6 +106,62 @@ nextflow_process {
 
     }
 
+    test("taxmarker - embedded taxonomy drops trailing bracket metadata") {
+
+        when {
+            process {
+                """
+                def fasta = File.createTempFile('resolvetaxonomy_brackets', '.fasta')
+                fasta.text = '>SeqA Bacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA [locus_tag=abc] [location=1..100]\\nACGT\\n'
+                input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def taxonomy = path(process.out.taxonomy[0][1]).text
+
+            assertAll(
+                { assert taxonomy.contains('SeqA\tBacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA\n') },
+                { assert !taxonomy.contains('locus_tag') },
+                { assert !taxonomy.contains('[') },
+            )
+        }
+
+    }
+
+    test("taxmarker - gzipped sequences input is read and resolved as plain text") {
+
+        when {
+            process {
+                """
+                def fasta = File.createTempFile('resolvetaxonomy_gz', '.fasta')
+                fasta.text = '>SeqA Bacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA\\nACGT\\n'
+                def gz = new File(fasta.toString() + '.gz')
+                new java.util.zip.GZIPOutputStream(gz.newOutputStream()).withCloseable { it << fasta.bytes }
+                input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(gz.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def taxonomy_path = path(process.out.taxonomy[0][1])
+            def sequences_path = path(process.out.sequences[0][1])
+
+            assertAll(
+                { assert taxonomy_path.text.contains('SeqA\tBacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA\n') },
+                // Output is plain, uncompressed FASTA -- not still gzipped.
+                { assert sequences_path.toString().endsWith('.fasta') },
+                { assert sequences_path.text.contains('>SeqA\n') },
+            )
+        }
+
+    }
+
     test("taxmarker - neither taxonomy file nor embedded text fails clearly") {
 
         when {
