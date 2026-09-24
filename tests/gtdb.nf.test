@@ -139,4 +139,32 @@ nextflow_pipeline {
 
     }
 
+    test("-profile test_gtdb, sativa and clustering both skipped") {
+
+        when {
+            params {
+                outdir          = "$outputDir"
+                skip_sativa     = true
+                skip_clustering = true
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
+
+            assertAll(
+                { assert mislabels =~ /DupHaloA[^\n]*\traxtax/ },
+                { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
+                // With WEIGHTED_CLUSTERING bypassed, raxtax judges every one of the
+                // 121 raw sequences directly, duplicates included -- back to the same
+                // 12 mislabels seen right after #22's reorder, before #15 introduced
+                // clustering (see the "sativa skipped" test's comment above).
+                { assert mislabels.readLines().size() - 1 == 12 },
+            )
+        }
+
+    }
+
 }

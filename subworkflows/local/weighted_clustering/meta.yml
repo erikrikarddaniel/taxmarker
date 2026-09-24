@@ -31,9 +31,6 @@ input:
   - min_weight:
       type: value
       description: Absolute weight cutoff, or null/empty to skip it.
-  - cluster_identity:
-      type: value
-      description: VSEARCH clustering identity (0-1).
 output:
   - taxonomy:
       type: file

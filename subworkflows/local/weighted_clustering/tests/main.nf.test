@@ -26,7 +26,6 @@ nextflow_workflow {
                 input[1] = Channel.of(file(seq.toString()))
                 input[2] = null
                 input[3] = null
-                input[4] = 1.0
                 """
             }
         }
@@ -63,7 +62,6 @@ nextflow_workflow {
                 input[1] = Channel.of(file(seq.toString()))
                 input[2] = weights.toString()
                 input[3] = 0.0
-                input[4] = 1.0
                 """
             }
         }

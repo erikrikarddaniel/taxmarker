@@ -34,6 +34,10 @@
 
 > Consolidated leave-one-out placement and scoring wrapper around RAxML-NG and EPA-ng, used by this pipeline's `sativaepang/*` modules.
 
+- [VSEARCH](https://pubmed.ncbi.nlm.nih.gov/27781170/)
+
+> Rognes T, Flouri T, Nichols B, Quince C, Mahé F. VSEARCH: a versatile open source tool for metagenomics. PeerJ. 2016 Oct 18;4:e2584. doi: 10.7717/peerj.2584. PubMed PMID: 27781170.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

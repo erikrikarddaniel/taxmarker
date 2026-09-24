@@ -35,7 +35,6 @@ workflow WEIGHTED_CLUSTERING {
     ch_sequences      // channel: unaligned sequences file, already normalised to FASTA by the caller
     sequence_weights  // value:   path to a two-column weight table, or null/empty if not supplied
     min_weight        // value:   absolute weight cutoff, or null/empty to skip it
-    cluster_identity  // value:   VSEARCH clustering identity (0-1)
 
     main:
     def ch_meta_taxonomy  = ch_taxonomy.map  { [ [ id: 'user-alignment' ], it ] }
