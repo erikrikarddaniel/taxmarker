@@ -67,6 +67,37 @@ nextflow_pipeline {
 
     }
 
+    test("-profile test_gtdb_unaligned, sativa skipped") {
+
+        when {
+            params {
+                outdir      = "$outputDir"
+                skip_sativa = true
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
+
+            assertAll(
+                { assert mislabels =~ /DupHaloA[^\n]*\traxtax/ },
+                { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
+                // Regression guard for the esl-alimask/raxtax ordering bug (see
+                // CHANGELOG): with raxtax downstream of hmmalign+esl-alimask, unaligned
+                // input reached it with insert-state residues already stripped, and 15
+                // Saccharolobus islandicus + 13 S. solfataricus -- sister species only
+                // separable with the full-length sequence -- became mutually
+                // indistinguishable and got flagged (37 total). Running raxtax before
+                // alignment fixes it: 12 mislabels, none of them a spurious
+                // islandicus/solfataricus call.
+                { assert mislabels.readLines().size() - 1 == 12 },
+            )
+        }
+
+    }
+
     test("-profile test_gtdb_unaligned, gapfilter skipped (inactive branch)") {
 
         when {
