@@ -50,7 +50,12 @@ Whichever source is used, sequence headers are stripped down to a bare id before
 
 ### Sequence name sanitisation
 
-Sequence name characters other than letters, digits, `_`, `.`, `-`, `|` and `/` are rewritten to underscores in both `--sequences` and `--taxonomy`, since IQTREE's own tree-writer would otherwise silently mangle them in leaf names, desyncing the alignment/taxonomy from the tree it builds.
+Sequence name characters other than letters, digits, `_`, `.`, `-`, `|` and `/` are rewritten to underscores in both `--sequences` and `--taxonomy`, since RAxML-NG's own tree-writer would otherwise silently mangle them in leaf names, desyncing the alignment/taxonomy from the tree it builds.
+
+## Weighted clustering
+
+Before alignment, raxtax and placement, the pipeline reduces the input to one representative sequence per (cluster, taxon) pair, collapsing near-duplicate sequences of the same taxon.
+See [Weighted clustering](usage/weighted_clustering.md) for the `--sequence_weights`/`--min_weight`/`--cluster_identity` parameters and exactly how VSEARCH decides what counts as a duplicate.
 
 ## Running the pipeline
 

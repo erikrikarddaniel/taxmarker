@@ -12,6 +12,7 @@ include { RESOLVETAXONOMY        } from '../modules/local/resolvetaxonomy/main'
 include { SEQKIT_GREP            } from '../modules/nf-core/seqkit/grep/main'
 include { CHECKNAMECONSISTENCY   } from '../modules/local/checknameconsistency/main'
 include { EMBOSS_SEQRET          } from '../modules/nf-core/emboss/seqret/main'
+include { WEIGHTED_CLUSTERING    } from '../subworkflows/local/weighted_clustering'
 include { ENSURE_ALIGNED         } from '../subworkflows/local/ensure_aligned'
 include { GAPFILTER              } from '../modules/local/gapfilter/main'
 include { PROFILECOVER           } from '../modules/local/profilecover/main'
@@ -30,6 +31,9 @@ workflow TAXMARKER {
     ch_taxonomy        // channel: taxonomy file, or [] if not provided (derived from --sequences headers instead)
     ch_sequences       // channel: sequences file, aligned or not
     seqgrep            // value:   keep only --sequences records whose header matches this pattern, or null/empty to skip filtering
+    skip_clustering    // value:   skip WEIGHTED_CLUSTERING entirely?
+    sequence_weights   // value:   path to a two-column weight table, or null/empty if not supplied
+    min_weight         // value:   absolute weight cutoff, or null/empty to skip it
     skip_raxtax        // value:   skip the raxtax prefilter?
     skip_gapfilter     // value:   skip the gap filter (already-aligned input)?
     skip_profile_cover // value:   skip the profile-coverage filter (hmmalign-derived input)?
@@ -136,6 +140,26 @@ workflow TAXMARKER {
     def ch_sequences_fasta = EMBOSS_SEQRET.out.outseq.map { _meta, seq -> seq }
 
     //
+    // SUBWORKFLOW: WEIGHTED_CLUSTERING (optional, skip_clustering to disable)
+    //
+    // Reduce the input set to one representative per (cluster, taxon) pair before
+    // raxtax, alignment and placement all see it -- see nf-core/taxmarker#15.
+    // --cluster_identity is read directly from conf/modules.config's ext.args, like
+    // this pipeline's other tuning-only knobs.
+    //
+    def ch_taxonomy_clustered
+    def ch_sequences_clustered
+    def run_clustering = !skip_clustering.toString().toBoolean()
+    if (run_clustering) {
+        WEIGHTED_CLUSTERING(ch_taxonomy_checked, ch_sequences_fasta, sequence_weights, min_weight)
+        ch_taxonomy_clustered  = WEIGHTED_CLUSTERING.out.taxonomy
+        ch_sequences_clustered = WEIGHTED_CLUSTERING.out.sequences
+    } else {
+        ch_taxonomy_clustered  = ch_taxonomy_checked
+        ch_sequences_clustered = ch_sequences_fasta
+    }
+
+    //
     // SUBWORKFLOW: RAXTAX_PREFILTER (optional, skip_raxtax to disable)
     //
     // Fast raxtax self-classification prefilter ahead of the expensive alignment and
@@ -156,13 +180,13 @@ workflow TAXMARKER {
     // needed even with cli_typecast on.
     def run_raxtax = !skip_raxtax.toString().toBoolean()
     if (run_raxtax) {
-        RAXTAX_PREFILTER(ch_taxonomy_checked, ch_sequences_fasta)
+        RAXTAX_PREFILTER(ch_taxonomy_clustered, ch_sequences_clustered)
         ch_taxonomy_for_alignment  = RAXTAX_PREFILTER.out.taxonomy
         ch_sequences_for_alignment = RAXTAX_PREFILTER.out.sequences
         ch_raxtax_mislabels        = RAXTAX_PREFILTER.out.mislabels
     } else {
-        ch_taxonomy_for_alignment  = ch_taxonomy_checked
-        ch_sequences_for_alignment = ch_sequences_fasta
+        ch_taxonomy_for_alignment  = ch_taxonomy_clustered
+        ch_sequences_for_alignment = ch_sequences_clustered
         ch_raxtax_mislabels        = channel.empty()
     }
 

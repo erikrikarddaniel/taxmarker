@@ -10,6 +10,9 @@
                     "biopython": 1.84,
                     "python": "3.12.12"
                 },
+                "CLUSTERSELECT": {
+                    "python": "3.12.12"
+                },
                 "EMBOSS_SEQRET": {
                     "emboss": "6.6.0.0"
                 },
@@ -66,12 +69,19 @@
                 "TAXONOMYTREE": {
                     "python": "3.11.10"
                 },
+                "VSEARCH_CLUSTER": {
+                    "samtools": "1.23.1",
+                    "vsearch": "2.31.0"
+                },
+                "WEIGHTFILTER": {
+                    "python": "3.12.12"
+                },
                 "Workflow": {
                     "nf-core/taxmarker": "v1.0.0dev"
                 }
             }
         ],
-        "timestamp": "2026-09-17T09:56:08.188423082",
+        "timestamp": "2026-09-22T12:08:21.25688458",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"

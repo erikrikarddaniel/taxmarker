@@ -49,6 +49,34 @@
                     "help_text": "Passed to `seqkit grep -n -r -p`, so it's a regular expression matched against each record's whole header line (id plus any trailing text), not just the id. Useful for restricting a shared/combined reference set -- e.g. GTDB's own ssu_all distribution, which covers more than one domain in a single file -- to just the records wanted, by matching against embedded text such as `d__Archaea`.",
                     "fa_icon": "fas fa-filter"
                 },
+                "skip_clustering": {
+                    "type": "boolean",
+                    "description": "Skip WEIGHTED_CLUSTERING entirely and run every sequence straight through, unclustered.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "sequence_weights": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Path to a two-column table (sequence_id<TAB>weight) used to pick a representative sequence per (cluster, taxon) pair. Sequences absent from the table default to weight 1.",
+                    "help_text": "The clustering/selection logic only ever sees this generic table -- it doesn't matter where the weights came from (e.g. a GTDB-metadata-derived translation). Omit entirely to treat every sequence as weight 1, which degrades gracefully to picking the longest sequence per (cluster, taxon) pair.",
+                    "fa_icon": "fas fa-balance-scale"
+                },
+                "min_weight": {
+                    "type": "number",
+                    "description": "Absolute weight cutoff: sequences below this are excluded before clustering, regardless of --sequence_weights. Unset by default -- has no effect unless both this and --sequence_weights are given.",
+                    "help_text": "Relative per-cluster selection alone can't exclude a badly-mislabeled sequence that never co-clusters with a competitor (e.g. a singleton cluster) -- this cutoff is the only mechanism that can. No default at the generic-mechanism level, by design: whichever weight-producing translation supplies --sequence_weights (e.g. a GTDB-specific one) is responsible for recommending its own cutoff, calibrated to its own scale.",
+                    "fa_icon": "fas fa-cut"
+                },
+                "cluster_identity": {
+                    "type": "number",
+                    "default": 1.0,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "VSEARCH clustering identity threshold (0-1) applied before representative selection.",
+                    "help_text": "1.0 (the default) is a safe no-op: pure dereplication of exact/near-identical duplicates. Lower it for more aggressive input-size reduction on very large datasets.",
+                    "fa_icon": "fas fa-object-group"
+                },
                 "skip_raxtax": {
                     "type": "boolean",
                     "description": "Skip the raxtax prefilter and run every sequence straight through the full EPA-ng-based placement pipeline.",

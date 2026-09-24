@@ -50,6 +50,11 @@
                         "branch": "master",
                         "git_sha": "504cddfc189c20124336b8f2c88cc97dbd543928",
                         "installed_by": ["modules"]
+                    },
+                    "vsearch/cluster": {
+                        "branch": "master",
+                        "git_sha": "3a0ac08f5e8a748df4bc8b3998623121adec36fe",
+                        "installed_by": ["modules"]
                     }
                 }
             },
