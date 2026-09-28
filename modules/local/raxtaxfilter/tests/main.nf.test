@@ -11,7 +11,12 @@ nextflow_process {
 
     test("taxmarker - default rank (species, leaf-count 1)") {
 
+        config "./nextflow.config"
+
         when {
+            params {
+                module_args = ''
+            }
             process {
                 """
                 input[0] = [
