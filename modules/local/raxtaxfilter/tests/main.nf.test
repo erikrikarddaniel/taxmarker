@@ -60,6 +60,9 @@ nextflow_process {
         config "./nextflow.config"
 
         when {
+            params {
+                module_args = '--filter-rank 2'
+            }
             process {
                 """
                 input[0] = [
@@ -90,6 +93,78 @@ nextflow_process {
                 { assert !taxonomy.contains('SeqSevereMismatch') },
                 { assert snapshot(mislabels, taxonomy).match("coarse_rank") },
             )
+        }
+
+    }
+
+    test("taxmarker - minimum confidence") {
+
+        config "./nextflow.config"
+
+        when {
+            params {
+                module_args = '--filter-rank 2 --min-confidence 0.96'
+            }
+            process {
+                """
+                input[0] = [
+                    [ id:'raxtaxfilter_test' ],
+                    file(params.pipelines_testdata_base_path + 'taxmarker/testdata/raxtaxfilter_test.out', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'taxmarker/testdata/raxtaxfilter_test.tax', checkIfExists: true),
+                    file(params.pipelines_testdata_base_path + 'taxmarker/testdata/raxtaxfilter_test.fasta', checkIfExists: true),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def mislabels = path(process.out.mislabels[0][1]).text
+            def taxonomy  = path(process.out.taxonomy[0][1]).text
+
+            assertAll(
+                // SeqSevereMismatch disagrees at genus with confidence 0.95, below the threshold.
+                { assert !mislabels.contains('SeqSevereMismatch') },
+                { assert taxonomy.contains('SeqSevereMismatch') },
+            )
+        }
+
+    }
+
+    test("taxmarker - best hit chosen at the checked rank") {
+
+        config "./nextflow.config"
+
+        when {
+            params {
+                module_args = '--filter-rank 2'
+            }
+            process {
+                """
+                // GenusA wins at genus (0.60), but GenusX's species (0.40) beats every GenusA species.
+                def dir = java.nio.file.Files.createTempDirectory('raxtaxfilter')
+                def hdr = 'SeqQ;tax=Bacteria,PhylumA,GenusA,SpeciesA1;'
+                dir.resolve('rank.out').text = [
+                    "\${hdr}\\tBacteria,PhylumA,GenusA,SpeciesA1\\t1.00,1.00,0.60,0.35\\t0.0\\t0.9",
+                    "\${hdr}\\tBacteria,PhylumA,GenusA,SpeciesA3\\t1.00,1.00,0.60,0.25\\t0.0\\t0.9",
+                    "\${hdr}\\tBacteria,PhylumA,GenusX,SpeciesX1\\t1.00,1.00,0.40,0.40\\t0.0\\t0.9",
+                ].join('\\n') + '\\n'
+                dir.resolve('rank.tax').text = 'SeqQ\\tBacteria;PhylumA;GenusA;SpeciesA1\\nSeqR\\tBacteria;PhylumA;GenusA;SpeciesA3\\n'
+                dir.resolve('rank.fasta').text = '>SeqQ\\nACGT\\n>SeqR\\nACGT\\n'
+                input[0] = [
+                    [ id:'rank' ],
+                    file(dir.resolve('rank.out')),
+                    file(dir.resolve('rank.tax')),
+                    file(dir.resolve('rank.fasta')),
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert !path(process.out.mislabels[0][1]).text.contains('SeqQ')
         }
 
     }

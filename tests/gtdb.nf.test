@@ -36,7 +36,7 @@ nextflow_pipeline {
 
     }
 
-    test("-profile test_gtdb, raxtax default rank (species)") {
+    test("-profile test_gtdb, raxtax default (genus, confidence 0.9)") {
 
         when {
             params {
@@ -56,21 +56,21 @@ nextflow_pipeline {
                 { assert mislabels =~ /DupHaloA[^\n]*\traxtax/ },
                 { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
                 // Haloferax prahovense's best raxtax hit is its sister species H.
-                // volcanii: genus agrees, species doesn't -- flagged at the default
-                // (species-level) rank.
-                { assert mislabels =~ /Haloferax prahovense[^\n]*\traxtax/ },
+                // volcanii: genus agrees, so it is not flagged at the default rank.
+                { assert !(mislabels =~ /Haloferax prahovense[^\n]*\traxtax/) },
                 { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_default_rank") },
             )
         }
 
     }
 
-    test("-profile test_gtdb, raxtax coarse rank (genus)") {
+    test("-profile test_gtdb, raxtax species rank") {
 
         when {
             params {
-                outdir              = "$outputDir"
-                raxtax_filter_rank  = 2
+                outdir                = "$outputDir"
+                raxtax_filter_rank    = 1
+                raxtax_min_confidence = 0
             }
         }
 
@@ -80,14 +80,11 @@ nextflow_pipeline {
             def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
 
             assertAll(
-                // Still caught: disagrees with raxtax at genus and every coarser rank too.
                 { assert mislabels =~ /DupHaloA[^\n]*\traxtax/ },
                 { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
-                // No longer flagged by raxtax at genus level (Haloferax matches its
-                // sister species' genus) -- proves the single-check-point rank semantics
-                // at the whole-pipeline level, not just in RAXTAXFILTER's own unit test.
-                { assert !(mislabels =~ /Haloferax prahovense[^\n]*\traxtax/) },
-                { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_coarse_rank") },
+                // Species disagrees with its sister H. volcanii, so it is flagged at species rank.
+                { assert mislabels =~ /Haloferax prahovense[^\n]*\traxtax/ },
+                { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_species_rank") },
             )
         }
 
@@ -112,10 +109,8 @@ nextflow_pipeline {
                 { assert new File("$outputDir/raxtaxformat").exists() },
                 { assert mislabels =~ /DupHaloA[^\n]*\traxtax/ },
                 { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
-                // raxtax sees the clustered input before GAPFILTER. Single-member
-                // species (Halorutilus salinus, and Pyrococcus furiosus once dereplicated)
-                // are not judged.
-                { assert mislabels.readLines().size() - 1 == 7 },
+                // Only the swapped-label pair disagrees at genus with high confidence.
+                { assert mislabels.readLines().size() - 1 == 2 },
                 // ...but the phylogenetic placement subworkflow never runs at all: no
                 // reference tree, no leave-one-out placement, no scoring. This is the
                 // whole point of --skip_sativa -- a pure taxonomy-resolution/alignment/
@@ -152,9 +147,9 @@ nextflow_pipeline {
             assertAll(
                 { assert mislabels =~ /DupHaloA[^\n]*\traxtax/ },
                 { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
-                // Without clustering, raxtax judges every duplicate; only Halorutilus
-                // salinus is a single-member species.
-                { assert mislabels.readLines().size() - 1 == 11 },
+                // Without clustering, Pyrococcus furiosus has three sequences, so it is
+                // judged, and raxtax places all three in Methanocaldococcus.
+                { assert mislabels.readLines().size() - 1 == 5 },
             )
         }
 
