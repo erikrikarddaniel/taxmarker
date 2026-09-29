@@ -45,13 +45,6 @@
 %% directives. The connecting flow lines and section titles remain unambiguous;
 %% revisit if a future nf-metro version supports correct numbering with explicit grids.
 %%
-%% NOTE (2026-09-22): RAxML-NG + sativa-epang are implemented (#19); only
-%% CLASSIFIEREXPORT (new step emitting ranked reference FASTA files for downstream
-%% classifiers -- e.g. DADA2's assignTaxonomy/addSpecies is one example consumer, not
-%% the only one) remains TARGET architecture, not yet implemented (see #9/#13).
-%% Revert/update this note once it lands. Pipeline title uses the provisional
-%% nf-core/taxmarker name (not yet finalised) -- see project memory project_pipeline_rename.
-%%
 
 %%metro title: nf-core/taxmarker
 %%metro style: nfcore
@@ -67,7 +60,7 @@
 %%metro file: gtdb_metadata_in | TSV | GTDB metadata (optional)
 %%metro file: mislabels_raxtax_out | TSV | Mislabels (raxtax)
 %%metro file: mislabels_out | TSV | Mislabels
-%%metro file: ref_out | FASTA | Ranked reference FASTA (1, 5, 20 per taxon)
+%%metro file: ref_out | FASTA | Reference FASTA, N per species
 %%metro file: report_out | HTML | MultiQC report
 
 %%metro off_track: mislabels_raxtax_out
@@ -92,7 +85,7 @@
 %%metro process: taxonomytree | SWF_SATIVA:TAXONOMYTREE
 %%metro process: raxmlng | SWF_SATIVA:RAXMLNG_.*
 %%metro process: sativaepang | SWF_SATIVA:SATIVAEPANG
-%%metro process: classifierexport | CLASSIFIEREXPORT
+%%metro process: exportreference | EXPORTREFERENCE
 %%metro process: multiqc | MULTIQC
 
 graph LR
@@ -142,9 +135,9 @@ graph LR
     end
 
     subgraph export [Reference export]
-        classifierexport[CLASSIFIEREXPORT]
+        exportreference[EXPORTREFERENCE]
         ref_out[ ]
-        classifierexport -->|main| ref_out
+        exportreference -->|main| ref_out
     end
 
     subgraph report [Reporting]
@@ -158,5 +151,5 @@ graph LR
     hmmalign -->|unaligned| profilecover
     gapfilter -->|main| taxonomytree
     profilecover -->|unaligned| taxonomytree
-    sativaepang -->|main| classifierexport
-    classifierexport -->|main| multiqc
+    sativaepang -->|main| exportreference
+    exportreference -->|main| multiqc
