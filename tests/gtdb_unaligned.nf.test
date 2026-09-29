@@ -79,8 +79,10 @@ nextflow_pipeline {
 
         when {
             params {
-                outdir      = "$outputDir"
-                skip_sativa = true
+                outdir                = "$outputDir"
+                skip_sativa           = true
+                raxtax_filter_rank    = 1
+                raxtax_min_confidence = 0
             }
         }
 

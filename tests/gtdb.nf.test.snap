@@ -182,7 +182,7 @@
             "nextflow": "26.04.6"
         }
     },
-    "versions_coarse_rank": {
+    "versions_species_rank": {
         "content": [
             {
                 "CHECKALIGNED": {

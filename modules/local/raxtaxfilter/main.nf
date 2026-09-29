@@ -73,6 +73,8 @@ parser.add_argument('--filter-rank', type=int, default=1,
                      help='Leaf-counted rank (1 = most specific) at which the best raxtax '
                           'hit must agree with the declared taxonomy; disagreement there '
                           'flags the sequence as a likely mislabel.')
+parser.add_argument('--min-confidence', type=float, default=0.0,
+                    help='Minimum raxtax confidence at --filter-rank for a disagreement to be flagged.')
 opts = parser.parse_args()
 
 tax = load_taxonomy(opts.taxonomy)
@@ -88,20 +90,20 @@ for name, candidates in hits.items():
     if declared is None:
         continue
 
-    # Best hit = the candidate with the highest confidence at its deepest (most
-    # specific) reported rank -- the single most likely classification for this
-    # query, as opposed to SATIVASCORE's weighted aggregate across all candidates.
-    best_predicted, best_conf = max(candidates, key=lambda c: c[1][-1])
-
-    n_ranks = min(len(declared), len(best_predicted))
-    root_index = n_ranks - opts.filter_rank  # 0-indexed, root-counted position to check
+    root_index = len(declared) - opts.filter_rank  # 0-indexed, root-counted position to check
     if root_index < 0:
         continue  # requested rank goes deeper than this lineage; nothing to check
     if members[tuple(declared[:root_index + 1])] < 2:
         continue
 
-    if declared[root_index] != best_predicted[root_index]:
-        confidence = best_conf[root_index] if root_index < len(best_conf) else best_conf[-1]
+    # Best hit = most confident at the checked rank; ties go to the most confident species.
+    candidates = [c for c in candidates if len(c[1]) > root_index]
+    if not candidates:
+        continue
+    best_predicted, best_conf = max(candidates, key=lambda c: (c[1][root_index], c[1][-1]))
+    confidence = best_conf[root_index]
+
+    if declared[root_index] != best_predicted[root_index] and confidence >= opts.min_confidence:
         flagged[name] = {
             'original': declared,
             'predicted': best_predicted,
