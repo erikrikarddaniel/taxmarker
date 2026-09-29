@@ -57,6 +57,11 @@ Sequence name characters other than letters, digits, `_`, `.`, `-`, `|` and `/` 
 Before alignment, raxtax and placement, the pipeline reduces the input to one representative sequence per (cluster, taxon) pair, collapsing near-duplicate sequences of the same taxon.
 See [Weighted clustering](usage/weighted_clustering.md) for the `--sequence_weights`/`--min_weight`/`--cluster_identity` parameters, exactly how VSEARCH decides what counts as a duplicate, and `--upstream GTDB` for computing `--sequence_weights` automatically from GTDB genome metadata.
 
+## Partial sequences
+
+Unaligned input is aligned to an HMM profile, and sequences covering too little of it are dropped, except the best one of any taxon that would otherwise be lost.
+See [Profile coverage and fragment rescue](usage/profile_coverage.md) for the `--min_profile_cover`/`--min_profile_cover_rescue` parameters and how well fragments place.
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
