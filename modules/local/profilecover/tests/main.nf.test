@@ -39,12 +39,11 @@ nextflow_process {
                 { assert taxonomy.contains('SeqGood2') },
                 { assert alignment.contains('>SeqGood1') },
                 { assert alignment.contains('>SeqGood2') },
-                // SeqBad1 (0.3) is below it but the only sequence of its taxon, and
-                // reaches the default rescue floor (0.3).
-                { assert taxonomy.contains('SeqBad1') },
-                { assert alignment.contains('>SeqBad1') },
-                { assert excluded.contains('SeqBad1\t0.3000\t0.8\trescued') },
-                // SeqBad2 (0.0) is dropped, but reported.
+                // SeqBad1 (0.3) and SeqBad2 (0.0) are the only sequences of their taxa,
+                // but below the default rescue floor (0.5): dropped, but reported.
+                { assert !taxonomy.contains('SeqBad1') },
+                { assert !alignment.contains('>SeqBad1') },
+                { assert excluded.contains('SeqBad1\t0.3000\t0.8\texcluded') },
                 { assert !taxonomy.contains('SeqBad2') },
                 { assert !alignment.contains('>SeqBad2') },
                 { assert excluded.contains('SeqBad2\t0.0000\t0.8\texcluded') },

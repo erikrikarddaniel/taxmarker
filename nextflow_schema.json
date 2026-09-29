@@ -137,7 +137,7 @@
                 },
                 "min_profile_cover_rescue": {
                     "type": "number",
-                    "default": 0.3,
+                    "default": 0.5,
                     "minimum": 0,
                     "maximum": 1,
                     "description": "For hmmalign-derived input: keep the best-covered sequence of any taxon that has none at or above --min_profile_cover, if it covers at least this proportion of the profile.",
