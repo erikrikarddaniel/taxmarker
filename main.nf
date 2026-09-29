@@ -54,6 +54,7 @@ workflow NFCORE_TAXMARKER {
         params.skip_sativa,
         params.taxcode,
         params.folds_per_job,
+        params.export_n_per_species,
         params.hmm,
         params.hmm_name,
         params.multiqc_config,

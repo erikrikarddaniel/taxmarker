@@ -48,7 +48,7 @@ Using evolutionary placement, it identifies sequences in the alignment that do n
 7. Optionally perform phylogenetic placement (disable entirely with `--skip_sativa`, turning the pipeline into a taxonomy-resolution/alignment/prefilter QC tool -- steps 1-6 above still run as configured), as the SATIVA subworkflow:
    1. Create a bifurcating phylogeny with branch-lengths corresponding to the alignment from the taxonomy tree induced by the taxonomy file ([RAxML-NG](https://github.com/amkozlov/raxml-ng))
    2. Perform a leave-one-out test, placing each sequence back into the phylogeny after removing it, and score each sequence's placement against its declared taxonomy to flag likely mislabels ([sativa-epang](https://github.com/Aaramis/sativa-epang)); spread the placement over several jobs with `--folds_per_job` if you have the cluster for it (unset places every fold in one job)
-8. Optionally export ranked reference FASTA files for downstream classifiers -- e.g. DADA2's `assignTaxonomy`/`addSpecies` -- subsetting sequences per taxon and prioritising type-strain sequences, then other isolates, then MAGs/SAGs
+8. Optionally export verified reference sequences for downstream classifiers (`--export_n_per_species`, e.g. `1,5,20`): for each number, at most that many sequences per species, ranked by weight times length, in DADA2's `addSpecies`/`assignTaxonomy` formats and with the original headers
 9. Summarise the run ([MULTIQC](https://multiqc.info/))
 
 ## Usage

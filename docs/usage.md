@@ -62,6 +62,19 @@ See [Weighted clustering](usage/weighted_clustering.md) for the `--sequence_weig
 Unaligned input is aligned to an HMM profile, and sequences covering too little of it are dropped, except the best one of any taxon that would otherwise be lost.
 See [Profile coverage and fragment rescue](usage/profile_coverage.md) for the `--min_profile_cover`/`--min_profile_cover_rescue` parameters and how well fragments place.
 
+## Reference export
+
+`--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes three gzipped FASTA files to `export/` for each:
+
+- `*.n<N>.addSpecies.fna.gz`: `>ID Genus species`, for DADA2's `addSpecies()`.
+- `*.n<N>.assignTaxonomy.fna.gz`: `>rank1;rank2;...;species`, rank prefixes such as `d__` removed, for DADA2's `assignTaxonomy()`.
+- `*.n<N>.general.fna.gz`: the original headers, unchanged.
+
+Each file holds at most N sequences per species, ranked by weight (`--sequence_weights` or `--upstream GTDB`) times length.
+Only sequences that passed every check that ran are exported.
+A cluster member inherits its representative's verdict, so identical copies from different genomes can fill a species' N slots.
+Sequences dropped by a filter before the last check, such as short fragments, are left out.
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
