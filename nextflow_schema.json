@@ -106,10 +106,19 @@
                 },
                 "raxtax_filter_rank": {
                     "type": "integer",
-                    "default": 1,
+                    "default": 2,
                     "description": "Taxonomic rank at which raxtax's self-classification must agree with the declared taxonomy, counted from the most specific rank (1) upward. A sequence disagreeing at this one rank is flagged as a mislabel and skips EPA-ng placement.",
                     "help_text": "A sequence whose taxon at this rank has no other sequence in the input is not checked: raxtax never sees the sequence itself when classifying it, so it cannot predict that taxon.",
                     "fa_icon": "fas fa-layer-group"
+                },
+                "raxtax_min_confidence": {
+                    "type": "number",
+                    "default": 0.9,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Minimum raxtax confidence at `--raxtax_filter_rank` for a disagreement to be flagged as a mislabel.",
+                    "help_text": "Sequences raxtax is less sure about are not flagged and go on to EPA-ng placement, which checks them anyway.",
+                    "fa_icon": "fas fa-percentage"
                 },
                 "skip_gapfilter": {
                     "type": "boolean",
