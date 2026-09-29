@@ -132,8 +132,17 @@
                     "type": "number",
                     "default": 0.8,
                     "description": "For hmmalign-derived input: minimum proportion of the HMM profile's match-state columns a sequence must cover to be kept. Sequences below this are too short/incomplete to place reliably, and are reported separately instead of being placed.",
-                    "help_text": "Unlike an already-aligned reference set, a masked hmmalign-derived alignment's width is fixed by the HMM profile itself, so real full-length sequences cluster tightly near full coverage -- a higher default than --min_nongap correctly separates them from genuinely partial sequences instead of barely filtering anything.",
+                    "help_text": "A masked hmmalign-derived alignment's width is fixed by the HMM profile, so coverage measures how complete a sequence is directly. That is why the default is higher than --min_nongap's. Real data rarely separate cleanly into full-length and partial sequences, so see also --min_profile_cover_rescue.",
                     "fa_icon": "fas fa-ruler"
+                },
+                "min_profile_cover_rescue": {
+                    "type": "number",
+                    "default": 0.3,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "For hmmalign-derived input: keep the best-covered sequence of any taxon that has none at or above --min_profile_cover, if it covers at least this proportion of the profile.",
+                    "help_text": "Many taxa, especially those known only from MAGs, have only partial 16S sequences. A fragment still carries phylogenetic signal, so this keeps one per taxon rather than losing the taxon altogether. Set it to --min_profile_cover or higher to disable the rescue.",
+                    "fa_icon": "fas fa-life-ring"
                 },
                 "skip_sativa": {
                     "type": "boolean",
