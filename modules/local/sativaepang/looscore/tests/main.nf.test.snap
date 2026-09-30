@@ -7,19 +7,19 @@
                         {
                             "id": "test"
                         },
-                        "test.mis:md5,c7d675a20bec15b8aa842e2b90a44d5c"
+                        "test.mis:md5,0a0efff6a162ab994ee15f92231dc7e9"
                     ]
                 ],
                 "versions_sativaepang": [
                     [
                         "SATIVAEPANG_LOOSCORE",
                         "sativaepang",
-                        "0.10.1"
+                        "0.10.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-09-24T14:13:07.618012",
+        "timestamp": "2026-09-30T10:06:18.349938",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -33,19 +33,19 @@
                         {
                             "id": "test"
                         },
-                        "test.mis:md5,c8758fa09adee193eba3f0f5f11d4822"
+                        "test.mis:md5,a636eab9f102adb5fc73845af04200d7"
                     ]
                 ],
                 "versions_sativaepang": [
                     [
                         "SATIVAEPANG_LOOSCORE",
                         "sativaepang",
-                        "0.10.1"
+                        "0.10.2"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-09-24T14:13:22.149506",
+        "timestamp": "2026-09-30T10:06:32.497868",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -66,7 +66,7 @@
                     [
                         "SATIVAEPANG_LOOSCORE",
                         "sativaepang",
-                        "0.10.1"
+                        "0.10.2"
                     ]
                 ]
             }

@@ -44,6 +44,9 @@ opts = parser.parse_args()
 # tab-separated data row per flagged sequence:
 #   SeqID  MislabeledLevel  OriginalLabel  ProposedLabel  Confidence
 #   OriginalTaxonomyPath  ProposedTaxonomyPath  PerRankConfidence
+# Columns past those eight are ignored: sativa-epang appends its own (0.10.2 added
+# OriginalLabelExclusion, and -ranktest has always added one), so slicing keeps a
+# new one from breaking the unpacking.
 # MislabeledLevel is a rank NAME (e.g. "Phylum"), not a position, so the numeric
 # mismatch_rank below is derived from the taxonomy paths themselves (first
 # differing ';'-separated token) rather than trusting that name.
@@ -53,7 +56,7 @@ with open(opts.mis_file) as fh:
         line = line.rstrip('\\n')
         if not line or line.startswith(';'):
             continue
-        seq_name, _level, _original, _proposed, confidence, original_path, proposed_path, _per_rank = line.split('\\t')
+        seq_name, _level, _original, _proposed, confidence, original_path, proposed_path, _per_rank = line.split('\\t')[:8]
         original_ranks = original_path.split(';')
         proposed_ranks = proposed_path.split(';')
         mismatch_rank = None

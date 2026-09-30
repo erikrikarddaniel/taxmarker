@@ -153,6 +153,41 @@ nextflow_process {
 
     }
 
+    test("extra .mis columns are ignored") {
+
+        when {
+            process {
+                """
+                // sativa-epang 0.10.2 appends OriginalLabelExclusion, and -ranktest adds
+                // one of its own. 0.123 is the exclusion here: it must not surface as any
+                // field of the output, which is what field-shifting would look like.
+                def misFile = File.createTempFile('test', '.mis')
+                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\tOriginalLabelExclusion\\n' +
+                    'SeqA\\tPhylum\\tp__Nanoarchaeota\\tp__Halobacteriota\\t1.000\\td__Archaea;p__Nanoarchaeota\\td__Archaea;p__Halobacteriota\\t1.000;1.000\\t0.123\\n'
+                def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
+                taskdir.mkdirs()
+                new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 3}'
+                input[0] = [ [ id:'test' ], file(misFile.toString()), file(taskdir.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def mislabels = path(process.out.mislabels[0][1]).text
+            def summary   = path(process.out.summary[0][1]).text
+
+            assertAll(
+                { assert mislabels.contains('SeqA') },
+                { assert !mislabels.contains('0.123') },
+                { assert mislabels.contains('\t1.0\t2\tsativa') },
+                { assert summary.contains('putative mislabels: 1') },
+            )
+        }
+
+    }
+
     test("stub") {
 
         options "-stub"
