@@ -41,7 +41,8 @@ output:
           description: |
             Mislabelled sequences, one per line: sequence ID, the rank at which the
             mislabelling was detected, original and proposed taxonomy paths, confidence,
-            and per-rank confidence.
+            per-rank confidence, and the likelihood weight that fell outside the declared
+            taxon at that rank, which is what the mislabel call rests on.
           pattern: "*.mis"
           ontologies: []
   versions_sativaepang:

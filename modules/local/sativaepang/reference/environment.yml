@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::sativa-epang=0.10.1
+  - bioconda::sativa-epang=0.10.2
