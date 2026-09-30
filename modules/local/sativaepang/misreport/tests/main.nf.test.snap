@@ -1,4 +1,34 @@
 {
+    "extra .mis columns are ignored": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,23ddb0de83d4a430dfc3e4b88fe20a20"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,4dbe2b6191f101721d6acc09c2aa5637"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-09-30T11:05:44.577552",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
     "no flagged sequences": {
         "content": [
             {
