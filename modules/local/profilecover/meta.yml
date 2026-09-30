@@ -5,7 +5,8 @@ description: |
   (non-gap proportion, once HMMER_ESLALIMASK has masked the alignment down to
   match-state columns only) falls below a threshold (--min-coverage) -- too
   short/incomplete to place reliably -- reporting them separately rather than
-  silently discarding them, and returning the surviving taxonomy/alignment pair
+  silently discarding them (optionally keeping the best-covered sequence of any
+  taxon that would otherwise lose all its sequences, --rescue-floor), and returning the surviving taxonomy/alignment pair
   unchanged in schema. Same underlying logic as GAPFILTER, applied to the
   hmmalign branch specifically: the two branches' alignments have structurally
   different non-gap distributions (a fixed-length HMM match-state profile vs. a
@@ -47,7 +48,7 @@ output:
             id:'sample1' ]`
       - filtered_taxonomy:
           type: file
-          description: Declared taxonomy for sequences at or above --min-coverage.
+          description: Declared taxonomy for sequences at or above --min-coverage, plus any rescued by --rescue-floor.
           pattern: "*.covfiltered.tax"
   alignment:
     - - meta:
@@ -56,7 +57,7 @@ output:
             id:'sample1' ]`
       - filtered_alignment:
           type: file
-          description: Alignment subset to sequences at or above --min-coverage.
+          description: Alignment subset to sequences at or above --min-coverage, plus any rescued by --rescue-floor.
           pattern: "*.covfiltered.fasta"
   excluded:
     - - meta:
@@ -65,7 +66,7 @@ output:
             id:'sample1' ]`
       - excluded_tsv:
           type: file
-          description: Sequences dropped for too little profile coverage (seq_name, profile_coverage, min_coverage_threshold).
+          description: Sequences below --min-coverage (seq_name, profile_coverage, min_coverage_threshold, status), where status is `excluded` or `rescued`.
           pattern: "*.cov_excluded.tsv"
   versions:
     - - ${task.process}:

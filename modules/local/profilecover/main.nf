@@ -47,6 +47,9 @@ parser.add_argument('--min-coverage', type=float, default=0.8,
                           'match-state columns by HMMER_ESLALIMASK) to be kept; '
                           'sequences below this are too short/incomplete to place '
                           'reliably and are reported separately instead.')
+parser.add_argument('--rescue-floor', type=float, default=None,
+                     help='For a taxon with no sequence at or above --min-coverage, keep its '
+                          'best-covered sequence if that reaches this floor.')
 opts = parser.parse_args()
 
 tax_rows = []
@@ -57,20 +60,30 @@ with open(opts.taxonomy) as fh:
             continue
         name, _, rest = line.partition('\\t')
         tax_rows.append((name, rest))
+taxon_of = dict(tax_rows)
 
 records = list(SeqIO.parse(opts.alignment, 'fasta'))
 
-kept, excluded = [], []
+coverage = {}
 for record in records:
     seq = str(record.seq)
     non_gap = sum(1 for ch in seq if ch not in GAP_CHARS)
-    coverage = non_gap / len(seq) if seq else 0.0
-    if coverage >= opts.min_coverage:
-        kept.append(record)
-    else:
-        excluded.append((record.id, coverage))
+    coverage[record.id] = non_gap / len(seq) if seq else 0.0
 
-kept_names = {record.id for record in kept}
+kept_names = {name for name, cov in coverage.items() if cov >= opts.min_coverage}
+rescued = set()
+if opts.rescue_floor is not None:
+    covered_taxa = {taxon_of.get(name) for name in kept_names}
+    best = {}
+    for name, cov in coverage.items():
+        taxon = taxon_of.get(name)
+        if taxon not in covered_taxa and cov >= opts.rescue_floor and cov > best.get(taxon, ('', -1))[1]:
+            best[taxon] = (name, cov)
+    rescued = {name for name, _ in best.values()}
+    kept_names |= rescued
+
+kept = [record for record in records if record.id in kept_names]
+below = [(name, cov) for name, cov in coverage.items() if cov < opts.min_coverage]
 
 with open(opts.out_taxonomy, 'w') as fh:
     for name, rest in tax_rows:
@@ -80,9 +93,10 @@ with open(opts.out_taxonomy, 'w') as fh:
 SeqIO.write(kept, opts.out_alignment, 'fasta')
 
 with open(opts.out_excluded, 'w') as fh:
-    print('seq_name\\tprofile_coverage\\tmin_coverage_threshold', file=fh)
-    for name, coverage in sorted(excluded):
-        print(f"{name}\\t{coverage:.4f}\\t{opts.min_coverage}", file=fh)
+    print('seq_name\\tprofile_coverage\\tmin_coverage_threshold\\tstatus', file=fh)
+    for name, cov in sorted(below):
+        status = 'rescued' if name in rescued else 'excluded'
+        print(f"{name}\\t{cov:.4f}\\t{opts.min_coverage}\\t{status}", file=fh)
 
 with open('versions.yml', 'w') as fh:
     print('"${task.process}":', file=fh)
