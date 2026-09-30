@@ -97,8 +97,16 @@ def labels(taxon):
     return [re.sub(r'^[a-z]__', '', rank) for rank in taxon.split(';')]
 
 def species_name(taxon):
-    ranks = labels(taxon)
-    genus, species = ranks[-2], ranks[-1]
+    ranks = taxon.split(';')
+    if any(re.match(r'^[a-z]__', r) for r in ranks):
+        by_rank = {r[0]: r[3:] for r in ranks if re.match(r'^[a-z]__', r)}
+        genus, species = by_rank.get('g', ''), by_rank.get('s', '')
+    elif len(ranks) >= 2:
+        genus, species = ranks[-2], ranks[-1]
+    else:
+        return None
+    if not genus.strip() or not species.strip():
+        return None
     return species if species.startswith(genus + ' ') else f"{genus} {species}"
 
 for n in counts:
@@ -110,7 +118,8 @@ for n in counts:
                 description, seq = records[name]
                 seq_id = description.split()[0]
                 print(f">{description}\\n{seq}", file=general)
-                print(f">{seq_id} {species_name(taxon)}\\n{seq}", file=add_species)
+                if species_name(taxon):
+                    print(f">{seq_id} {species_name(taxon)}\\n{seq}", file=add_species)
                 print(f">{';'.join(labels(taxon))}\\n{seq}", file=assign_taxonomy)
 
 with open('versions.yml', 'w') as fh:

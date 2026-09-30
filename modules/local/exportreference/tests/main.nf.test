@@ -111,6 +111,40 @@ nextflow_process {
 
     }
 
+    test("taxa without genus and species are left out of addSpecies only") {
+
+        when {
+            process {
+                """
+                def dir = file("\${workDir}/exportreference_ranks")
+                dir.mkdirs()
+                def taxa = [
+                    OK:     'd__Bacteria;f__F;g__Gz;s__Gz zeta',
+                    EMPTYS: 'd__Bacteria;f__F;g__Gz;s__',
+                    GENUS:  'd__Bacteria;f__F;g__Gz',
+                    SINGLE: 'Bacteria',
+                ]
+                def seqs = file("\${dir}/input.fna")
+                seqs.text = taxa.keySet().collect { n -> ">\${n}\\nACGT\\n" }.join('')
+                def tax = file("\${dir}/checked.tax")
+                tax.text = taxa.collect { n, t -> "\${n}\\t\${t}\\n" }.join('')
+                input[0] = [ [ id:'export_test' ], seqs, tax, [], tax, [] ]
+                input[1] = [ 1 ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            def ids = { ch -> path(ch[0][1]).linesGzip.findAll { it.startsWith('>') } }
+            assertAll(
+                { assert ids(process.out.general).size() == 4 },
+                { assert ids(process.out.addspecies) == [ '>OK Gz zeta' ] },
+            )
+        }
+
+    }
+
     test("weight x length ranking - stub") {
 
         options "-stub"
