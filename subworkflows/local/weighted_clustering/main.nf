@@ -74,4 +74,5 @@ workflow WEIGHTED_CLUSTERING {
     emit:
     taxonomy  = CLUSTERSELECT.out.taxonomy.map  { _meta, tax -> tax } // channel: taxonomy file, representatives only
     sequences = CLUSTERSELECT.out.sequences.map { _meta, seq -> seq } // channel: sequences file, representatives only
+    selection = CLUSTERSELECT.out.selection.map { _meta, sel -> sel } // channel: per-sequence cluster, weight and representative table
 }

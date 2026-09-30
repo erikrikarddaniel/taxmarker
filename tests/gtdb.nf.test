@@ -9,8 +9,9 @@ nextflow_pipeline {
 
         when {
             params {
-                outdir      = "$outputDir"
-                skip_raxtax = true
+                outdir               = "$outputDir"
+                skip_raxtax          = true
+                export_n_per_species = '1,5'
             }
         }
 
@@ -19,6 +20,10 @@ nextflow_pipeline {
 
             def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
             def summary   = path("$outputDir/sativaepang/user-alignment.summary.txt").text
+            def headers   = { name -> path("$outputDir/export/user-alignment.${name}.fna.gz").linesGzip.findAll { it.startsWith('>') } }
+            def taxa1     = headers('n1.assignTaxonomy')
+            def taxa5     = headers('n5.assignTaxonomy')
+            def general5  = path("$outputDir/export/user-alignment.n5.general.fna.gz").linesGzip
 
             assertAll(
                 // Every sequence goes through EPA-ng placement and scoring directly;
@@ -30,6 +35,15 @@ nextflow_pipeline {
                 { assert summary.contains('putative mislabels: 2') },
                 { assert mislabels.contains('DupHaloA') },
                 { assert mislabels.contains('DupSulfoA') },
+                // Export: flagged sequences left out, at most N per species, original
+                // IDs restored, alignment gaps removed.
+                { assert !general5.any { it.contains('DupHaloA') || it.contains('DupSulfoA') } },
+                { assert taxa1.size() == taxa1.toSet().size() },
+                { assert taxa5.countBy { it }.values().max() == 5 },
+                { assert taxa1.toSet() == taxa5.toSet() },
+                { assert general5.findAll { it.startsWith('>') }.every { it.contains('~') } },
+                { assert !general5.findAll { !it.startsWith('>') }.any { it.contains('-') } },
+                { assert headers('n1.addSpecies').size() == taxa1.size() },
                 { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_raxtax_disabled") },
             )
         }

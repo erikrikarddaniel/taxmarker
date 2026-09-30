@@ -19,6 +19,7 @@ include { GAPFILTER              } from '../modules/local/gapfilter/main'
 include { PROFILECOVER           } from '../modules/local/profilecover/main'
 include { RAXTAX_PREFILTER       } from '../subworkflows/local/raxtax_prefilter'
 include { SATIVA as SWF_SATIVA   } from '../subworkflows/local/sativa'
+include { EXPORTREFERENCE        } from '../modules/local/exportreference/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,6 +45,7 @@ workflow TAXMARKER {
     skip_sativa        // value:   skip the phylogenetic placement subworkflow entirely?
     taxcode            // value:   taxonomic code for sativa-epang (bac/bot/zoo/vir)
     folds_per_job      // value:   folds each placement job places, or null for all in one
+    export_n_per_species // value: comma-separated sequences per species to export, or null to skip the export
     hmm                // value:   path to an HMM profile database, or null/empty if not needed
     hmm_name           // value:   name of a specific profile within hmm, or null/empty
     multiqc_config
@@ -187,14 +189,17 @@ workflow TAXMARKER {
     //
     def ch_taxonomy_clustered
     def ch_sequences_clustered
+    def ch_selection
     def run_clustering = !skip_clustering.toString().toBoolean()
     if (run_clustering) {
         WEIGHTED_CLUSTERING(ch_taxonomy_checked, ch_sequences_fasta, ch_sequence_weights, min_weight)
         ch_taxonomy_clustered  = WEIGHTED_CLUSTERING.out.taxonomy
         ch_sequences_clustered = WEIGHTED_CLUSTERING.out.sequences
+        ch_selection           = WEIGHTED_CLUSTERING.out.selection
     } else {
         ch_taxonomy_clustered  = ch_taxonomy_checked
         ch_sequences_clustered = ch_sequences_fasta
+        ch_selection           = channel.of([[]])
     }
 
     //
@@ -315,6 +320,25 @@ workflow TAXMARKER {
         ch_sativa_mislabels = SWF_SATIVA.out.mislabels
     } else {
         ch_sativa_mislabels = channel.empty()
+    }
+
+    //
+    // MODULE: EXPORTREFERENCE (optional, --export_n_per_species to enable)
+    //
+    // Exports only sequences whose representative reached the last step and was not
+    // flagged there; raxtax-flagged representatives never reach it.
+    //
+    if (export_n_per_species) {
+        def counts = export_n_per_species.toString().tokenize(',').collect { n -> n.trim() as int }
+        EXPORTREFERENCE(
+            ch_sequences_for_resolve
+                .combine(ch_taxonomy_checked)
+                .combine(ch_selection)
+                .combine(ch_taxonomy_for_sativa)
+                .combine(ch_sativa_mislabels.map { _meta, tsv -> [ tsv ] }.ifEmpty([[]]))
+                .map { seqs, tax, selection, verified, mislabels -> [ [ id: 'user-alignment' ], seqs, tax, selection, verified, mislabels ] },
+            counts
+        )
     }
 
     //
