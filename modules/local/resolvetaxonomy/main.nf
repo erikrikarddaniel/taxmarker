@@ -71,6 +71,18 @@ def embedded_taxonomy(record):
     text = record.description[len(record.id):].strip()
     return text.split(' [', 1)[0]
 
+def is_blank_rank(rank):
+    rank = rank.strip()
+    return not rank or (len(rank) == 3 and rank[0].isalpha() and rank[1:] == '__')
+
+# SATIVA reads a trailing placeholder or empty rank as a real taxon name, so every
+# lineage must end at its last named rank.
+def trim_lineage(lineage):
+    ranks = lineage.split(';')
+    while ranks and is_blank_rank(ranks[-1]):
+        ranks.pop()
+    return ';'.join(ranks)
+
 if taxonomy_in:
     # An explicit --taxonomy file always wins. Warn (not fail) -- surfaced by the
     # caller via log.warn, not just buried in this task's own stderr -- rather than
@@ -82,7 +94,9 @@ if taxonomy_in:
             '--sequences record headers.'
         )
     with open(taxonomy_in) as fh_in, open(taxonomy_out, 'w') as fh_out:
-        fh_out.write(fh_in.read())
+        for line in fh_in:
+            name, tab, lineage = line.rstrip('\\n').partition('\\t')
+            print(name + tab + trim_lineage(lineage) if tab else name, file=fh_out)
 else:
     missing = [record.id for record in records if not embedded_taxonomy(record)]
     if missing:
@@ -92,7 +106,7 @@ else:
         )
     with open(taxonomy_out, 'w') as fh:
         for record in records:
-            print(f"{record.id}\\t{embedded_taxonomy(record)}", file=fh)
+            print(f"{record.id}\\t{trim_lineage(embedded_taxonomy(record))}", file=fh)
 
 # Always strip headers down to a bare id -- downstream tools (IQTREE, EPA-ng) keep
 # the whole header line as the leaf name, not just the first token, so leftover
