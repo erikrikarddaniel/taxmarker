@@ -200,6 +200,38 @@ nextflow_process {
 
     }
 
+    test("taxmarker - embedded taxonomy drops trailing empty and placeholder ranks") {
+
+        when {
+            process {
+                """
+                def fasta = File.createTempFile('resolvetaxonomy_embedded_partial', '.fasta')
+                fasta.text = [
+                    '>Full d__A;p__B;c__C;o__O;f__F;g__Gx;s__Gx full [locus_tag=abc]',
+                    '>Placeholder d__A;p__B;c__C;o__O;f__F;g__Gx;s__',
+                    '>Genus d__A;p__B;c__C;o__O;f__F;g__;s__',
+                    '>Interior d__A;p__B;c__;o__O;f__F;g__;s__',
+                ].collect { it + '\\nACGT\\n' }.join()
+                input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def lines = path(process.out.taxonomy[0][1]).readLines()
+
+            assertAll(
+                { assert lines.contains('Full\td__A;p__B;c__C;o__O;f__F;g__Gx;s__Gx full') },
+                { assert lines.contains('Placeholder\td__A;p__B;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('Genus\td__A;p__B;c__C;o__O;f__F') },
+                { assert lines.contains('Interior\td__A;p__B;c__;o__O;f__F') },
+            )
+        }
+
+    }
+
     test("taxmarker - neither taxonomy file nor embedded text fails clearly") {
 
         when {
