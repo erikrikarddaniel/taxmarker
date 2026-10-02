@@ -37,6 +37,7 @@ Sequence names in the taxonomy file must match those in `--sequences` (after the
 Lineages may stop at any rank.
 Trailing empty ranks and bare placeholders such as `g__` or `s__` are removed, so a sequence annotated only to genus ends at the genus.
 Empty ranks inside a lineage are kept.
+Sequences without any annotation, such as a lineage of only `;;;;;;`, are dropped from both the taxonomy and the sequences, with a warning, since they cannot be checked.
 
 ### Taxonomy embedded in sequence headers
 

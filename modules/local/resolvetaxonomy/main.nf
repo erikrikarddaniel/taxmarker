@@ -83,6 +83,7 @@ def trim_lineage(lineage):
         ranks.pop()
     return ';'.join(ranks)
 
+lineages = {}
 if taxonomy_in:
     # An explicit --taxonomy file always wins. Warn (not fail) -- surfaced by the
     # caller via log.warn, not just buried in this task's own stderr -- rather than
@@ -93,10 +94,10 @@ if taxonomy_in:
             '--taxonomy was provided; ignoring embedded taxonomy text found in '
             '--sequences record headers.'
         )
-    with open(taxonomy_in) as fh_in, open(taxonomy_out, 'w') as fh_out:
+    with open(taxonomy_in) as fh_in:
         for line in fh_in:
-            name, tab, lineage = line.rstrip('\\n').partition('\\t')
-            print(name + tab + trim_lineage(lineage) if tab else name, file=fh_out)
+            name, _, lineage = line.rstrip('\\n').partition('\\t')
+            lineages[name] = trim_lineage(lineage)
 else:
     missing = [record.id for record in records if not embedded_taxonomy(record)]
     if missing:
@@ -104,9 +105,25 @@ else:
             'No --taxonomy file was provided, and these --sequences records have no '
             'embedded taxonomy in their header either: ' + ', '.join(missing)
         )
-    with open(taxonomy_out, 'w') as fh:
-        for record in records:
-            print(f"{record.id}\\t{trim_lineage(embedded_taxonomy(record))}", file=fh)
+    for record in records:
+        lineages[record.id] = trim_lineage(embedded_taxonomy(record))
+
+# A sequence with no annotation cannot be mislabelled, and SATIVA fails on an empty lineage.
+unannotated = sorted(name for name, lineage in lineages.items() if not lineage)
+if unannotated:
+    warnings.append(
+        'Dropped ' + str(len(unannotated)) + ' sequence(s) without any taxonomic annotation: '
+        + ', '.join(unannotated)
+    )
+    dropped = set(unannotated)
+    records = [record for record in records if record.id not in dropped]
+    if not records:
+        sys.exit('No sequence has a taxonomic annotation.')
+
+with open(taxonomy_out, 'w') as fh:
+    for name, lineage in lineages.items():
+        if lineage:
+            print(name + '\\t' + lineage, file=fh)
 
 # Always strip headers down to a bare id -- downstream tools (IQTREE, EPA-ng) keep
 # the whole header line as the leaf name, not just the first token, so leftover
