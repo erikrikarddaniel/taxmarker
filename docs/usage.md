@@ -69,6 +69,10 @@ By default RAxML-NG first selects a substitution model, which can take a quarter
 Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+G4`, to skip the selection.
 Any model string that RAxML-NG accepts for `--model` works.
 
+On large alignments the search itself dominates the run time.
+`--raxmlng_fast` switches to the RAxML-NG fast search: one parsimony starting tree and a simplified topology search that stops early.
+The constraint still applies, and the tree is somewhat less optimal than the default search gives.
+
 ## Reference export
 
 `--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes three gzipped FASTA files to `export/` for each:
