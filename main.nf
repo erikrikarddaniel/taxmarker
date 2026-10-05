@@ -20,6 +20,36 @@ include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_taxm
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_taxmarker_pipeline'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARAMETER TYPES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// Types only: the defaults live in nextflow.config
+params {
+    skip_clustering: Boolean
+    skip_raxtax: Boolean
+    skip_gapfilter: Boolean
+    skip_profile_cover: Boolean
+    skip_sativa: Boolean
+    raxmlng_fast: Boolean
+    version: Boolean
+    plaintext_email: Boolean
+    monochrome_logs: Boolean
+    validate_params: Boolean
+    help_full: Boolean
+    show_hidden: Boolean
+    min_weight: Float?
+    cluster_identity: Float
+    raxtax_filter_rank: Integer
+    raxtax_min_confidence: Float
+    min_nongap: Float
+    min_profile_cover: Float
+    min_profile_cover_rescue: Float
+    folds_per_job: Integer?
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
