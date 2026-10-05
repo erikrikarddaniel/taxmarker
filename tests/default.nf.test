@@ -123,4 +123,21 @@ nextflow_pipeline {
             )
         }
     }
+
+    test("-profile test, raxmlng_fast given as the string false") {
+
+        when {
+            params {
+                outdir          = "$outputDir"
+                skip_clustering = true
+                raxmlng_fast    = "false"
+            }
+        }
+
+        then {
+            assert workflow.success
+            def log = new File("$outputDir/raxmlng/user-alignment.raxml.log").text
+            assert !log.contains("ML tree search (simplified)")
+        }
+    }
 }
