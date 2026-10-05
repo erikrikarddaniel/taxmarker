@@ -124,13 +124,13 @@ nextflow_pipeline {
         }
     }
 
-    test("-profile test, raxmlng_fast given as the string false") {
+    test("-profile test, raxmlng_fast false skips the fast search") {
 
         when {
             params {
                 outdir          = "$outputDir"
                 skip_clustering = true
-                raxmlng_fast    = "false"
+                raxmlng_fast    = false
             }
         }
 
