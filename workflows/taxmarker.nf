@@ -44,6 +44,7 @@ workflow TAXMARKER {
     skip_profile_cover // value:   skip the profile-coverage filter (hmmalign-derived input)?
     skip_sativa        // value:   skip the phylogenetic placement subworkflow entirely?
     taxcode            // value:   taxonomic code for sativa-epang (bac/bot/zoo/vir)
+    raxmlng_model      // value:   RAxML-NG model for the reference tree, or DNA to select one
     folds_per_job      // value:   folds each placement job places, or null for all in one
     export_n_per_species // value: comma-separated sequences per species to export, or null to skip the export
     hmm                // value:   path to an HMM profile database, or null/empty if not needed
@@ -190,7 +191,7 @@ workflow TAXMARKER {
     def ch_taxonomy_clustered
     def ch_sequences_clustered
     def ch_selection
-    def run_clustering = !skip_clustering.toString().toBoolean()
+    def run_clustering = !skip_clustering
     if (run_clustering) {
         WEIGHTED_CLUSTERING(ch_taxonomy_checked, ch_sequences_fasta, ch_sequence_weights, min_weight)
         ch_taxonomy_clustered  = WEIGHTED_CLUSTERING.out.taxonomy
@@ -214,14 +215,7 @@ workflow TAXMARKER {
     def ch_taxonomy_for_alignment
     def ch_sequences_for_alignment
     def ch_raxtax_mislabels
-    // Coerce explicitly: a CLI-supplied `--skip_raxtax false` arrives as the *string*
-    // "false", and Groovy's `!"false"` is false (any non-empty string is truthy) --
-    // .toBoolean() parses both real Booleans and "true"/"false" strings correctly.
-    // Confirmed empirically that nf-schema's cli_typecast (enabled just above, in
-    // PIPELINE_INITIALISATION) validates the string against the boolean schema type but
-    // does not itself replace params.skip_raxtax with a real Boolean, so this is still
-    // needed even with cli_typecast on.
-    def run_raxtax = !skip_raxtax.toString().toBoolean()
+    def run_raxtax = !skip_raxtax
     if (run_raxtax) {
         RAXTAX_PREFILTER(ch_taxonomy_clustered, ch_sequences_clustered)
         ch_taxonomy_for_alignment  = RAXTAX_PREFILTER.out.taxonomy
@@ -255,10 +249,7 @@ workflow TAXMARKER {
     //
     def ch_taxonomy_gapfiltered
     def ch_alignment_gapfiltered
-    // Coerce explicitly: a CLI-supplied `--skip_gapfilter false` arrives as the
-    // *string* "false" -- see the analogous skip_raxtax coercion above for why
-    // .toString().toBoolean() is needed even with nf-schema's cli_typecast enabled.
-    def run_gapfilter = !skip_gapfilter.toString().toBoolean()
+    def run_gapfilter = !skip_gapfilter
     if (run_gapfilter) {
         GAPFILTER(
             ch_taxonomy_for_alignment.combine(ENSURE_ALIGNED.out.alignment_passthrough).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
@@ -279,7 +270,7 @@ workflow TAXMARKER {
 
     def ch_taxonomy_covfiltered
     def ch_alignment_covfiltered
-    def run_profile_cover = !skip_profile_cover.toString().toBoolean()
+    def run_profile_cover = !skip_profile_cover
     if (run_profile_cover) {
         PROFILECOVER(
             ch_taxonomy_for_alignment.combine(ENSURE_ALIGNED.out.alignment_from_hmm).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
@@ -314,9 +305,9 @@ workflow TAXMARKER {
     // model file respectively. Not implemented yet.
     //
     def ch_sativa_mislabels
-    def run_sativa = !skip_sativa.toString().toBoolean()
+    def run_sativa = !skip_sativa
     if (run_sativa) {
-        SWF_SATIVA(ch_taxonomy_for_sativa, ch_alignment_for_sativa, taxcode, folds_per_job, [], [])
+        SWF_SATIVA(ch_taxonomy_for_sativa, ch_alignment_for_sativa, taxcode, raxmlng_model, folds_per_job, [], [])
         ch_sativa_mislabels = SWF_SATIVA.out.mislabels
     } else {
         ch_sativa_mislabels = channel.empty()
