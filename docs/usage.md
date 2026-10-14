@@ -82,6 +82,10 @@ The constraint still applies, and the tree is somewhat less optimal than the def
 A different seed can give a somewhat different tree and so somewhat different flags.
 The published files do not carry the seed in their names, so run another seed with a new `--outdir`.
 
+`--raxmlng_blopt` sets the branch length optimisation method (`nr_fast`, `nr_safe` or `nr_oldstyle`, RAxML-NG's `--blopt`).
+Unset uses RAxML-NG's default.
+If RAxML-NG stops with a branch length error (BRLEN out-of-bounds), for example on alignments with near-empty sequences, use `nr_safe`.
+
 ## Reference export
 
 `--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes three gzipped FASTA files to `export/` for each:

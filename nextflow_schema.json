@@ -193,6 +193,13 @@
                     "help_text": "Different seeds can give somewhat different trees, and so somewhat different flags, especially with --raxmlng_fast. A resumed run with another seed re-runs the tree search and everything after it and overwrites the published files, so use a new --outdir.",
                     "fa_icon": "fas fa-dice"
                 },
+                "raxmlng_blopt": {
+                    "type": "string",
+                    "enum": ["nr_fast", "nr_safe", "nr_oldstyle"],
+                    "description": "Branch length optimisation method of RAxML-NG (--blopt). Unset uses the RAxML-NG default.",
+                    "help_text": "nr_safe is slower than the default but avoids a branch length error (BRLEN out-of-bounds) that RAxML-NG can raise on alignments with near-empty sequences.",
+                    "fa_icon": "fas fa-ruler"
+                },
                 "folds_per_job": {
                     "type": "integer",
                     "minimum": 1,
