@@ -33,6 +33,7 @@ params {
     skip_sativa: Boolean
     raxmlng_fast: Boolean
     raxmlng_seed: Integer
+    raxmlng_blopt: String?
     version: Boolean
     plaintext_email: Boolean
     monochrome_logs: Boolean
