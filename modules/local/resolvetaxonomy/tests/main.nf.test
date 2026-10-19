@@ -162,6 +162,36 @@ nextflow_process {
 
     }
 
+    test("taxmarker - gzipped taxonomy file is read") {
+
+        when {
+            process {
+                """
+                def tax = File.createTempFile('resolvetaxonomy_gz', '.tax')
+                tax.text = 'SeqA\\tBacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA\\n'
+                def gz = new File(tax.toString() + '.gz')
+                new java.util.zip.GZIPOutputStream(gz.newOutputStream()).withCloseable { it << tax.bytes }
+                def fasta = File.createTempFile('resolvetaxonomy_gz', '.fasta')
+                fasta.text = '>SeqA\\nACGT\\n'
+                input[0] = [ [ id:'resolvetaxonomy_test' ], file(gz.toString()), file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def taxonomy = path(process.out.taxonomy[0][1]).text
+
+            assertAll(
+                // The headers carry no taxonomy, so this lineage can only come from the gzipped file.
+                { assert taxonomy.contains('SeqA\tBacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA\n') },
+                { assert path(process.out.warnings[0][1]).text.trim().isEmpty() },
+            )
+        }
+
+    }
+
     test("taxmarker - trailing empty and placeholder ranks are dropped, interior ones kept") {
 
         when {

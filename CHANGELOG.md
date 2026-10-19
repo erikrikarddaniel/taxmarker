@@ -37,6 +37,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Fixed`
 
+- [#NN](https://github.com/nf-core/taxmarker/pull/NN) - Gzipped `--taxonomy` and `--sequence_weights` files ([#2](https://github.com/nf-core/taxmarker/issues/2)) no longer fail with a `UnicodeDecodeError`: `RESOLVETAXONOMY` (taxonomy) and `WEIGHTFILTER`/`CLUSTERSELECT` (weights) read them as plain text instead of decompressing them like gzipped `--sequences`
 - [#48](https://github.com/nf-core/taxmarker/pull/48) - `nextflow run . -profile test,docker` (and the other small test profiles) no longer fails with RAxML-NG's `BRLEN out-of-bounds`: the test profiles now set `--raxmlng_blopt nr_safe`, because the fixtures' near-empty sequences crash the default branch-length optimisation for some seeds
 - [#29](https://github.com/nf-core/taxmarker/pull/29) - The raxtax prefilter no longer flags every sequence that is the only member of its taxon at `--raxtax_filter_rank`: raxtax cannot predict a taxon with no other sequence, so these were always reported as mislabelled. After dereplication this covers most species with a single 16S variant
 - [#23](https://github.com/nf-core/taxmarker/pull/23) - `RAXMLNG_SEARCH` (the reference-tree build) was pinned to a single thread unconditionally, including in real runs, rather than only for test-time reproducibility; it now uses whatever cpus its `process_high` allocation and executor config grant it, with the single-thread pin moved to test-only config
