@@ -21,20 +21,17 @@ process SATIVAEPANG_LOOPLACE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    # loo-place writes a jplace/logs into every fold, which would mutate lootasks' own
-    # output in place (nf-core/modules#12799-style -resume bug) if run directly against
-    # it -- stageAs above always stages the incoming taskdir read-only as "input", so a
-    # private writable copy is built here instead. The input files are hard-linked, not
-    # copied (at GTDB scale each fold holds near-full-alignment copies) and not
-    # symlinked (a link into lootasks' work directory dangles when a container mounts
-    # only part of work/); cp is the fallback across file systems.
-    link() { ln -L "\$1" "\$2" 2>/dev/null || cp -rL "\$1" "\$2"; }
+    # loo-place writes into every fold, so it works in a private directory, not the
+    # read-only staged input. The fold inputs are linked, not copied (near-full alignments
+    # per fold), and the links removed afterwards: looscore reads only manifest.json and
+    # the placements, and a link into lootasks' work directory dangles when a container
+    # mounts only part of work/.
     mkdir "${prefix}.l1o_tasks"
-    link "input/manifest.json" "${prefix}.l1o_tasks/manifest.json"
+    cp "\$(readlink -f input/manifest.json)" "${prefix}.l1o_tasks/manifest.json"
     for fold in input/fold_*; do
         d="${prefix}.l1o_tasks/\$(basename "\$fold")"
         mkdir "\$d"
-        for f in "\$fold"/*; do link "\$f" "\$d/"; done
+        ln -s "\$(readlink -f "\$fold")"/* "\$d/"
     done
 
     sativa-epang \\
@@ -42,6 +39,8 @@ process SATIVAEPANG_LOOPLACE {
         -taskdir "${prefix}.l1o_tasks" \\
         -T ${task.cpus} \\
         ${args}
+
+    find "${prefix}.l1o_tasks" -type l -exec rm -f {} +
     """
 
     stub:
