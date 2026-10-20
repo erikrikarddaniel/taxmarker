@@ -24,15 +24,17 @@ process SATIVAEPANG_LOOPLACE {
     # loo-place writes a jplace/logs into every fold, which would mutate lootasks' own
     # output in place (nf-core/modules#12799-style -resume bug) if run directly against
     # it -- stageAs above always stages the incoming taskdir read-only as "input", so a
-    # private writable copy is built here instead. fold_*/{ref.nwk,ref.fasta,query.fasta}
-    # stay symlinks -- at GTDB scale these are already near-full-alignment copies per
-    # fold, so duplicating them again here isn't affordable.
+    # private writable copy is built here instead. The input files are hard-linked, not
+    # copied (at GTDB scale each fold holds near-full-alignment copies) and not
+    # symlinked (a link into lootasks' work directory dangles when a container mounts
+    # only part of work/); cp is the fallback across file systems.
+    link() { ln -L "\$1" "\$2" 2>/dev/null || cp -rL "\$1" "\$2"; }
     mkdir "${prefix}.l1o_tasks"
-    ln -s "\$(readlink -f input/manifest.json)" "${prefix}.l1o_tasks/manifest.json"
+    link "input/manifest.json" "${prefix}.l1o_tasks/manifest.json"
     for fold in input/fold_*; do
         d="${prefix}.l1o_tasks/\$(basename "\$fold")"
         mkdir "\$d"
-        ln -s "\$(readlink -f "\$fold")"/* "\$d/"
+        for f in "\$fold"/*; do link "\$f" "\$d/"; done
     done
 
     sativa-epang \\

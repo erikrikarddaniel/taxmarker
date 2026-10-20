@@ -43,6 +43,9 @@ nextflow_process {
             assert process.success
             assertAll(
                 { assert foldDirs.size() > 0 },
+                // A link out of the directory dangles when a container mounts only part of
+                // the work directory, so every entry must be a real file.
+                { assert java.nio.file.Files.walk(new File(taskdir.toString()).toPath()).noneMatch { java.nio.file.Files.isSymbolicLink(it) } },
                 { assert foldDirs.every { new File(it.toString(), "epa_result.jplace").exists() } },
                 { assert snapshot(sanitizeOutput(process.out, unstablePatterns: ["**/epa_result.jplace", "**/epa_info.log", "**/epang.log"])).match() }
             )
