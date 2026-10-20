@@ -9,7 +9,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Added`
 
-- [#NN](https://github.com/nf-core/taxmarker/pull/NN) - `--export_n_per_species` accepts `all` (e.g. `1,5,all`) to export every sequence that passed the checks, not just the top N per species. The files are named `*.all.*`
+- [#51](https://github.com/nf-core/taxmarker/pull/51) - `--export_n_per_species` accepts `all` (e.g. `1,5,all`) to export every sequence that passed the checks, not just the top N per species. The files are named `*.all.*`
 - [#49](https://github.com/nf-core/taxmarker/pull/49) - New `--raxmlng_seed` (default 42) sets the seed of the RAxML-NG reference tree search, so a seed can be changed without overriding `ext.args`, which would also drop `--fast`
 - [#48](https://github.com/nf-core/taxmarker/pull/48) - New `--raxmlng_blopt` (`nr_fast`, `nr_safe` or `nr_oldstyle`, unset by default) sets the RAxML-NG branch length optimisation method (`--blopt`) of the reference tree search
 - [#38](https://github.com/nf-core/taxmarker/pull/38) - `--export_n_per_species` (e.g. `1,5,20`) exports verified reference sequences to `export/`: for each number, at most that many sequences per species, ranked by weight times length, as gzipped FASTA for DADA2's `addSpecies()` and `assignTaxonomy()` and with the original headers. Cluster members inherit their representative's verdict; flagged and unchecked sequences are left out
