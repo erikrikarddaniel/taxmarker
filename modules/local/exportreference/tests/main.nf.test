@@ -123,6 +123,37 @@ nextflow_process {
 
     }
 
+    test("a member within rounding of its representative does not outrank it") {
+
+        when {
+            process {
+                """
+                def dir = file("\${workDir}/exportreference_near")
+                dir.mkdirs()
+                def T = 'd__Bacteria;p__P;g__Gt;s__Gt tie'
+                def seqs = file("\${dir}/input.fna")
+                seqs.text = ['T_a', 'T_b'].collect { n -> ">\${n}\\nACGT\\n" }.join('')
+                def tax = file("\${dir}/checked.tax")
+                tax.text = ['T_a', 'T_b'].collect { n -> "\${n}\\t\${T}\\n" }.join('')
+                def sel = file("\${dir}/selection.tsv")
+                // selection.tsv rounds weights to 6 decimals, so a member can end up a hair above
+                // the representative that was chosen on the unrounded values.
+                sel.text = 'cluster_id\\ttaxon\\tseq_name\\tlength\\tweight\\tscore\\tis_representative\\n' +
+                    "1\\t\${T}\\tT_a\\t100\\t1.000004\\t0\\tFalse\\n" +
+                    "1\\t\${T}\\tT_b\\t100\\t1.0\\t0\\tTrue\\n"
+                input[0] = [ [ id:'export_test' ], seqs, tax, sel, tax, [] ]
+                input[1] = [ 1 ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert path(process.out.names[0][1]).readLines() == [ 'T_b' ]
+        }
+
+    }
+
     test("without clustering: every sequence is its own representative, ranked by length") {
 
         when {
