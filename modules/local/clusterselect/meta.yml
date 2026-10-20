@@ -40,7 +40,7 @@ input:
         pattern: "*.uc.tsv.gz"
     - weights:
         type: file
-        description: Optional two-column weight table (seq_name<TAB>weight), optionally gzipped. Absent -> every sequence defaults to weight 1.
+        description: Optional two-column weight table (seq_name<TAB>weight), plain or gzipped. Absent -> every sequence defaults to weight 1.
         pattern: "*.{tsv,txt,tsv.gz,txt.gz}"
 output:
   taxonomy:

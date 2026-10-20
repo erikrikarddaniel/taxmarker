@@ -14,7 +14,7 @@ It takes two logical inputs: a set of sequences (`--sequences`) and their propos
 ### Sequences (`--sequences`)
 
 Path to a sequences file, aligned or not: phylip (`.phy`, `.phylip`), Clustal (`.aln`), or FASTA (`.fa`, `.fasta`, `.fna`, `.faa`, `.mfa`, `.alnfaa`, `.alnfna`).
-Any of these can be gzipped (e.g. `sequences.fna.gz`).
+The file can be gzipped, e.g. `sequences.fna.gz`.
 Aligned vs. unaligned is detected automatically -- no separate mode-switch parameter needed.
 Unaligned content is aligned via [hmmalign](http://hmmer.org) against an HMM profile before continuing through the rest of the pipeline as if it had arrived pre-aligned: pass `--hmm` (path to an HMM profile database) and, if that database holds more than one named profile, `--hmm_name` to pick which one.
 
@@ -25,7 +25,8 @@ Unaligned content is aligned via [hmmalign](http://hmmer.org) against an HMM pro
 ### Taxonomy (`--taxonomy`)
 
 Optional -- see [Taxonomy embedded in sequence headers](#taxonomy-embedded-in-sequence-headers) below if omitted.
-A tab-separated file (`.tax` or `.tsv`, optionally gzipped) with two columns and no header: sequence name, and a semicolon-separated taxonomy string.
+A tab-separated file with two columns and no header: sequence name, and a semicolon-separated taxonomy string.
+It should end in `.tax` or `.tsv`, and can be gzipped.
 
 ```tsv title="taxonomy.tsv"
 UnpCCeti        Bacteria;Fusobacteria;Fusobacteriia;Fusobacteriales;Fusobacteriaceae;Cetobacterium;Cetobacterium ceti
