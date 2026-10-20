@@ -180,6 +180,57 @@ nextflow_pipeline {
 
     }
 
+    test("-profile test_gtdb, reference tree with its own model") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_raxtax             = true
+                run_reference           = true
+                raxmlng_model           = "GTR+G4"
+                raxmlng_reference_model = "GTR+I"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def placementModel = path("$outputDir/raxmlng/user-alignment.raxml.bestModel").text
+            def referenceModel = path("$outputDir/reference/user-alignment.raxml.bestModel").text
+
+            assertAll(
+                // Each tree is built under its own model.
+                { assert placementModel.contains('G4') },
+                { assert !referenceModel.contains('G4') },
+                { assert referenceModel.contains('+I') },
+            )
+        }
+
+    }
+
+    test("-profile test_gtdb, reference tree falls back to the placement tree model") {
+
+        when {
+            params {
+                outdir        = "$outputDir"
+                skip_raxtax   = true
+                run_reference = true
+                raxmlng_model = "GTR+G4"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def referenceModel = path("$outputDir/reference/user-alignment.raxml.bestModel").text
+
+            assertAll(
+                { assert referenceModel.contains('G4') },
+            )
+        }
+
+    }
+
     test("-profile test_gtdb, sativa skipped") {
 
         when {

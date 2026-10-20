@@ -73,6 +73,8 @@ The reference tree is built with RAxML-NG under a topology constraint from the t
 By default RAxML-NG first selects a substitution model, which can take a quarter or more of the tree building time on large alignments.
 Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+G4`, to skip the selection.
 Any model string that RAxML-NG accepts for `--model` works.
+`--raxmlng_model` applies to the tree the placement test scores against.
+The tree of `--run_reference` takes `--raxmlng_reference_model` and, when that is not set, the same model as `--raxmlng_model`.
 
 On large alignments the search itself dominates the run time.
 `--raxmlng_fast` switches to the RAxML-NG fast search: one parsimony starting tree and a simplified topology search that stops early.
@@ -105,7 +107,7 @@ Sequences dropped by a filter before the last check, such as short fragments, ar
 `--run_reference` builds a reference phylogeny for placing unknown sequences, from one sequence per species, and writes it to `reference/`:
 
 - `*.raxml.bestTree`: the phylogeny, constrained by the taxonomy.
-- `*.raxml.bestModel`: the RAxML-NG model, selected for this alignment (see `--raxmlng_model`).
+- `*.raxml.bestModel`: the RAxML-NG model, selected for this alignment unless a model is given (see `--raxmlng_reference_model`).
 - `*.reference.fasta`: the alignment the tree was built from.
 - `*.reference.tax`: the declared taxonomy of the same sequences.
 - `*.guide.nwk`: the taxonomy-only guide tree used as the constraint.
@@ -114,7 +116,7 @@ The sequences are the same as in the one-per-species reference export (`--export
 `export/*.n1.names.txt` lists them.
 The names in `reference/` and in `*.names.txt` are the sequence names the pipeline works with, in which characters other than letters, digits, `_`, `.`, `-`, `|` and `/` have been replaced by `_`; the headers in `export/*.fna.gz` keep the original ones.
 A species with no sequence that passed every check has none in the reference.
-The tree is a second RAxML-NG search, run with the settings of the first one (`--raxmlng_model`, `--raxmlng_fast`, `--raxmlng_seed`).
+The tree is a second RAxML-NG search, run with the settings of the first one (`--raxmlng_fast`, `--raxmlng_seed`, `--raxmlng_blopt`) and, unless `--raxmlng_reference_model` is set, its model.
 
 ## Running the pipeline
 

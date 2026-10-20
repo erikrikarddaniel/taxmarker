@@ -47,6 +47,7 @@ workflow TAXMARKER {
     skip_sativa        // value:   skip the phylogenetic placement subworkflow entirely?
     taxcode            // value:   taxonomic code for sativa-epang (bac/bot/zoo/vir)
     raxmlng_model      // value:   RAxML-NG model for the reference tree, or DNA to select one
+    raxmlng_reference_model // value: RAxML-NG model for the --run_reference tree, or null for raxmlng_model
     folds_per_job      // value:   folds each placement job places, or null for all in one
     export_n_per_species // value: comma-separated sequences per species to export, or null to skip the export
     run_reference      // value:   build the reference tree for phylogenetic placement from the sequences that pass every step?
@@ -354,7 +355,7 @@ workflow TAXMARKER {
         TAXONOMY2PHYLOGENY_REFERENCE(
             KEEPNAMES.out.taxonomy
                 .join(KEEPNAMES.out.alignment)
-                .map { meta, tax, aln -> [ meta, tax, aln, raxmlng_model ] }
+                .map { meta, tax, aln -> [ meta, tax, aln, raxmlng_reference_model ?: raxmlng_model ] }
         )
     }
 
