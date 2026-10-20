@@ -101,6 +101,21 @@ Only sequences that passed every check that ran are exported.
 A cluster member inherits its representative's verdict, so identical copies from different genomes can fill a species' N slots.
 Sequences dropped by a filter before the last check, such as short fragments, are left out.
 
+## Reference for phylogenetic placement
+
+`--run_reference` builds a reference phylogeny for placing unknown sequences, from one sequence per species, and writes it to `reference/`:
+
+- `*.raxml.bestTree`: the phylogeny, constrained by the taxonomy.
+- `*.raxml.bestModel`: the RAxML-NG model, selected for this alignment (see `--raxmlng_model`).
+- `*.reference.fasta`: the alignment the tree was built from.
+- `*.reference.tax`: the declared taxonomy of the same sequences.
+- `*.guide.nwk`: the taxonomy-only guide tree used as the constraint.
+
+The sequences are the same as in the one-per-species reference export (`--export_n_per_species`, number 1), which `--run_reference` writes to `export/` even when that option is not given.
+`export/*.n1.names.txt` lists them.
+A species with no sequence that passed every check has none in the reference.
+The tree is a second RAxML-NG search, run with the settings of the first one (`--raxmlng_model`, `--raxmlng_fast`, `--raxmlng_seed`).
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:

@@ -15,6 +15,7 @@ process EXPORTREFERENCE {
     tuple val(meta), path("*.addSpecies.fna.gz"),     emit: addspecies
     tuple val(meta), path("*.assignTaxonomy.fna.gz"), emit: assigntaxonomy
     tuple val(meta), path("*.general.fna.gz"),        emit: general
+    tuple val(meta), path("*.names.txt"),             emit: names
     path "versions.yml",                              emit: versions, topic: versions
 
     when:
@@ -89,7 +90,7 @@ else:
 by_taxon = {}
 for name, taxon, length, weight, rep in rows:
     if rep in verified and rep not in flagged:
-        by_taxon.setdefault(taxon, []).append((-weight * length, name))
+        by_taxon.setdefault(taxon, []).append((-weight * length, name != rep, name))
 for candidates in by_taxon.values():
     candidates.sort()
 
@@ -113,15 +114,17 @@ for n in counts:
     label = 'all' if n is None else f"n{n}"
     with gzip.open(f"{prefix}.{label}.general.fna.gz", 'wt') as general, \\
          gzip.open(f"{prefix}.{label}.addSpecies.fna.gz", 'wt') as add_species, \\
-         gzip.open(f"{prefix}.{label}.assignTaxonomy.fna.gz", 'wt') as assign_taxonomy:
+         gzip.open(f"{prefix}.{label}.assignTaxonomy.fna.gz", 'wt') as assign_taxonomy, \\
+         open(f"{prefix}.{label}.names.txt", 'w') as names:
         for taxon in sorted(by_taxon):
-            for _, name in by_taxon[taxon][:n]:
+            for *_, name in by_taxon[taxon][:n]:
                 description, seq = records[name]
                 seq_id = description.split()[0]
                 print(f">{description}\\n{seq}", file=general)
                 if species_name(taxon):
                     print(f">{seq_id} {species_name(taxon)}\\n{seq}", file=add_species)
                 print(f">{';'.join(labels(taxon))}\\n{seq}", file=assign_taxonomy)
+                print(name, file=names)
 
 with open('versions.yml', 'w') as fh:
     print('"${task.process}":', file=fh)
@@ -132,8 +135,10 @@ PYEOF
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     def files = counts.collectMany { n -> ["addSpecies", "assignTaxonomy", "general"].collect { f -> "${prefix}.${n == 'all' ? 'all' : 'n' + n}.${f}.fna.gz" } }.join(' ')
+    def names = counts.collect { n -> "${prefix}.${n == 'all' ? 'all' : 'n' + n}.names.txt" }.join(' ')
     """
     for f in ${files}; do echo -n | gzip > \$f; done
+    touch ${names}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python3 --version | sed 's/Python //')

@@ -20,6 +20,8 @@ include { PROFILECOVER           } from '../modules/local/profilecover/main'
 include { RAXTAX_PREFILTER       } from '../subworkflows/local/raxtax_prefilter'
 include { SATIVA as SWF_SATIVA   } from '../subworkflows/local/sativa'
 include { EXPORTREFERENCE        } from '../modules/local/exportreference/main'
+include { KEEPNAMES              } from '../modules/local/keepnames/main'
+include { TAXONOMY2PHYLOGENY as TAXONOMY2PHYLOGENY_REFERENCE } from '../subworkflows/local/taxonomy2phylogeny/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,6 +49,7 @@ workflow TAXMARKER {
     raxmlng_model      // value:   RAxML-NG model for the reference tree, or DNA to select one
     folds_per_job      // value:   folds each placement job places, or null for all in one
     export_n_per_species // value: comma-separated sequences per species to export (a number or 'all'), or null to skip the export
+    run_reference      // value:   build the reference tree for phylogenetic placement of unknown sequences from the one-per-species sequences?
     hmm                // value:   path to an HMM profile database, or null/empty if not needed
     hmm_name           // value:   name of a specific profile within hmm, or null/empty
     multiqc_config
@@ -314,13 +317,16 @@ workflow TAXMARKER {
     }
 
     //
-    // MODULE: EXPORTREFERENCE (optional, --export_n_per_species to enable)
+    // MODULE: EXPORTREFERENCE (optional, --export_n_per_species to enable; --run_reference needs the one-per-species set)
     //
     // Exports only sequences whose representative reached the last step and was not
     // flagged there; raxtax-flagged representatives never reach it.
     //
-    if (export_n_per_species) {
-        def counts = export_n_per_species.toString().tokenize(',').collect { n -> n.trim() == 'all' ? 'all' : n.trim() as int }
+    def export_counts = export_n_per_species ? export_n_per_species.toString().tokenize(',').collect { n -> n.trim() == 'all' ? 'all' : n.trim() as int } : []
+    if (run_reference && !export_counts.contains(1)) {
+        export_counts += 1
+    }
+    if (export_counts) {
         EXPORTREFERENCE(
             ch_sequences_for_resolve
                 .combine(ch_taxonomy_checked)
@@ -328,7 +334,27 @@ workflow TAXMARKER {
                 .combine(ch_taxonomy_for_sativa)
                 .combine(ch_sativa_mislabels.map { _meta, tsv -> [ tsv ] }.ifEmpty([[]]))
                 .map { seqs, tax, selection, verified, mislabels -> [ [ id: 'user-alignment' ], seqs, tax, selection, verified, mislabels ] },
-            counts
+            export_counts
+        )
+    }
+
+    //
+    // MODULE + SUBWORKFLOW: KEEPNAMES, TAXONOMY2PHYLOGENY_REFERENCE (optional, --run_reference to enable)
+    //
+    // The reference tree holds the sequences of the one-per-species export, taken from the
+    // alignment and built under the same taxonomy constraint as SATIVA's own tree.
+    //
+    if (run_reference) {
+        KEEPNAMES(
+            ch_taxonomy_for_sativa
+                .combine(ch_alignment_for_sativa)
+                .combine(EXPORTREFERENCE.out.names.map { _meta, names -> [ names ].flatten().find { f -> f.name.endsWith('.n1.names.txt') } })
+                .map { tax, aln, names -> [ [ id: 'user-alignment' ], tax, aln, names ] }
+        )
+        TAXONOMY2PHYLOGENY_REFERENCE(
+            KEEPNAMES.out.taxonomy
+                .join(KEEPNAMES.out.alignment)
+                .map { meta, tax, aln -> [ meta, tax, aln, raxmlng_model ] }
         )
     }
 
