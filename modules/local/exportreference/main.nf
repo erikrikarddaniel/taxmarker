@@ -90,7 +90,7 @@ else:
 by_taxon = {}
 for name, taxon, length, weight, rep in rows:
     if rep in verified and rep not in flagged:
-        by_taxon.setdefault(taxon, []).append((-weight * length, name != rep, name))
+        by_taxon.setdefault(taxon, []).append((-round(weight * length, 3), name != rep, name))
 for candidates in by_taxon.values():
     candidates.sort()
 

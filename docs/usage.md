@@ -88,11 +88,12 @@ If RAxML-NG stops with a branch length error (BRLEN out-of-bounds), for example 
 
 ## Reference export
 
-`--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes three gzipped FASTA files to `export/` for each:
+`--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes these files to `export/` for each:
 
 - `*.n<N>.addSpecies.fna.gz`: `>ID Genus species`, for DADA2's `addSpecies()`.
 - `*.n<N>.assignTaxonomy.fna.gz`: `>rank1;rank2;...;species`, rank prefixes such as `d__` removed, for DADA2's `assignTaxonomy()`.
 - `*.n<N>.general.fna.gz`: the original headers, unchanged.
+- `*.n<N>.names.txt`: the names of the exported sequences, one per line.
 
 Each file holds at most N sequences per species, ranked by weight (`--sequence_weights` or `--upstream GTDB`) times length.
 Only sequences that passed every check that ran are exported.
@@ -111,6 +112,7 @@ Sequences dropped by a filter before the last check, such as short fragments, ar
 
 The sequences are the same as in the one-per-species reference export (`--export_n_per_species`, number 1), which `--run_reference` writes to `export/` even when that option is not given.
 `export/*.n1.names.txt` lists them.
+The names in `reference/` and in `*.names.txt` are the sequence names the pipeline works with, in which characters other than letters, digits, `_`, `.`, `-`, `|` and `/` have been replaced by `_`; the headers in `export/*.fna.gz` keep the original ones.
 A species with no sequence that passed every check has none in the reference.
 The tree is a second RAxML-NG search, run with the settings of the first one (`--raxmlng_model`, `--raxmlng_fast`, `--raxmlng_seed`).
 
