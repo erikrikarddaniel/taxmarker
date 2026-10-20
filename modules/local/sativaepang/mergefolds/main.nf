@@ -21,13 +21,16 @@ process SATIVAEPANG_MERGEFOLDS {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     # Each shard placed only the folds it was given, so linking every shard's fold
-    # contents lands exactly one jplace per fold whatever order they arrive in.
+    # contents lands exactly one jplace per fold whatever order they arrive in. Hard
+    # links, with cp across file systems: a symlink into another work directory dangles
+    # when a container mounts only part of work/.
+    link() { ln -fL "\$1" "\$2" 2>/dev/null || cp -rfL "\$1" "\$2"; }
     mkdir "${prefix}.l1o_tasks"
-    ln -s "\$(readlink -f shard1/*/manifest.json)" "${prefix}.l1o_tasks/manifest.json"
+    link shard1/*/manifest.json "${prefix}.l1o_tasks/manifest.json"
     for fold in shard*/*/fold_*; do
         d="${prefix}.l1o_tasks/\$(basename "\$fold")"
         mkdir -p "\$d"
-        ln -sf "\$(readlink -f "\$fold")"/* "\$d/"
+        for f in "\$fold"/*; do link "\$f" "\$d/"; done
     done
     """
 
