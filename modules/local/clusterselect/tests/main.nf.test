@@ -84,10 +84,14 @@ nextflow_process {
                 seq.text = '>SeqLongLowWeight\\n' + ('ACGT' * 25) + '\\n' +
                     '>SeqShortHighWeight\\n' + ('ACGT' * 12) + 'AC' + '\\n'
                 def weights = File.createTempFile('test', '.weights.tsv.gz')
-                new java.util.zip.GZIPOutputStream(weights.newOutputStream()).withCloseable { it << ('SeqLongLowWeight\\t1\\n' + 'SeqShortHighWeight\\t3\\n').getBytes('UTF-8') }
+                def weights_gz = new java.util.zip.GZIPOutputStream(new FileOutputStream(weights))
+                weights_gz.write(('SeqLongLowWeight\\t1\\n' + 'SeqShortHighWeight\\t3\\n').getBytes('UTF-8'))
+                weights_gz.close()
                 def uc = File.createTempFile('test', '.uc.tsv.gz')
-                new java.util.zip.GZIPOutputStream(uc.newOutputStream()).withCloseable { it << ('S\\t0\\t100\\t*\\t+\\t0\\t0\\t*\\tSeqLongLowWeight\\t*\\n' +
-                    'H\\t0\\t50\\t100.0\\t+\\t0\\t0\\t50M\\tSeqShortHighWeight\\tSeqLongLowWeight\\n').getBytes('UTF-8') }
+                def gz = new java.util.zip.GZIPOutputStream(new FileOutputStream(uc))
+                gz.write(('S\\t0\\t100\\t*\\t+\\t0\\t0\\t*\\tSeqLongLowWeight\\t*\\n' +
+                    'H\\t0\\t50\\t100.0\\t+\\t0\\t0\\t50M\\tSeqShortHighWeight\\tSeqLongLowWeight\\n').getBytes('UTF-8'))
+                gz.close()
                 input[0] = [ [ id:'test' ], file(tax.toString()), file(seq.toString()), file(uc.toString()), file(weights.toString()) ]
                 """
             }

@@ -16,7 +16,7 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "pattern": "^\\S+\\.(tax|tsv)(\\.gz)?$",
+                    "pattern": "^(.*/)?\\S+\\.(tax|tsv)(\\.gz)?$",
                     "description": "Path to a taxonomy file (.tax or .tsv, optionally gzipped). If omitted, taxonomy is derived from --sequences record headers instead.",
                     "help_text": "TSV file with two columns: Name and semicolon-separated taxonomy. If not given, each --sequences FASTA record's header must carry the taxonomy directly after its id (GTDB-style: `>id taxonomy;string`). If both are given, the file wins -- a warning is logged if header text is also present and being ignored.",
                     "fa_icon": "fas fa-file-alt"
@@ -25,7 +25,7 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "pattern": "^\\S+\\.(aln|phy|phylip|alnf[na]a|mfa|f[na]a|fa|fasta)(\\.gz)?$",
+                    "pattern": "^(.*/)?\\S+\\.(aln|phy|phylip|alnf[na]a|mfa|f[na]a|fa|fasta)(\\.gz)?$",
                     "description": "Path to a sequences file, aligned or not, in phylip (.phy or .phylip), Clustal (.aln) or fasta format (.fa, .fasta, .fna, .faa, .mfa, .alnfaa or .alnfna), optionally gzipped (.gz).",
                     "help_text": "Unaligned content is aligned automatically via hmmalign -- see --hmm/--hmm_name.",
                     "fa_icon": "fas fa-file-alt"
