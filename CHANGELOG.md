@@ -26,6 +26,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Changed`
 
+- [#NN](https://github.com/nf-core/taxmarker/pull/NN) - `--sequences` and `--taxonomy` are now checked against their documented suffixes, each optionally gzipped (`.gz`); the previous patterns were unanchored and let almost any path through. `.fna`, `.faa` and `.phylip` are now listed for `--sequences`; other suffixes, such as `.fas` or `.txt`, are rejected
 - [#42](https://github.com/nf-core/taxmarker/pull/42) - The minimum Nextflow version is now 26.04.0, so that boolean and numeric parameters are typed in `main.nf`: `--skip_sativa false` and the like are now real Booleans, and a non-boolean or non-numeric value is rejected
 - [#42](https://github.com/nf-core/taxmarker/pull/42) - New `--raxmlng_model` sets the RAxML-NG model for the reference tree, for example `GTR+G4`, so model selection can be skipped, and `--raxmlng_fast` switches to the RAxML-NG fast search. Defaults are unchanged: model selection runs and the fast search is off (see [#41](https://github.com/nf-core/taxmarker/issues/41))
 - [#40](https://github.com/nf-core/taxmarker/pull/40) - Trailing empty or placeholder ranks (`s__`, `g__`, `;;`) are removed from every lineage, so a sequence annotated only to genus or family ends there. SATIVA otherwise reads them as real taxon names and groups all unnamed sequences of a genus into one species (see [#39](https://github.com/nf-core/taxmarker/issues/39)). Sequences with no annotation at all are dropped, with a warning

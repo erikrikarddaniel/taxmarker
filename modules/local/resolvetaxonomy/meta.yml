@@ -29,10 +29,10 @@ input:
     - taxonomy:
         type: file
         description: |
-          Optional tab-separated taxonomy labels (seq_name<TAB>rank1;rank2;...).
-          Pass `[]` if not available -- taxonomy is then derived from sequences'
-          own FASTA headers instead.
-        pattern: "*.{tax,tsv}"
+          Optional tab-separated taxonomy labels (seq_name<TAB>rank1;rank2;...),
+          optionally gzipped. Pass `[]` if not available -- taxonomy is then
+          derived from sequences' own FASTA headers instead.
+        pattern: "*.{tax,tsv,tax.gz,tsv.gz}"
     - sequences:
         type: file
         description: Sequences in FASTA format, aligned or not.

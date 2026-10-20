@@ -36,8 +36,8 @@ input:
         pattern: "*.{fa,fasta,fna}"
     - weights:
         type: file
-        description: Optional two-column weight table (seq_name<TAB>weight). Absent -> every sequence defaults to weight 1.
-        pattern: "*.{tsv,txt}"
+        description: Optional two-column weight table (seq_name<TAB>weight), optionally gzipped. Absent -> every sequence defaults to weight 1.
+        pattern: "*.{tsv,txt,tsv.gz,txt.gz}"
     - min_weight:
         type: value
         description: Absolute weight cutoff; sequences below it are excluded.

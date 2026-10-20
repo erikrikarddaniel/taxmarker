@@ -5,7 +5,7 @@ This collapses near-duplicate sequences of the same taxon -- common in real refe
 
 Three parameters control this, all optional:
 
-- `--sequence_weights`: a two-column table (`sequence_id<TAB>weight`) used to break ties when picking a representative.
+- `--sequence_weights`: a two-column table (`sequence_id<TAB>weight`, optionally gzipped) used to break ties when picking a representative.
   Sequences absent from the table default to weight 1.
   Omit entirely and every sequence is weight 1, which degrades to "pick the longest sequence per (cluster, taxon) pair".
   The clustering logic itself is generic and doesn't care where the weights came from -- see `--upstream` below for a way to compute it automatically instead of supplying it directly.
