@@ -186,6 +186,12 @@
                     "help_text": "Any model string RAxML-NG accepts for --model. A fixed model skips model selection, which can take a quarter or more of the tree building time on large alignments.",
                     "fa_icon": "fas fa-project-diagram"
                 },
+                "raxmlng_reference_model": {
+                    "type": "string",
+                    "description": "RAxML-NG model for the tree built by --run_reference, for example GTR+G4. Unset uses --raxmlng_model.",
+                    "help_text": "Any model string RAxML-NG accepts for --model; DNA runs model selection. It is separate from --raxmlng_model so that the tree used for the placement test and the reference tree can be built under different models.",
+                    "fa_icon": "fas fa-project-diagram"
+                },
                 "raxmlng_fast": {
                     "type": "boolean",
                     "description": "Build the reference tree with the RAxML-NG fast search.",
