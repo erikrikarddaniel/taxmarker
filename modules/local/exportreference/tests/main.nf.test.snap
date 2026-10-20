@@ -36,6 +36,17 @@
                     ]
                 ],
                 "3": [
+                    [
+                        {
+                            "id": "export_test"
+                        },
+                        [
+                            "export_test.n1.names.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "export_test.n5.names.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "4": [
                     "versions.yml:md5,63ad93552ffaf5bef21f5a7e437c8aca"
                 ],
                 "addspecies": [
@@ -68,6 +79,17 @@
                         [
                             "export_test.n1.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n5.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        ]
+                    ]
+                ],
+                "names": [
+                    [
+                        {
+                            "id": "export_test"
+                        },
+                        [
+                            "export_test.n1.names.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                            "export_test.n5.names.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
                         ]
                     ]
                 ],
