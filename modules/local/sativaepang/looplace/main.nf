@@ -47,7 +47,7 @@ process SATIVAEPANG_LOOPLACE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     mkdir "${prefix}.l1o_tasks"
-    ln -s "\$(readlink -f input/manifest.json)" "${prefix}.l1o_tasks/manifest.json"
+    cp "\$(readlink -f input/manifest.json)" "${prefix}.l1o_tasks/manifest.json"
     for fold in input/fold_*; do
         d="${prefix}.l1o_tasks/\$(basename "\$fold")"
         mkdir "\$d"

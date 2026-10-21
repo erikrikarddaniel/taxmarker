@@ -48,9 +48,6 @@ nextflow_process {
                 // Everything is a real file: a link into a shard's work directory dangles when
                 // a container mounts only part of work/.
                 { assert java.nio.file.Files.walk(new File(taskdir.toString()).toPath()).noneMatch { java.nio.file.Files.isSymbolicLink(it) } },
-                // A link out of the directory dangles when a container mounts only part of
-                // the work directory, so every entry must be a real file.
-                { assert java.nio.file.Files.walk(new File(taskdir.toString()).toPath()).noneMatch { java.nio.file.Files.isSymbolicLink(it) } },
                 // Each jplace names the shard that placed it: the shards that only had
                 // the fold's inputs must not have replaced it.
                 { assert new File(taskdir.toString(), 'fold_000/epa_result.jplace').text == 'fold_000 placed by shard0' },
