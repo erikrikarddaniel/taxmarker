@@ -49,7 +49,7 @@ workflow TAXMARKER {
     raxmlng_model      // value:   RAxML-NG model for the reference tree, or DNA to select one
     raxmlng_reference_model // value: RAxML-NG model for the --run_reference tree, or null for raxmlng_model
     folds_per_job      // value:   folds each placement job places, or null for all in one
-    export_n_per_species // value: comma-separated sequences per species to export, or null to skip the export
+    export_n_per_species // value: comma-separated sequences per species to export (a number or 'all'), or null to skip the export
     run_reference      // value:   build the reference tree for phylogenetic placement from the sequences that pass every step?
     hmm                // value:   path to an HMM profile database, or null/empty if not needed
     hmm_name           // value:   name of a specific profile within hmm, or null/empty
@@ -323,7 +323,7 @@ workflow TAXMARKER {
     // Exports only sequences whose representative reached the last step and was not
     // flagged there; raxtax-flagged representatives never reach it.
     //
-    def export_counts = export_n_per_species ? export_n_per_species.toString().tokenize(',').collect { n -> n.trim() as int } : []
+    def export_counts = export_n_per_species ? export_n_per_species.toString().tokenize(',').collect { n -> n.trim() == 'all' ? 'all' : n.trim() as int } : []
     if (run_reference && !export_counts.contains(1)) {
         export_counts += 1
     }

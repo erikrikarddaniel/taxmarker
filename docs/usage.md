@@ -90,14 +90,16 @@ If RAxML-NG stops with a branch length error (BRLEN out-of-bounds), for example 
 
 ## Reference export
 
-`--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes these files to `export/` for each:
+`--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes four files to `export/` for each.
+The word `all` can be used as a number, e.g. `1,5,all`, to export every sequence that passed (the files are then named `*.all.*` instead of `*.n<N>.*`).
+The files are:
 
 - `*.n<N>.addSpecies.fna.gz`: `>ID Genus species`, for DADA2's `addSpecies()`.
 - `*.n<N>.assignTaxonomy.fna.gz`: `>rank1;rank2;...;species`, rank prefixes such as `d__` removed, for DADA2's `assignTaxonomy()`.
 - `*.n<N>.general.fna.gz`: the original headers, unchanged.
 - `*.n<N>.names.txt`: the names of the exported sequences, one per line.
 
-Each file holds at most N sequences per species, ranked by weight (`--sequence_weights` or `--upstream GTDB`) times length.
+Each file holds at most N sequences per species (all of them for `all`), ranked by weight (`--sequence_weights` or `--upstream GTDB`) times length.
 Only sequences that passed every check that ran are exported.
 A cluster member inherits its representative's verdict, so identical copies from different genomes can fill a species' N slots.
 Sequences dropped by a filter before the last check, such as short fragments, are left out.

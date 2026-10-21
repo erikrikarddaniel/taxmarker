@@ -122,8 +122,8 @@
                 },
                 "export_n_per_species": {
                     "type": ["string", "integer"],
-                    "pattern": "^\\s*\\d+(\\s*,\\s*\\d+)*\\s*$",
-                    "description": "Export reference FASTA files with at most this many sequences per species, e.g. `1,5,20` for one set of files per number.",
+                    "pattern": "^\\s*(\\d+|all)(\\s*,\\s*(\\d+|all))*\\s*$",
+                    "description": "Export reference FASTA files with at most this many sequences per species, e.g. `1,5,all` for one set of files per number, `all` meaning no limit.",
                     "help_text": "Each number gives three gzipped FASTA files in `export/`: one for DADA2's `addSpecies()`, one for its `assignTaxonomy()`, and one keeping the original headers. Only sequences that passed every check are exported, cluster members inheriting their representative's verdict. Within a species, sequences are ranked by weight (see --sequence_weights) times length.",
                     "fa_icon": "fas fa-file-export"
                 },

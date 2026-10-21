@@ -11,7 +11,7 @@ nextflow_pipeline {
             params {
                 outdir               = "$outputDir"
                 skip_raxtax          = true
-                export_n_per_species = '1,5'
+                export_n_per_species = '1,5,all'
             }
         }
 
@@ -24,6 +24,7 @@ nextflow_pipeline {
             def taxa1     = headers('n1.assignTaxonomy')
             def taxa5     = headers('n5.assignTaxonomy')
             def general5  = path("$outputDir/export/user-alignment.n5.general.fna.gz").linesGzip
+            def generalAll = path("$outputDir/export/user-alignment.all.general.fna.gz").linesGzip.findAll { it.startsWith('>') }
 
             assertAll(
                 // Every sequence goes through EPA-ng placement and scoring directly;
@@ -44,6 +45,10 @@ nextflow_pipeline {
                 { assert general5.findAll { it.startsWith('>') }.every { it.contains('~') } },
                 { assert !general5.findAll { !it.startsWith('>') }.any { it.contains('-') } },
                 { assert headers('n1.addSpecies').size() == taxa1.size() },
+                // All: a superset of the top 5 per species, still without the flagged pair.
+                { assert generalAll.size() >= general5.findAll { it.startsWith('>') }.size() },
+                { assert generalAll.toSet().containsAll(general5.findAll { it.startsWith('>') }) },
+                { assert !generalAll.any { it.contains('DupHaloA') || it.contains('DupSulfoA') } },
                 { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions_raxtax_disabled") },
             )
         }
