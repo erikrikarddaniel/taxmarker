@@ -31,9 +31,11 @@ params {
     skip_gapfilter: Boolean
     skip_profile_cover: Boolean
     skip_sativa: Boolean
+    run_reference: Boolean
     raxmlng_fast: Boolean
     raxmlng_seed: Integer
     raxmlng_blopt: String?
+    raxmlng_reference_model: String?
     version: Boolean
     plaintext_email: Boolean
     monochrome_logs: Boolean
@@ -86,8 +88,10 @@ workflow NFCORE_TAXMARKER {
         params.skip_sativa,
         params.taxcode,
         params.raxmlng_model,
+        params.raxmlng_reference_model,
         params.folds_per_job,
         params.export_n_per_species,
+        params.run_reference,
         params.hmm,
         params.hmm_name,
         params.multiqc_config,

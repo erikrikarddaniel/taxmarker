@@ -109,6 +109,133 @@ nextflow_pipeline {
 
     }
 
+    test("-profile test_gtdb, reference tree of the one-per-species sequences") {
+
+        when {
+            params {
+                outdir        = "$outputDir"
+                skip_raxtax   = true
+                run_reference = true
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def tips   = { file -> (path(file).text =~ /[(,]([^(),:;]+):/).collect { it[1] } }
+            def names  = { file -> path(file).readLines().findAll { it.startsWith('>') }.collect { it.substring(1).tokenize(' ')[0] } }
+            def refTips   = tips("$outputDir/reference/user-alignment.raxml.bestTree")
+            def refNames  = names("$outputDir/reference/user-alignment.reference.fasta")
+            def refTax    = path("$outputDir/reference/user-alignment.reference.tax").readLines()
+            def n1Names   = path("$outputDir/export/user-alignment.n1.names.txt").readLines()
+            def n1Ids     = path("$outputDir/export/user-alignment.n1.general.fna.gz").linesGzip.findAll { it.startsWith('>') }
+                .collect { it.substring(1).tokenize(' ')[0].replaceAll('[^A-Za-z0-9_.|/-]', '_') }
+            def trainTips = tips("$outputDir/raxmlng/user-alignment.raxml.bestTree")
+
+            assertAll(
+                // The reference holds exactly the sequences of the one-per-species export,
+                // which --run_reference writes without --export_n_per_species.
+                { assert refNames.toSet() == n1Names.toSet() },
+                { assert refNames.size() == n1Names.size() },
+                { assert refNames.toSet() == n1Ids.toSet() },
+                { assert refNames.size() == refNames.toSet().size() },
+                // One sequence per taxon.
+                { assert refTax.collect { it.split('\t', 2)[1] }.toSet().size() == refTax.size() },
+                { assert refTax.collect { it.split('\t')[0] }.toSet() == refNames.toSet() },
+                { assert refTips.toSet() == refNames.toSet() },
+                // The flagged pair is out; it is still in the tree SATIVA scored against.
+                { assert !refNames.any { it in ['DupHaloA', 'DupSulfoA'] } },
+                { assert trainTips.containsAll(['DupHaloA', 'DupSulfoA']) },
+                { assert refTips.size() < trainTips.size() },
+                // The model found for the reference tree is published with it.
+                { assert path("$outputDir/reference/user-alignment.raxml.bestModel").text.trim() },
+                { assert new File("$outputDir/reference/user-alignment.guide.nwk").exists() },
+            )
+        }
+
+    }
+
+    test("-profile test_gtdb, reference tree with sativa skipped") {
+
+        when {
+            params {
+                outdir        = "$outputDir"
+                skip_raxtax   = true
+                skip_sativa   = true
+                run_reference = true
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def tips  = (path("$outputDir/reference/user-alignment.raxml.bestTree").text =~ /[(,]([^(),:;]+):/).collect { it[1] }
+            def names = path("$outputDir/reference/user-alignment.reference.fasta").readLines().findAll { it.startsWith('>') }.collect { it.substring(1).tokenize(' ')[0] }
+
+            assertAll(
+                { assert names.toSet() == path("$outputDir/export/user-alignment.n1.names.txt").readLines().toSet() },
+                { assert tips.toSet() == names.toSet() },
+                { assert path("$outputDir/reference/user-alignment.raxml.bestModel").text.trim() },
+                // The reference search has its own directory; skipping SATIVA leaves the
+                // default one empty.
+                { assert !new File("$outputDir/raxmlng").exists() },
+                { assert !new File("$outputDir/taxonomytree").exists() },
+            )
+        }
+
+    }
+
+    test("-profile test_gtdb, reference tree with its own model") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_raxtax             = true
+                run_reference           = true
+                raxmlng_model           = "GTR+G4"
+                raxmlng_reference_model = "GTR+I"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def placementModel = path("$outputDir/raxmlng/user-alignment.raxml.bestModel").text
+            def referenceModel = path("$outputDir/reference/user-alignment.raxml.bestModel").text
+
+            assertAll(
+                // Each tree is built under its own model.
+                { assert placementModel.contains('G4') },
+                { assert !referenceModel.contains('G4') },
+                { assert referenceModel.contains('+I') },
+            )
+        }
+
+    }
+
+    test("-profile test_gtdb, reference tree falls back to the placement tree model") {
+
+        when {
+            params {
+                outdir        = "$outputDir"
+                skip_raxtax   = true
+                run_reference = true
+                raxmlng_model = "GTR+G4"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def referenceModel = path("$outputDir/reference/user-alignment.raxml.bestModel").text
+
+            assertAll(
+                { assert referenceModel.contains('G4') },
+            )
+        }
+
+    }
+
     test("-profile test_gtdb, sativa skipped") {
 
         when {
