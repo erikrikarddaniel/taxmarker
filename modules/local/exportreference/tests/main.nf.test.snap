@@ -8,6 +8,7 @@
                             "id": "export_test"
                         },
                         [
+                            "export_test.all.addSpecies.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n1.addSpecies.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n5.addSpecies.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
                         ]
@@ -19,6 +20,7 @@
                             "id": "export_test"
                         },
                         [
+                            "export_test.all.assignTaxonomy.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n1.assignTaxonomy.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n5.assignTaxonomy.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
                         ]
@@ -30,6 +32,7 @@
                             "id": "export_test"
                         },
                         [
+                            "export_test.all.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n1.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n5.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
                         ]
@@ -44,6 +47,7 @@
                             "id": "export_test"
                         },
                         [
+                            "export_test.all.addSpecies.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n1.addSpecies.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n5.addSpecies.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
                         ]
@@ -55,6 +59,7 @@
                             "id": "export_test"
                         },
                         [
+                            "export_test.all.assignTaxonomy.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n1.assignTaxonomy.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n5.assignTaxonomy.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
                         ]
@@ -66,6 +71,7 @@
                             "id": "export_test"
                         },
                         [
+                            "export_test.all.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n1.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e",
                             "export_test.n5.general.fna.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
                         ]
