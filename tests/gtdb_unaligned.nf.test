@@ -20,18 +20,41 @@ nextflow_pipeline {
 
             assertAll(
                 // The hmmalign path ran at all (not silently skipped as already-aligned).
-                // hmmfetch/hmmalign/eslreformat all publish under the same "hmmer"
-                // directory (the pipeline's generic publishDir naming takes everything
-                // before the process name's first underscore).
+                // hmmfetch publishes under "hmmer", the concatenated alignment under "find"
+                // (the pipeline's generic publishDir naming takes everything before the
+                // process name's first underscore).
                 { assert new File("$outputDir/checkaligned").exists() },
                 { assert new File("$outputDir/hmmer").exists() },
-                { assert new File("$outputDir/gunzip").exists() },
+                { assert new File("$outputDir/find").exists() },
+                { assert path("$outputDir/find/user-alignment.fasta").md5 == '6a24de8c4d96af84bdaae6f7d6277f79' },
                 // Same real dataset, same guaranteed positive control, as the pre-aligned
                 // test_gtdb tests -- confirms hmmalign produced a genuinely usable
                 // alignment, not just one that merely completes.
                 { assert mislabels.contains('DupHaloA') },
                 { assert mislabels.contains('DupSulfoA') },
                 { assert snapshot(removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml")).match("versions") },
+            )
+        }
+
+    }
+
+    test("-profile test_gtdb_unaligned, aligned in chunks") {
+
+        when {
+            params {
+                outdir           = "$outputDir"
+                skip_sativa      = true
+                align_chunk_size = 20
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            assertAll(
+                { assert workflow.trace.tasks().findAll { it.name.contains('HMMER_HMMALIGN') }.size() > 1 },
+                // Same alignment, byte for byte, as the unchunked test above.
+                { assert path("$outputDir/find/user-alignment.fasta").md5 == '6a24de8c4d96af84bdaae6f7d6277f79' },
             )
         }
 

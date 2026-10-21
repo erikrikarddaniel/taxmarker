@@ -49,6 +49,7 @@ workflow TAXMARKER {
     export_n_per_species // value: comma-separated sequences per species to export, or null to skip the export
     hmm                // value:   path to an HMM profile database, or null/empty if not needed
     hmm_name           // value:   name of a specific profile within hmm, or null/empty
+    align_chunk_size   // value:   sequences aligned per hmmalign job
     multiqc_config
     multiqc_logo
     multiqc_methods_description
@@ -235,7 +236,7 @@ workflow TAXMARKER {
     // via hmmalign against the hmm/hmm_name profile before continuing. Only past this
     // point is the data actually guaranteed to be an alignment.
     //
-    ENSURE_ALIGNED(ch_sequences_for_alignment, hmm, hmm_name)
+    ENSURE_ALIGNED(ch_sequences_for_alignment, hmm, hmm_name, align_chunk_size)
 
     //
     // MODULE: GAPFILTER + PROFILECOVER (each optional, own skip flag)

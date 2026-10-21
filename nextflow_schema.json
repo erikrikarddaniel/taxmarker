@@ -43,6 +43,14 @@
                     "description": "Name of the specific profile to use from --hmm, if that database holds more than one (e.g. Barrnap's databases hold one profile per rRNA gene).",
                     "fa_icon": "fas fa-tag"
                 },
+                "align_chunk_size": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 10000,
+                    "description": "Number of sequences each hmmalign job aligns, when --sequences is unaligned.",
+                    "help_text": "hmmalign needs about 60 kB of memory per sequence, so one job for hundreds of thousands of sequences needs tens of GB. The chunks are masked to the profile's match-state columns and concatenated in input order, so the alignment does not depend on this value.",
+                    "fa_icon": "fas fa-layer-group"
+                },
                 "seqgrep": {
                     "type": "string",
                     "description": "Keep only --sequences records whose whole FASTA header matches this pattern, dropping the rest before anything else runs.",

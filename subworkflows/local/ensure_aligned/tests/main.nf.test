@@ -17,6 +17,7 @@ nextflow_workflow {
                 input[0] = Channel.of(file(params.pipelines_testdata_base_path + 'taxmarker/testdata/sativa_loo_test.fasta', checkIfExists: true))
                 input[1] = null
                 input[2] = null
+                input[3] = 10000
                 """
             }
         }
@@ -45,6 +46,7 @@ nextflow_workflow {
                 input[0] = Channel.of(file(params.pipelines_testdata_base_path + 'taxmarker/testdata/checkaligned_test_unaligned.fasta', checkIfExists: true))
                 input[1] = params.pipelines_testdata_base_path + 'taxmarker/testdata/barrnap_arc.hmm'
                 input[2] = '16S_rRNA'
+                input[3] = 10000
                 """
             }
         }
@@ -74,8 +76,101 @@ nextflow_workflow {
                 // proportion filter measures true profile coverage rather than
                 // being diluted by insert-column noise.
                 { assert seqLengths[0] == 1477 },
+                // The md5 the chunked tests below compare against.
+                { assert path(workflow.out.alignment_from_hmm[0]).md5 == '3cd303f21b542cafeb9345a99e28bd8d' },
                 // Nothing went through the passthrough branch.
                 { assert workflow.out.alignment_passthrough.isEmpty() },
+            )
+        }
+
+    }
+
+    test("taxmarker - unaligned, one sequence per hmmalign job gives the same alignment") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of(file(params.pipelines_testdata_base_path + 'taxmarker/testdata/checkaligned_test_unaligned.fasta', checkIfExists: true))
+                input[1] = params.pipelines_testdata_base_path + 'taxmarker/testdata/barrnap_arc.hmm'
+                input[2] = '16S_rRNA'
+                input[3] = 1
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def aligned = path(workflow.out.alignment_from_hmm[0])
+            def ids = aligned.readLines().findAll { it.startsWith('>') }
+
+            assertAll(
+                { assert workflow.trace.tasks().findAll { it.name.contains('HMMER_HMMALIGN') }.size() == 3 },
+                { assert ids == ['>SeqA', '>SeqB', '>SeqC'] },
+                // Chunking must not change a character: same md5 as the unchunked run.
+                { assert aligned.md5 == '3cd303f21b542cafeb9345a99e28bd8d' },
+            )
+        }
+
+    }
+
+    test("taxmarker - unaligned, uneven last chunk gives the same alignment") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of(file(params.pipelines_testdata_base_path + 'taxmarker/testdata/checkaligned_test_unaligned.fasta', checkIfExists: true))
+                input[1] = params.pipelines_testdata_base_path + 'taxmarker/testdata/barrnap_arc.hmm'
+                input[2] = '16S_rRNA'
+                input[3] = 2
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def aligned = path(workflow.out.alignment_from_hmm[0])
+
+            assertAll(
+                { assert workflow.trace.tasks().findAll { it.name.contains('HMMER_HMMALIGN') }.size() == 2 },
+                { assert aligned.md5 == '3cd303f21b542cafeb9345a99e28bd8d' },
+            )
+        }
+
+    }
+
+    test("taxmarker - unaligned, many chunks keep input order and one width") {
+
+        when {
+            workflow {
+                """
+                input[0] = Channel.of(file(params.pipelines_testdata_base_path + 'taxmarker/testdata/gtdb_archaea_16s_unaligned.fasta', checkIfExists: true))
+                input[1] = params.pipelines_testdata_base_path + 'taxmarker/testdata/barrnap_arc.hmm'
+                input[2] = '16S_rRNA'
+                input[3] = 10
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def lines = path(workflow.out.alignment_from_hmm[0]).readLines()
+            def ids = lines.findAll { it.startsWith('>') }
+            def widths = lines.join('\n').split('>').findAll { it.trim() }.collect { it.readLines().drop(1).join('').length() }
+
+            assertAll(
+                // 121 sequences, 10 per job: 13 chunks, the last one holding a single sequence.
+                { assert workflow.trace.tasks().findAll { it.name.contains('HMMER_HMMALIGN') }.size() == 13 },
+                // Chunk boundaries (10|11) and the one-sequence last chunk, in input order.
+                { assert ids.size() == 121 },
+                { assert ids[0] == '>RS_GCF_000245255.1~NZ_AHJS01000002.1' },
+                { assert ids[9] == '>RS_GCF_000245135.1~NZ_AHJM01000003.1' },
+                { assert ids[10] == '>GB_GCA_003086455.1~QEFG01000074.1' },
+                { assert ids[119] == '>DupHaloA' },
+                { assert ids[120] == '>DupSulfoA' },
+                { assert widths.toSet().size() == 1 },
             )
         }
 
@@ -89,6 +184,7 @@ nextflow_workflow {
                 input[0] = Channel.of(file(params.pipelines_testdata_base_path + 'taxmarker/testdata/checkaligned_test_unaligned.fasta', checkIfExists: true))
                 input[1] = null
                 input[2] = null
+                input[3] = 10000
                 """
             }
         }

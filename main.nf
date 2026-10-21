@@ -48,6 +48,7 @@ params {
     min_profile_cover: Float
     min_profile_cover_rescue: Float
     folds_per_job: Integer?
+    align_chunk_size: Integer
 }
 
 /*
@@ -90,6 +91,7 @@ workflow NFCORE_TAXMARKER {
         params.export_n_per_species,
         params.hmm,
         params.hmm_name,
+        params.align_chunk_size,
         params.multiqc_config,
         params.multiqc_logo,
         params.multiqc_methods_description,
