@@ -35,7 +35,7 @@ import sys
 from Bio import SeqIO
 
 sequences_in, taxonomy_in, selection_in, verified_in, mislabels_in, prefix = sys.argv[1:7]
-counts = [int(n) for n in sys.argv[7:]]
+counts = [None if n == 'all' else int(n) for n in sys.argv[7:]]
 
 # Must match CHECKNAMECONSISTENCY, which renamed every sequence the other inputs name.
 UNSAFE_CHARS = re.compile(r'[^A-Za-z0-9_.|/-]')
@@ -110,9 +110,10 @@ def species_name(taxon):
     return species if species.startswith(genus + ' ') else f"{genus} {species}"
 
 for n in counts:
-    with gzip.open(f"{prefix}.n{n}.general.fna.gz", 'wt') as general, \\
-         gzip.open(f"{prefix}.n{n}.addSpecies.fna.gz", 'wt') as add_species, \\
-         gzip.open(f"{prefix}.n{n}.assignTaxonomy.fna.gz", 'wt') as assign_taxonomy:
+    label = 'all' if n is None else f"n{n}"
+    with gzip.open(f"{prefix}.{label}.general.fna.gz", 'wt') as general, \\
+         gzip.open(f"{prefix}.{label}.addSpecies.fna.gz", 'wt') as add_species, \\
+         gzip.open(f"{prefix}.{label}.assignTaxonomy.fna.gz", 'wt') as assign_taxonomy:
         for taxon in sorted(by_taxon):
             for _, name in by_taxon[taxon][:n]:
                 description, seq = records[name]
@@ -130,7 +131,7 @@ PYEOF
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def files = counts.collectMany { n -> ["addSpecies", "assignTaxonomy", "general"].collect { f -> "${prefix}.n${n}.${f}.fna.gz" } }.join(' ')
+    def files = counts.collectMany { n -> ["addSpecies", "assignTaxonomy", "general"].collect { f -> "${prefix}.${n == 'all' ? 'all' : 'n' + n}.${f}.fna.gz" } }.join(' ')
     """
     for f in ${files}; do echo -n | gzip > \$f; done
     cat <<-END_VERSIONS > versions.yml

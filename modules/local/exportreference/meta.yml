@@ -50,7 +50,7 @@ input:
         pattern: "*.tsv"
   - counts:
       type: list
-      description: Numbers of sequences per species to export, one set of files per number.
+      description: Numbers of sequences per species to export, or the string `all` for no limit, one set of files per number.
 output:
   addspecies:
     - - meta:
