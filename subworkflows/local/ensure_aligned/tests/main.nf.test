@@ -76,7 +76,6 @@ nextflow_workflow {
                 // proportion filter measures true profile coverage rather than
                 // being diluted by insert-column noise.
                 { assert seqLengths[0] == 1477 },
-                // The md5 the chunked tests below compare against.
                 { assert path(workflow.out.alignment_from_hmm[0]).md5 == '3cd303f21b542cafeb9345a99e28bd8d' },
                 // Nothing went through the passthrough branch.
                 { assert workflow.out.alignment_passthrough.isEmpty() },

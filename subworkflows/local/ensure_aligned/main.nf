@@ -24,7 +24,7 @@
     Every chunk is masked to the same match-state columns, so the masked chunks
     concatenate into exactly the alignment a single hmmalign run would give.
 
-    Step 4 matters beyond tidiness: hmmalign's raw output width is match-state
+    Masking matters beyond tidiness: hmmalign's raw output width is match-state
     columns *plus* the union of every sequence's own insert-state columns, so a
     single divergent sequence's insertion pads every other sequence with extra
     gap columns there. Left unmasked, that badly deflates a downstream non-gap-
