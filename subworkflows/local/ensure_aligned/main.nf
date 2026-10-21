@@ -11,13 +11,20 @@
     Workflow:
       1. Detect aligned vs unaligned (equal sequence lengths?)     (CHECKALIGNED)
       2. unaligned only: extract the named profile, if given       (HMMER_HMMFETCH)
-      3. unaligned only: align against the profile                 (HMMER_HMMALIGN)
-      4. unaligned only: mask down to the profile's own match-state
+      3. unaligned only: split into chunks of chunk_size sequences (splitFasta)
+      4. per chunk: align against the profile                      (HMMER_HMMALIGN)
+      5. per chunk: mask down to the profile's own match-state
          columns, discarding insert-state columns                  (HMMER_ESLALIMASK)
-      5. unaligned only: convert Stockholm back to aligned FASTA   (HMMER_ESLREFORMAT)
-      6. unaligned only: decompress (eslreformat always gzips)     (GUNZIP)
+      6. per chunk: convert Stockholm back to aligned FASTA        (HMMER_ESLREFORMAT)
+      7. unaligned only: concatenate the chunks in input order and
+         decompress (eslreformat always gzips)                     (FIND_CONCATENATE)
 
-    Step 4 matters beyond tidiness: hmmalign's raw output width is match-state
+    Chunking bounds hmmalign's memory, which grows with the number of sequences
+    (about 60 kB each) because it holds every trace until the alignment is written.
+    Every chunk is masked to the same match-state columns, so the masked chunks
+    concatenate into exactly the alignment a single hmmalign run would give.
+
+    Masking matters beyond tidiness: hmmalign's raw output width is match-state
     columns *plus* the union of every sequence's own insert-state columns, so a
     single divergent sequence's insertion pads every other sequence with extra
     gap columns there. Left unmasked, that badly deflates a downstream non-gap-
@@ -41,7 +48,7 @@ include { HMMER_HMMFETCH    } from '../../../modules/nf-core/hmmer/hmmfetch/main
 include { HMMER_HMMALIGN    } from '../../../modules/nf-core/hmmer/hmmalign/main'
 include { HMMER_ESLALIMASK  } from '../../../modules/nf-core/hmmer/eslalimask/main'
 include { HMMER_ESLREFORMAT } from '../../../modules/nf-core/hmmer/eslreformat/main'
-include { GUNZIP            } from '../../../modules/nf-core/gunzip/main'
+include { FIND_CONCATENATE  } from '../../../modules/nf-core/find/concatenate/main'
 
 workflow ENSURE_ALIGNED {
 
@@ -49,6 +56,7 @@ workflow ENSURE_ALIGNED {
     ch_sequences // channel: sequences file, aligned or not, already FASTA (format-normalised by the caller)
     hmm          // value:   path to an HMM profile database, or null/empty if not needed
     hmm_name     // value:   name of a specific profile within hmm, or null/empty
+    chunk_size   // value:   sequences aligned per hmmalign job
 
     main:
     CHECKALIGNED(ch_sequences.map { [ [ id: 'user-alignment' ], it ] })
@@ -85,7 +93,17 @@ workflow ENSURE_ALIGNED {
         ch_hmm_profile = channel.empty()
     }
 
-    HMMER_HMMALIGN(ch_unaligned, ch_hmm_profile.map { _meta, hmm_file -> hmm_file })
+    // Zero-padded chunk number in the id: FIND_CONCATENATE joins its inputs in file name order.
+    def ch_chunks = ch_unaligned
+        .map { _meta, fasta -> fasta }
+        .splitFasta(by: chunk_size, file: true)
+        .toList()
+        .flatMap { chunks ->
+            chunks.withIndex().collect { chunk, i -> [ [ id: "user-alignment.${String.format('%06d', i)}" ], chunk ] }
+        }
+
+    // first(): a value channel, so every chunk pairs with the one profile.
+    HMMER_HMMALIGN(ch_chunks, ch_hmm_profile.map { _meta, hmm_file -> hmm_file }.first())
 
     // --rf-is-mask derives the mask from the alignment's own #=GC RF (reference/
     // match-state) annotation -- no separate maskfile needed, unlike the tool's
@@ -98,12 +116,16 @@ workflow ENSURE_ALIGNED {
 
     HMMER_ESLREFORMAT(HMMER_ESLALIMASK.out.maskedaln, '')
 
-    // eslreformat's output is unconditionally gzipped (hardcoded in the vendored
-    // module's script); decompress so it matches the plain-text passthrough branch
-    // below before merging the two back into one channel.
-    GUNZIP(HMMER_ESLREFORMAT.out.seqreformated)
+    // eslreformat always gzips; the .gz-less prefix (conf/modules.config) makes
+    // FIND_CONCATENATE decompress, matching the plain-text passthrough branch.
+    FIND_CONCATENATE(
+        HMMER_ESLREFORMAT.out.seqreformated
+            .toList()
+            .filter { chunks -> chunks }
+            .map { chunks -> [ [ id: 'user-alignment' ], chunks.collect { _meta, fasta -> fasta } ] }
+    )
 
     emit:
     alignment_passthrough = CHECKALIGNED.out.aligned.map { _meta, fasta -> fasta } // channel: alignment file, already aligned on input
-    alignment_from_hmm    = GUNZIP.out.gunzip.map { _meta, fasta -> fasta }        // channel: alignment file, aligned via hmmalign then masked to match-state columns
+    alignment_from_hmm    = FIND_CONCATENATE.out.file_out.map { _meta, fasta -> fasta } // channel: alignment file, aligned via hmmalign then masked to match-state columns
 }
