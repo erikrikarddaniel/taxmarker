@@ -154,6 +154,38 @@ nextflow_process {
 
     }
 
+    test("a member never outranks its representative through weight rounding at 16S length") {
+
+        when {
+            process {
+                """
+                def dir = file("\${workDir}/exportreference_long")
+                dir.mkdirs()
+                def T = 'd__Bacteria;p__P;g__Gt;s__Gt long'
+                def seqs = file("\${dir}/input.fna")
+                seqs.text = ">T_rep\\n\${'A' * 1469}\\n>T_mem\\n\${'A' * 1466}\\n"
+                def tax = file("\${dir}/checked.tax")
+                tax.text = ['T_rep', 'T_mem'].collect { n -> "\${n}\\t\${T}\\n" }.join('')
+                def sel = file("\${dir}/selection.tsv")
+                // The member's unrounded weight is 1469/1466 = 1.0020464..., so the representative
+                // wins on the unrounded scores. The 6-decimal weight 1.002047 puts the member 0.0009
+                // above it, more than the 3-decimal rounding of the score hides.
+                sel.text = 'cluster_id\\ttaxon\\tseq_name\\tlength\\tweight\\tscore\\tis_representative\\n' +
+                    "1\\t\${T}\\tT_rep\\t1469\\t1.0\\t0\\tTrue\\n" +
+                    "1\\t\${T}\\tT_mem\\t1466\\t1.002047\\t0\\tFalse\\n"
+                input[0] = [ [ id:'export_test' ], seqs, tax, sel, tax, [] ]
+                input[1] = [ 1 ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert path(process.out.names[0][1]).readLines() == [ 'T_rep' ]
+        }
+
+    }
+
     test("without clustering: every sequence is its own representative, ranked by length") {
 
         when {

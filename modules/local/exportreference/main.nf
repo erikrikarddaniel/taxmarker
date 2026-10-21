@@ -87,10 +87,13 @@ else:
                 name, taxon = line.rstrip('\\n').split('\\t', 1)
                 rows.append((name, taxon, len(records[name][1]), 1.0, name))
 
+# Rounded weights can lift a member above the representative CLUSTERSELECT chose on the
+# unrounded values, so a member never scores above its representative.
+score = {name: round(weight * length, 3) for name, _, length, weight, _ in rows}
 by_taxon = {}
 for name, taxon, length, weight, rep in rows:
     if rep in verified and rep not in flagged:
-        by_taxon.setdefault(taxon, []).append((-round(weight * length, 3), name != rep, name))
+        by_taxon.setdefault(taxon, []).append((-min(score[name], score[rep]), name != rep, name))
 for candidates in by_taxon.values():
     candidates.sort()
 
