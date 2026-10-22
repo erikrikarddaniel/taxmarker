@@ -28,7 +28,7 @@ The chunks are masked to the profile's match-state columns and concatenated in i
 
 Optional -- see [Taxonomy embedded in sequence headers](#taxonomy-embedded-in-sequence-headers) below if omitted.
 A tab-separated file with two columns and no header: sequence name, and a semicolon-separated taxonomy string.
-It must end in `.tax` or `.tsv`, and can be gzipped.
+It must end in `.tax` or `.tsv`, and can be gzipped, e.g. `.tax.gz`.
 
 ```tsv title="taxonomy.tsv"
 UnpCCeti        Bacteria;Fusobacteria;Fusobacteriia;Fusobacteriales;Fusobacteriaceae;Cetobacterium;Cetobacterium ceti
