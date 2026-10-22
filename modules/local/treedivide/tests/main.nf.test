@@ -1,0 +1,159 @@
+nextflow_process {
+
+    name "Test Process TREEDIVIDE"
+    script "../main.nf"
+    process "TREEDIVIDE"
+    config "./nextflow.config"
+
+    tag "modules"
+    tag "modules_local"
+    tag "taxmarker"
+    tag "taxmarker/treedivide"
+
+    // The constraint tree is ((a1..a6), (b1..b6), (f1..f12), c1, c2): two ordinary taxa, one flat
+    // taxon of twelve direct tip children, and two unplaced tips (26 tips). Built inline, no fixture.
+    def inputs = """
+        def a = (1..6).collect { 'a' + it }
+        def b = (1..6).collect { 'b' + it }
+        def f = (1..12).collect { 'f' + it }
+        def all = a + b + f + ['c1', 'c2']
+        def constraint = File.createTempFile('test', '.nwk')
+        constraint.text = '((' + a.join(',') + '),(' + b.join(',') + '),(' + f.join(',') + '),c1,c2);\\n'
+        def aln = File.createTempFile('test', '.fasta')
+        aln.text = all.collect { '>' + it + '\\n' + 'ACGTACGT' + '\\n' }.join('')
+    """
+
+    test("taxmarker - flat taxon and two taxa are divided into parts of at most --max tips") {
+
+        when {
+            params {
+                module_args = '--max 8 --min 3 --reps 2 --outgroups 2'
+            }
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan   = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def fasta  = [process.out.fasta[0][1]].flatten().sort()
+            def nwk    = [process.out.constraints[0][1]].flatten().sort()
+            def names  = { f -> path(f).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) } }
+            def members = { f -> names(f) - plan.jobs.find { it.id == new File(f).name - '.fasta' }.outgroups }
+            def tipsOf = { f -> path(f).text.findAll(/[A-Za-z][A-Za-z0-9]*/) }
+            def covered = fasta.collectMany { names(it) } as Set
+
+            assertAll(
+                // The twelve-child flat taxon cannot be cut by closing a child, so its tips are grouped (8 + 4).
+                // Then a1-a6 and b1-b6 are each closed into one part, the flat taxon is closed once more, and
+                // the root part holds the representatives of those plus c1 and c2.
+                { assert plan.jobs.size() == 6 },
+                { assert plan.jobs.count { it.root } == 1 },
+                { assert plan.jobs.every { it.n <= 8 } },
+                { assert plan.jobs.find { it.root }.n == 8 },
+                { assert fasta.size() == 6 },
+                { assert nwk.size() == 6 },
+                { assert fasta.collect { new File(it).name - '.fasta' } == nwk.collect { new File(it).name - '.nwk' } },
+                // A part never holds more than --max tips plus its outgroup tips.
+                { assert fasta.every { names(it).size() <= 8 + 2 } },
+                // Every input tip is in some part, and no other name appears.
+                { assert covered == (((1..6).collect { 'a' + it }) + ((1..6).collect { 'b' + it }) + ((1..12).collect { 'f' + it }) + ['c1', 'c2']) as Set },
+                // A part's constraint tree has exactly the tips of its alignment.
+                { assert [fasta, nwk].transpose().every { f, n -> names(f) as Set == tipsOf(n) as Set } },
+                // Following the constraint tree, f1 is grouped with f2 to f8 and f12 with f9 to f11, so they never meet.
+                { assert !fasta.any { members(it).containsAll(['f1', 'f12']) } },
+                { assert process.out.findAll { key, val -> key.startsWith('versions') } }
+            )
+        }
+    }
+
+    test("taxmarker - input that fits in one part is not divided") {
+
+        when {
+            params {
+                module_args = '--max 100'
+            }
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def fasta = [process.out.fasta[0][1]].flatten()
+
+            assertAll(
+                { assert plan.jobs.size() == 1 },
+                { assert plan.jobs[0].root },
+                { assert plan.jobs[0].n == 26 },
+                { assert plan.jobs[0].outgroups == [] },
+                { assert fasta.size() == 1 },
+                { assert path(fasta[0]).text.readLines().count { it.startsWith('>') } == 26 }
+            )
+        }
+    }
+
+    // Same tips, but a phylogeny chooses the parts: the flat taxon is resolved so that f1 pairs with f12,
+    // f2 with f11, and so on. Cutting the constraint tree instead groups f1 with f2 to f8.
+    test("taxmarker - partition tree decides which tips share a part") {
+
+        when {
+            params {
+                module_args = '--max 8 --min 3 --reps 2 --outgroups 2'
+            }
+            process {
+                inputs + """
+                def ptree = File.createTempFile('test', '.nwk')
+                def pairs = (1..6).collect { '(f' + it + ',f' + (13 - it) + ')' }
+                ptree.text = '((' + a.join(',') + '),(' + b.join(',') + '),(((' + pairs[0] + ',' + pairs[1] + '),(' + pairs[2] + ',' + pairs[3] + ')),(' + pairs[4] + ',' + pairs[5] + ')),c1,c2);\\n'
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), file(ptree.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def fasta = [process.out.fasta[0][1]].flatten()
+            def names = { f -> path(f).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) } }
+            def members = { f -> names(f) - plan.jobs.find { it.id == new File(f).name - '.fasta' }.outgroups }
+
+            assertAll(
+                { assert plan.jobs.every { it.n <= 8 } },
+                // f1 and f12 are a cherry of the partition tree, so they are members of the same part.
+                { assert fasta.any { members(it).containsAll(['f1', 'f12']) } }
+            )
+        }
+    }
+
+    test("taxmarker - stub") {
+
+        options "-stub"
+
+        when {
+            params {
+                module_args = '--max 8'
+            }
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+    }
+
+}

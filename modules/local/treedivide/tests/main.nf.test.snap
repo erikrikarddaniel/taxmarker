@@ -1,0 +1,75 @@
+{
+    "taxmarker - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "job_000.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "job_000.nwk:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.plan.json:md5,9d5528adc18170e100d100e107d50fd3"
+                    ]
+                ],
+                "3": [
+                    [
+                        "TREEDIVIDE",
+                        "python",
+                        "3.12.12"
+                    ]
+                ],
+                "constraints": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "job_000.nwk:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "fasta": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "job_000.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "plan": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.plan.json:md5,9d5528adc18170e100d100e107d50fd3"
+                    ]
+                ],
+                "versions_python": [
+                    [
+                        "TREEDIVIDE",
+                        "python",
+                        "3.12.12"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-22T18:03:54.776846633",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    }
+}
