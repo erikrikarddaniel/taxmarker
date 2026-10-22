@@ -44,6 +44,8 @@ nextflow_process {
                 // First differing token between original/proposed paths is index 2
                 // (kingdom d__Archaea matches, phylum differs), 1-based.
                 { assert mislabels.contains('\t2\tsativa') },
+                // This .mis predates OriginalLabelExclusion, so the column is NA.
+                { assert mislabels.contains('\t1.0\tNA\t2\tsativa') },
                 { assert summary.contains('sequences scored: 3') },
                 { assert summary.contains('putative mislabels: 1') },
                 { assert snapshot(sanitizeOutput(process.out)).match() }
@@ -153,17 +155,17 @@ nextflow_process {
 
     }
 
-    test("extra .mis columns are ignored") {
+    test("OriginalLabelExclusion is kept, other extra .mis columns are ignored") {
 
         when {
             process {
                 """
                 // sativa-epang 0.10.2 appends OriginalLabelExclusion, and -ranktest adds
-                // one of its own. 0.123 is the exclusion here: it must not surface as any
-                // field of the output, which is what field-shifting would look like.
+                // HigherRankMisplacedConfidence after it. 0.123 is the exclusion and must
+                // land in original_label_exclusion; 0.456 must not surface at all.
                 def misFile = File.createTempFile('test', '.mis')
-                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\tOriginalLabelExclusion\\n' +
-                    'SeqA\\tPhylum\\tp__Nanoarchaeota\\tp__Halobacteriota\\t1.000\\td__Archaea;p__Nanoarchaeota\\td__Archaea;p__Halobacteriota\\t1.000;1.000\\t0.123\\n'
+                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\tOriginalLabelExclusion\\tHigherRankMisplacedConfidence\\n' +
+                    'SeqA\\tPhylum\\tp__Nanoarchaeota\\tp__Halobacteriota\\t1.000\\td__Archaea;p__Nanoarchaeota\\td__Archaea;p__Halobacteriota\\t1.000;1.000\\t0.123\\t0.456\\n'
                 def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
                 taskdir.mkdirs()
                 new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 3}'
@@ -179,9 +181,10 @@ nextflow_process {
             def summary   = path(process.out.summary[0][1]).text
 
             assertAll(
+                { assert mislabels.readLines()[0].split('\t')[4] == 'original_label_exclusion' },
                 { assert mislabels.contains('SeqA') },
-                { assert !mislabels.contains('0.123') },
-                { assert mislabels.contains('\t1.0\t2\tsativa') },
+                { assert mislabels.contains('\t1.0\t0.123\t2\tsativa') },
+                { assert !mislabels.contains('0.456') },
                 { assert summary.contains('putative mislabels: 1') },
                 { assert snapshot(sanitizeOutput(process.out)).match() }
             )

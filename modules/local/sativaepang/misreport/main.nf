@@ -44,18 +44,30 @@ opts = parser.parse_args()
 # tab-separated data row per flagged sequence:
 #   SeqID  MislabeledLevel  OriginalLabel  ProposedLabel  Confidence
 #   OriginalTaxonomyPath  ProposedTaxonomyPath  PerRankConfidence
-# Columns past these eight are ignored: sativa-epang appends its own (0.10.2 added
-# OriginalLabelExclusion, -ranktest another), so a new one cannot break the unpacking.
+# Of the columns past these eight, only OriginalLabelExclusion (sativa-epang 0.10.2+) is
+# kept, found by its name in the ';'-prefixed header: the placement weight outside the
+# declared taxon at the mislabelled rank. It explains the 0.510 confidence of stem
+# placements (all weight on a branch between two ranks) without being a second filter.
+# Any other extra column (-ranktest adds one) is ignored; a .mis without the column
+# gets NA.
 # MislabeledLevel is a rank NAME (e.g. "Phylum"), not a position, so the numeric
 # mismatch_rank below is derived from the taxonomy paths themselves (first
 # differing ';'-separated token) rather than trusting that name.
 rows = []
+exclusion_col = None
 with open(opts.mis_file) as fh:
     for line in fh:
         line = line.rstrip('\\n')
+        if line.startswith(';SeqID\\t'):
+            header = line[1:].split('\\t')
+            if 'OriginalLabelExclusion' in header:
+                exclusion_col = header.index('OriginalLabelExclusion')
+            continue
         if not line or line.startswith(';'):
             continue
-        seq_name, _level, _original, _proposed, confidence, original_path, proposed_path, _per_rank = line.split('\\t')[:8]
+        fields = line.split('\\t')
+        seq_name, _level, _original, _proposed, confidence, original_path, proposed_path, _per_rank = fields[:8]
+        exclusion = fields[exclusion_col] if exclusion_col is not None and exclusion_col < len(fields) else 'NA'
         original_ranks = original_path.split(';')
         proposed_ranks = proposed_path.split(';')
         mismatch_rank = None
@@ -74,14 +86,15 @@ with open(opts.mis_file) as fh:
             'original_label': original_path,
             'predicted_label': proposed_path,
             'lwr': float(confidence),
+            'original_label_exclusion': exclusion,
             'mismatch_rank': mismatch_rank,
         })
 
 with open(opts.mislabels_tsv, 'w') as fh:
-    print('seq_name\\toriginal_label\\tpredicted_label\\tlwr\\tmismatch_rank\\tmethod', file=fh)
+    print('seq_name\\toriginal_label\\tpredicted_label\\tlwr\\toriginal_label_exclusion\\tmismatch_rank\\tmethod', file=fh)
     for row in rows:
         if row['lwr'] >= opts.min_lwr:
-            print(f"{row['seq_name']}\\t{row['original_label']}\\t{row['predicted_label']}\\t{row['lwr']}\\t{row['mismatch_rank']}\\tsativa", file=fh)
+            print(f"{row['seq_name']}\\t{row['original_label']}\\t{row['predicted_label']}\\t{row['lwr']}\\t{row['original_label_exclusion']}\\t{row['mismatch_rank']}\\tsativa", file=fh)
 
 with open(opts.manifest_file) as fh:
     # n_folds is the number of leave-*batch*-out folds (25 by default, regardless
