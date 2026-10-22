@@ -25,8 +25,8 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "pattern": "^.+\\.(aln|phy|phylip|alnf[na]a|mfa|f[na]a|fa|fasta)(\\.gz)?$",
-                    "description": "Path to a sequences file, aligned or not, in phylip (.phy or .phylip), Clustal (.aln) or fasta format (.fa, .fasta, .fna, .faa, .mfa, .alnfaa or .alnfna). Can be gzipped.",
+                    "pattern": "^.+\\.(aln|phy|phylip|alnf[na]a|mfa|f[na]a|fa|afa|fasta)(\\.gz)?$",
+                    "description": "Path to a sequences file, aligned or not, in phylip (.phy or .phylip), Clustal (.aln) or fasta format (.fa, .fasta, .fna, .faa, .afa, .mfa, .alnfaa or .alnfna). Can be gzipped.",
                     "help_text": "Unaligned content is aligned automatically via hmmalign -- see --hmm/--hmm_name.",
                     "fa_icon": "fas fa-file-alt"
                 },

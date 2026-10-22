@@ -13,7 +13,7 @@ It takes two logical inputs: a set of sequences (`--sequences`) and their propos
 
 ### Sequences (`--sequences`)
 
-Path to a sequences file, aligned or not: phylip (`.phy`, `.phylip`), Clustal (`.aln`), or FASTA (`.fa`, `.fasta`, `.fna`, `.faa`, `.mfa`, `.alnfaa`, `.alnfna`).
+Path to a sequences file, aligned or not: phylip (`.phy`, `.phylip`), Clustal (`.aln`), or FASTA (`.fa`, `.fasta`, `.fna`, `.faa`, `.afa`, `.mfa`, `.alnfaa`, `.alnfna`).
 The file can be gzipped, e.g. `sequences.fna.gz`.
 Aligned vs. unaligned is detected automatically -- no separate mode-switch parameter needed.
 Unaligned content is aligned via [hmmalign](http://hmmer.org) against an HMM profile before continuing through the rest of the pipeline as if it had arrived pre-aligned: pass `--hmm` (path to an HMM profile database) and, if that database holds more than one named profile, `--hmm_name` to pick which one.

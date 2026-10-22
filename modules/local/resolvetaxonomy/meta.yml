@@ -36,7 +36,7 @@ input:
     - sequences:
         type: file
         description: Sequences in FASTA, Clustal or PHYLIP format, aligned or not, plain or gzipped.
-        pattern: "*.{fa,fasta,fna,faa,mfa,alnfna,alnfaa,aln,phy,phylip,fa.gz,fasta.gz,fna.gz,faa.gz,mfa.gz,alnfna.gz,alnfaa.gz,aln.gz,phy.gz,phylip.gz}"
+        pattern: "*.{fa,fasta,fna,faa,afa,mfa,alnfna,alnfaa,aln,phy,phylip,fa.gz,fasta.gz,fna.gz,faa.gz,afa.gz,mfa.gz,alnfna.gz,alnfaa.gz,aln.gz,phy.gz,phylip.gz}"
 output:
   taxonomy:
     - - meta:
