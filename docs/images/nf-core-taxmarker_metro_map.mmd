@@ -56,6 +56,7 @@
 %%metro file: mislabels_raxtax_out | TSV | Mislabels (raxtax)
 %%metro file: mislabels_out | TSV | Mislabels
 %%metro file: ref_out | FASTA | Reference FASTA, N per species
+%%metro file: ref_tree_out | NWK | Reference tree
 %%metro file: report_out | HTML | MultiQC report
 
 %%metro off_track: mislabels_raxtax_out
@@ -73,7 +74,7 @@
 %%metro process: gtdbweight | GTDBWEIGHTTRANSLATE
 %%metro process: weightedclustering | WEIGHTED_CLUSTERING:.*
 %%metro process: checkaligned | ENSURE_ALIGNED:CHECKALIGNED
-%%metro process: hmmalign | ENSURE_ALIGNED:(HMMER_.*|GUNZIP)
+%%metro process: hmmalign | ENSURE_ALIGNED:(HMMER_.*|FIND_CONCATENATE)
 %%metro process: gapfilter | GAPFILTER
 %%metro process: profilecover | PROFILECOVER
 %%metro process: raxtax | RAXTAX_PREFILTER:.*
@@ -81,6 +82,8 @@
 %%metro process: raxmlng | SWF_SATIVA:RAXMLNG_.*
 %%metro process: sativaepang | SWF_SATIVA:SATIVAEPANG
 %%metro process: exportreference | EXPORTREFERENCE
+%%metro process: keepnames | KEEPNAMES
+%%metro process: raxmlngref | TAXONOMY2PHYLOGENY_REFERENCE:RAXMLNG_.*
 %%metro process: multiqc | MULTIQC
 
 graph LR
@@ -132,7 +135,12 @@ graph LR
     subgraph export [Reference export]
         exportreference[EXPORTREFERENCE]
         ref_out[ ]
+        keepnames[KEEPNAMES]
+        raxmlngref[RAxML-NG]
+        ref_tree_out[ ]
         exportreference -->|main| ref_out
+        keepnames -->|main| raxmlngref
+        raxmlngref -->|main| ref_tree_out
     end
 
     subgraph report [Reporting]
@@ -147,4 +155,5 @@ graph LR
     gapfilter -->|main| taxonomytree
     profilecover -->|unaligned| taxonomytree
     sativaepang -->|main| exportreference
+    exportreference -->|main| keepnames
     exportreference -->|main| multiqc

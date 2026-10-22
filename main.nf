@@ -31,9 +31,11 @@ params {
     skip_gapfilter: Boolean
     skip_profile_cover: Boolean
     skip_sativa: Boolean
+    run_reference: Boolean
     raxmlng_fast: Boolean
     raxmlng_seed: Integer
     raxmlng_blopt: String?
+    raxmlng_reference_model: String?
     version: Boolean
     plaintext_email: Boolean
     monochrome_logs: Boolean
@@ -48,6 +50,7 @@ params {
     min_profile_cover: Float
     min_profile_cover_rescue: Float
     folds_per_job: Integer?
+    align_chunk_size: Integer
 }
 
 /*
@@ -86,10 +89,13 @@ workflow NFCORE_TAXMARKER {
         params.skip_sativa,
         params.taxcode,
         params.raxmlng_model,
+        params.raxmlng_reference_model,
         params.folds_per_job,
         params.export_n_per_species,
+        params.run_reference,
         params.hmm,
         params.hmm_name,
+        params.align_chunk_size,
         params.multiqc_config,
         params.multiqc_logo,
         params.multiqc_methods_description,

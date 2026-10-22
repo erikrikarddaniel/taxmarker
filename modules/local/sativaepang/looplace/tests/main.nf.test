@@ -43,6 +43,12 @@ nextflow_process {
             assert process.success
             assertAll(
                 { assert foldDirs.size() > 0 },
+                // Downstream tasks read only manifest.json and each fold's placement. A link
+                // into lootasks' work directory dangles when a container mounts only part of
+                // work/, so the output holds no links and none of lootasks' own inputs.
+                { assert java.nio.file.Files.walk(new File(taskdir.toString()).toPath()).noneMatch { java.nio.file.Files.isSymbolicLink(it) } },
+                { assert java.nio.file.Files.isRegularFile(new File(taskdir.toString(), 'manifest.json').toPath(), java.nio.file.LinkOption.NOFOLLOW_LINKS) },
+                { assert foldDirs.every { d -> ['ref.nwk', 'ref.fasta', 'query.fasta'].every { !new File(d.toString(), it).exists() } } },
                 { assert foldDirs.every { new File(it.toString(), "epa_result.jplace").exists() } },
                 { assert snapshot(sanitizeOutput(process.out, unstablePatterns: ["**/epa_result.jplace", "**/epa_info.log", "**/epang.log"])).match() }
             )
@@ -112,8 +118,10 @@ nextflow_process {
         }
 
         then {
+            def taskdir = file(process.out.taskdir[0][1])
             assert process.success
             assertAll(
+                { assert java.nio.file.Files.walk(new File(taskdir.toString()).toPath()).noneMatch { java.nio.file.Files.isSymbolicLink(it) } },
                 { assert snapshot(sanitizeOutput(process.out)).match() }
             )
         }

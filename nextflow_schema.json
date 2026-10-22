@@ -43,6 +43,14 @@
                     "description": "Name of the specific profile to use from --hmm, if that database holds more than one (e.g. Barrnap's databases hold one profile per rRNA gene).",
                     "fa_icon": "fas fa-tag"
                 },
+                "align_chunk_size": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 10000,
+                    "description": "Number of sequences each hmmalign job aligns, when --sequences is unaligned.",
+                    "help_text": "hmmalign needs about 60 kB of memory per sequence, so one job for hundreds of thousands of sequences needs tens of GB. The chunks are masked to the profile's match-state columns and concatenated in input order, so the alignment does not depend on this value.",
+                    "fa_icon": "fas fa-layer-group"
+                },
                 "seqgrep": {
                     "type": "string",
                     "description": "Keep only --sequences records whose whole FASTA header matches this pattern, dropping the rest before anything else runs.",
@@ -127,6 +135,12 @@
                     "help_text": "Each number gives three gzipped FASTA files in `export/`: one for DADA2's `addSpecies()`, one for its `assignTaxonomy()`, and one keeping the original headers. Only sequences that passed every check are exported, cluster members inheriting their representative's verdict. Within a species, sequences are ranked by weight (see --sequence_weights) times length.",
                     "fa_icon": "fas fa-file-export"
                 },
+                "run_reference": {
+                    "type": "boolean",
+                    "description": "Build a reference phylogeny and model for phylogenetic placement of new sequences, from one sequence per species.",
+                    "help_text": "The sequences are the ones in the one-per-species export (`export/*.n1.*`, which is written even without --export_n_per_species), taken from the alignment. The tree is built under the taxonomy constraint, like the one the placement test uses, and RAxML-NG selects the model unless --raxmlng_model names one. The tree, model, alignment and taxonomy go to `reference/`. This is a second RAxML-NG search.",
+                    "fa_icon": "fas fa-tree"
+                },
                 "skip_gapfilter": {
                     "type": "boolean",
                     "description": "For already-aligned input: skip filtering out sequences with too high a proportion of alignment gaps, and run every sequence straight through the rest of the pipeline.",
@@ -178,6 +192,12 @@
                     "default": "DNA",
                     "description": "RAxML-NG model for the reference tree, for example GTR+G4. The default DNA runs model selection first.",
                     "help_text": "Any model string RAxML-NG accepts for --model. A fixed model skips model selection, which can take a quarter or more of the tree building time on large alignments.",
+                    "fa_icon": "fas fa-project-diagram"
+                },
+                "raxmlng_reference_model": {
+                    "type": "string",
+                    "description": "RAxML-NG model for the tree built by --run_reference, for example GTR+G4. Unset uses --raxmlng_model.",
+                    "help_text": "Any model string RAxML-NG accepts for --model; DNA runs model selection. It is separate from --raxmlng_model so that the tree used for the placement test and the reference tree can be built under different models.",
                     "fa_icon": "fas fa-project-diagram"
                 },
                 "raxmlng_fast": {

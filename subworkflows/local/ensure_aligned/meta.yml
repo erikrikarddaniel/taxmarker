@@ -17,7 +17,7 @@ components:
   - hmmer/hmmalign
   - hmmer/eslalimask
   - hmmer/eslreformat
-  - gunzip
+  - find/concatenate
 input:
   - ch_sequences:
       type: file
@@ -35,6 +35,11 @@ input:
       description: |
         Name of a specific profile to extract from hmm, if that database holds more
         than one. Null/empty otherwise.
+  - chunk_size:
+      type: integer
+      description: |
+        Number of sequences each hmmalign job aligns. The masked chunks are
+        concatenated in input order, so the alignment does not depend on it.
 output:
   - alignment_passthrough:
       type: file
