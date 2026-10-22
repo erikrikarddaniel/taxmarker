@@ -40,7 +40,9 @@ input:
         type: file
         description: |
           Optional tree with the same tips as the constraint tree, for example a phylogeny, used only to
-          choose the parts. Pass an empty list to cut the constraint tree itself.
+          choose the parts. Every part it chooses must be a possible clade of the constraint tree, so it
+          must not conflict with it (a phylogeny in which the constraint taxa are monophyletic is fine).
+          Pass an empty list to cut the constraint tree itself.
         pattern: "*.{nwk,tree}"
         ontologies:
           - edam: http://edamontology.org/format_1910 # Newick

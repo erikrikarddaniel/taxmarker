@@ -74,6 +74,65 @@ nextflow_process {
         }
     }
 
+    test("taxmarker - part tree rooted elsewhere is cut at the outgroup") {
+
+        when {
+            process {
+                inputs + """
+                // The searched tree is rooted inside the a clade: a1-a4 is a node only when rooted above b1.
+                part.text = '(a1:0.1,(a3:0.1,((a2:0.1,a4:0.1):0.1,(b1:0.1,b2:0.1):0.1):0.1):0.1);\\n'
+                input[0] = [ [ id:'test' ], file(plan.toString()), [ file(top.toString()), file(part.toString()) ], file(constraint.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def topology = path(process.out.tree[0][1]).text.replaceAll(/:[0-9.]+/, '')
+
+            assertAll(
+                { assert (1..4).every { topology.contains('a' + it) && topology.contains('b' + it) } },
+                { assert topology =~ /\((a1,a3|a3,a1)\)/ },
+                { assert topology =~ /\((a2,a4|a4,a2)\)/ },
+                { assert topology =~ /\((b3,b4|b4,b3)\)/ }
+            )
+        }
+    }
+
+    test("taxmarker - a unary node in the constraint tree is not a broken clade") {
+
+        when {
+            process {
+                inputs + """
+                constraint.text = '(((a1),a2,a3,a4),(b1,b2,b3,b4));\\n'
+                input[0] = [ [ id:'test' ], file(plan.toString()), [ file(top.toString()), file(part.toString()) ], file(constraint.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+        }
+    }
+
+    test("taxmarker - a clade of all tips but one is not a broken clade") {
+
+        when {
+            process {
+                inputs + """
+                // The root tree puts b4 inside (b3,b4), so a1-a4 plus b1-b3 is no node; its complement is one tip.
+                constraint.text = '(((a1,a2,a3,a4),b1,b2,b3),b4);\\n'
+                input[0] = [ [ id:'test' ], file(plan.toString()), [ file(top.toString()), file(part.toString()) ], file(constraint.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+        }
+    }
+
     test("taxmarker - fails when the grafted tree breaks a clade of the constraint tree") {
 
         when {
@@ -122,7 +181,8 @@ nextflow_process {
 
         then {
             assert process.success
-            assert snapshot(process.out).match()
+            assert process.out.versions_python[0][0] == 'TREEGRAFT'
+            assert snapshot(process.out.tree).match()
         }
     }
 

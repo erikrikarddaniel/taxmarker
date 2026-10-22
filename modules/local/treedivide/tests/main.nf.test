@@ -135,6 +135,210 @@ nextflow_process {
         }
     }
 
+    test("taxmarker - each part and the representatives of its child parts are clades of its constraint tree") {
+
+        when {
+            params {
+                module_args = '--max 8 --min 3 --reps 2 --outgroups 2'
+            }
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def fasta = [process.out.fasta[0][1]].flatten().sort()
+            def nwk   = [process.out.constraints[0][1]].flatten().sort()
+            def names = { f -> path(f).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) } }
+            def job   = { f -> plan.jobs.find { it.id == new File(f).name.replaceAll(/\..*/, '') } }
+            def members = { f -> names(f) - job(f).outgroups }
+            def clades = { String s ->
+                def stack = [[]]
+                def out = [] as Set
+                s.findAll(/[(),]|[^(),;\s]+/).each { t ->
+                    if (t == '(') { stack << [] }
+                    else if (t == ')') { def l = stack.remove(stack.size() - 1); out << (l as Set); stack[-1].addAll(l) }
+                    else if (t != ',') { stack[-1] << t }
+                }
+                out
+            }
+            def cladesOf = { i -> clades(path(nwk[i]).text) }
+
+            assertAll(
+                // Every part but the root has its outgroups: distinct, and not among the part's own tips.
+                { assert plan.jobs.findAll { !it.root }.every { it.outgroups.size() == 2 && it.outgroups.toSet().size() == 2 } },
+                { assert fasta.every { f -> job(f).root || members(f).intersect(job(f).outgroups).isEmpty() } },
+                // The part itself is a clade, so the searched tree can be cut at that node.
+                { assert fasta.indices.every { i -> job(fasta[i]).root || (members(fasta[i]) as Set) in cladesOf(i) } },
+                // The representatives of each closed part are a clade in the parent, so the part can replace them.
+                { assert fasta.indices.every { i ->
+                    plan.jobs.findAll { c -> !c.root && c.reps.size() >= 2 && members(fasta[i]).containsAll(c.reps) && c.id != job(fasta[i]).id }
+                        .every { c -> (c.reps as Set) in cladesOf(i) }
+                } },
+                // At least one part contains the representatives of a child part, so the assertion above has content.
+                { assert fasta.any { f -> plan.jobs.any { c -> !c.root && c.id != job(f).id && members(f).containsAll(c.reps) } } }
+            )
+        }
+    }
+
+    test("taxmarker - a flat taxon that leaves two tips over gives no duplicated sequence") {
+
+        when {
+            params {
+                module_args = '--max 10'
+            }
+            process {
+                """
+                def tips = (1..12).collect { 't' + it }
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = '(' + tips.join(',') + ');\\n'
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = tips.collect { '>' + it + '\\n' + 'ACGTACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def fasta = [process.out.fasta[0][1]].flatten()
+            def names = { f -> path(f).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) } }
+
+            assertAll(
+                // t1-t10 and t11-t12 are grouped; the pair is shorter than --reps 3.
+                { assert plan.jobs.size() == 3 },
+                { assert plan.jobs.every { it.reps.toSet().size() == it.reps.size() } },
+                { assert fasta.every { names(it).toSet().size() == names(it).size() } }
+            )
+        }
+    }
+
+    test("taxmarker - trees with line breaks, comments, quoted names and no final semicolon are read") {
+
+        when {
+            params {
+                module_args = '--max 100'
+            }
+            process {
+                """
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = "[&R] ( 'a_b' ,\\n a2 ,\\n ( a3:1.5e-2, 'a4' )95:0.2 )\\n"
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = ['a_b', 'a2', 'a3', 'a4'].collect { '>' + it + '\\n' + 'ACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def tree = path(process.out.constraints[0][1]).text
+
+            assertAll(
+                { assert plan.jobs.size() == 1 },
+                { assert plan.jobs[0].n == 4 },
+                { assert ['a_b', 'a2', 'a3', 'a4'].every { tree.contains(it) } },
+                { assert !tree.contains("'") }
+            )
+        }
+    }
+
+    test("taxmarker - fails on a malformed constraint tree with a non-zero exit status") {
+
+        when {
+            process {
+                """
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = '(a1,a2,(a3,a4;\\n'
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = ['a1', 'a2', 'a3', 'a4'].collect { '>' + it + '\\n' + 'ACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+            assert process.errorReport.contains('terminated with an error exit status')
+        }
+    }
+
+    test("taxmarker - fails when a sequence name occurs twice in the alignment") {
+
+        when {
+            process {
+                """
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = '(a1,a2,a3,a4);\\n'
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = ['a1', 'a2', 'a3', 'a4', 'a2'].collect { '>' + it + '\\n' + 'ACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+            assert process.errorReport.contains('Duplicate sequence name a2')
+        }
+    }
+
+    test("taxmarker - fails with a clear message when the partition tree conflicts with the constraint tree") {
+
+        when {
+            params {
+                module_args = '--max 6 --min 2 --reps 2 --outgroups 2'
+            }
+            process {
+                """
+                def a = (1..6).collect { 'a' + it }
+                def b = (1..6).collect { 'b' + it }
+                def c = (1..6).collect { 'c' + it }
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = '((' + a.join(',') + '),(' + b.join(',') + '),(' + c.join(',') + '));\\n'
+                def ptree = File.createTempFile('test', '.nwk')
+                ptree.text = '(((a1,a2),b1),((a3,a4,a5,a6),(' + b[1..5].join(',') + ')),(' + c.join(',') + '));\\n'
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = (a + b + c).collect { '>' + it + '\\n' + 'ACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), file(ptree.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+            assert process.errorReport.contains('partition tree must not conflict with the constraint tree')
+        }
+    }
+
+    test("taxmarker - fails when --min or --outgroups would give parts that cannot be grafted") {
+
+        when {
+            params {
+                module_args = '--min 1'
+            }
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+            assert process.errorReport.contains('--min must be at least 2')
+        }
+    }
+
     test("taxmarker - stub") {
 
         options "-stub"
@@ -152,7 +356,8 @@ nextflow_process {
 
         then {
             assert process.success
-            assert snapshot(process.out).match()
+            assert process.out.versions_python[0][0] == 'TREEDIVIDE'
+            assert snapshot(process.out.fasta, process.out.constraints, process.out.plan).match()
         }
     }
 

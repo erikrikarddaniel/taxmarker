@@ -1,40 +1,16 @@
 {
     "taxmarker - stub": {
         "content": [
-            {
-                "0": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test.grafted.nwk:md5,2a17cb9cbac2766ca9124f2f513e458a"
-                    ]
-                ],
-                "1": [
-                    [
-                        "TREEGRAFT",
-                        "python",
-                        "3.12.12"
-                    ]
-                ],
-                "tree": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test.grafted.nwk:md5,2a17cb9cbac2766ca9124f2f513e458a"
-                    ]
-                ],
-                "versions_python": [
-                    [
-                        "TREEGRAFT",
-                        "python",
-                        "3.12.12"
-                    ]
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.grafted.nwk:md5,2a17cb9cbac2766ca9124f2f513e458a"
                 ]
-            }
+            ]
         ],
-        "timestamp": "2026-10-22T18:04:42.228042187",
+        "timestamp": "2026-10-22T21:00:46.727770612",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"

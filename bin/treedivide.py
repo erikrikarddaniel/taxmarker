@@ -18,6 +18,7 @@ import os
 import random
 import sys
 import threading
+import traceback
 
 __version__ = "1.0.0"
 
@@ -33,20 +34,26 @@ def _split_label(label):
     if label.startswith("'"):
         end = label.rindex("'")
         rest = label[end + 1:]
-        return label[:end + 1], float(rest[1:]) if rest.startswith(":") and len(rest) > 1 else None
+        return label[1:end].replace("''", "'"), float(rest[1:]) if rest.startswith(":") and len(rest) > 1 else None
     name, _, length = label.partition(":")
     return name or None, float(length) if length else None
 
 
 def _tokens(text):
-    out, cur, quoted = [], "", False
-    for ch in text.strip():
-        if quoted:
+    out, cur, quoted, comment = [], "", False, False
+    for ch in text:
+        if comment:
+            comment = ch != "]"
+        elif quoted:
             cur += ch
             quoted = ch != "'"
         elif ch == "'":
             cur += ch
             quoted = True
+        elif ch == "[":
+            comment = True
+        elif ch.isspace():
+            continue
         elif ch in "(),;":
             if cur:
                 out.append(cur)
@@ -59,6 +66,8 @@ def _tokens(text):
 
 def parse(text):
     tok, pos = _tokens(text), 0
+    if not tok:
+        sys.exit("No tree found in the input")
 
     def node():
         nonlocal pos
@@ -71,7 +80,7 @@ def parse(text):
                 pos += 1
                 if t == ")":
                     break
-            if tok[pos] not in "(),;":
+            if pos < len(tok) and tok[pos] not in "(),;":
                 n.name, n.length = _split_label(tok[pos])
                 pos += 1
         else:
@@ -82,8 +91,12 @@ def parse(text):
     return node()
 
 
+def _quote(name):
+    return "'%s'" % name.replace("'", "''") if any(c in "(),:;[]' \t" for c in name) else name
+
+
 def write(n, lengths=False):
-    s = n.name if not n.kids else "(" + ",".join(write(k, lengths) for k in n.kids) + ")"
+    s = _quote(n.name) if not n.kids else "(" + ",".join(write(k, lengths) for k in n.kids) + ")"
     if lengths and n.length is not None:
         s += ":%.8f" % n.length
     return s
@@ -141,7 +154,7 @@ def ensure_clade(root, want):
         return
     inside = [k for k in node.kids if c[id(k)][0]]
     if any(c[id(k)][0] != c[id(k)][1] for k in inside):
-        sys.exit("The constraint tree does not allow %s... to form a clade" % sorted(want)[:3])
+        sys.exit("The constraint tree does not allow %s... to form a clade; a partition tree must not conflict with the constraint tree" % sorted(want)[:3])
     node.kids = [k for k in node.kids if not c[id(k)][0]] + [Node(kids=inside)]
 
 
@@ -166,7 +179,8 @@ def reroot_above(root, tip):
             adj[id(k)][1].append((x, k.length))
     leaf = next(x for x, _ in adj.values() if not x.kids and x.name == tip)
     (par, length), = adj[id(leaf)][1]
-    top = Node(par.name, length)
+    half = length / 2 if length is not None else None
+    top = Node(par.name, half)
     stack = [(par, leaf, top)]
     while stack:
         x, frm, new = stack.pop()
@@ -175,7 +189,7 @@ def reroot_above(root, tip):
                 child = Node(y.name, ln)
                 new.kids.append(child)
                 stack.append((y, x, child))
-    return Node(kids=[Node(leaf.name, length), collapse(top)])
+    return Node(kids=[Node(leaf.name, half), collapse(top)])
 
 
 def find_clade(tree, tips, outside):
@@ -198,7 +212,11 @@ def read_fasta(path):
             if line.startswith(">"):
                 if name is not None:
                     records[name] = "".join(buf)
+                if not line[1:].split():
+                    sys.exit("A sequence in the alignment has no name")
                 name, buf = line[1:].split()[0], [line]
+                if name in records:
+                    sys.exit("Duplicate sequence name %s in the alignment" % name)
             elif name is not None:
                 buf.append(line if line.endswith("\n") else line + "\n")
     if name is not None:
@@ -207,7 +225,11 @@ def read_fasta(path):
 
 
 def split(a):
+    if a.min < 2 or a.reps < 1 or a.outgroups < 1:
+        sys.exit("--min must be at least 2, --reps and --outgroups at least 1")
     constraint = parse(open(a.constraint).read())
+    if len(set(leaves(constraint))) != len(leaves(constraint)):
+        sys.exit("The constraint tree has duplicate tip names")
     ptree = parse(open(a.partition_tree).read()) if a.partition_tree else constraint
     if set(leaves(ptree)) != set(leaves(constraint)):
         sys.exit("The partition tree and the constraint tree have different tips")
@@ -219,7 +241,7 @@ def split(a):
     parent, residual, jobs = {}, {}, []
 
     def newjob(tips, at, others, root=False):
-        reps = [tips[int(i * len(tips) / a.reps)] for i in range(min(a.reps, len(tips)))]
+        reps = list(tips) if len(tips) <= a.reps else [tips[int(i * len(tips) / a.reps)] for i in range(a.reps)]
         jobs.append({"tips": tips, "reps": reps, "at": at, "others": others, "root": root})
         return reps
 
@@ -249,7 +271,7 @@ def split(a):
                 size += len(it)
             groups = [g for g in groups + [g] if len(g) > 1]
             if not groups:
-                sys.exit("A node cannot be reduced below --max %d; raise --max" % a.max)
+                sys.exit("A node cannot be reduced below --max %d; raise --max or lower --reps or --min" % a.max)
             merged = {}
             for g in groups:
                 tips = [t for i in g for t in items[i]]
@@ -305,17 +327,19 @@ def check(constraint, tree):
     mask = (1 << 64) - 1
 
     def hashes(root):
-        memo, out = {}, set()
+        memo, size, out = {}, {}, {}
         for x in post_order(root):
             if not x.kids:
-                memo[id(x)] = h[x.name]
+                memo[id(x)], size[id(x)] = h[x.name], 1
             else:
                 memo[id(x)] = sum(memo[id(k)] for k in x.kids) & mask
-                out.add(memo[id(x)])
+                size[id(x)] = sum(size[id(k)] for k in x.kids)
+                out[memo[id(x)]] = size[id(x)]
         return out
 
     have, total = hashes(tree), sum(h.values()) & mask
-    return len([x for x in hashes(constraint) if x not in have and (total - x) & mask not in have])
+    # A clade of one tip or of all tips but one says nothing in an unrooted tree.
+    return len([x for x, n in hashes(constraint).items() if 2 <= n <= len(tips) - 2 and x not in have and (total - x) & mask not in have])
 
 
 def graft(a):
@@ -375,6 +399,9 @@ def main():
             (split if a.cmd == "split" else graft)(a)
         except SystemExit as e:
             code.append(e.code)
+        except BaseException:
+            traceback.print_exc()
+            code.append(1)
 
     t = threading.Thread(target=run)
     t.start()
