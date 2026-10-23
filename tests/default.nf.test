@@ -47,6 +47,7 @@ nextflow_pipeline {
             assert workflow.success
             assertAll(
                 { assert !new File("$outputDir/sativaepang/mergefolds").exists() },
+                { assert workflow.trace.tasks().findAll { it.name.contains('SATIVAEPANG_LOOPLACE') }*.name == ['NFCORE_TAXMARKER:TAXMARKER:SWF_SATIVA:SATIVAEPANG_LOOPLACE (user-alignment)'] },
                 { assert snapshot(
                     file("$outputDir/mislabels/user-alignment.mislabels.tsv"),
                     file("$outputDir/sativaepang/user-alignment.summary.txt")
@@ -73,12 +74,36 @@ nextflow_pipeline {
                 { assert new File("$outputDir/sativaepang/mergefolds").exists() },
                 // Nextflow still creates the publish directory, but nothing lands in it.
                 { assert !new File("$outputDir/sativaepang/looplace/user-alignment.l1o_tasks").exists() },
+                // Each job's name carries its fold range.
+                { assert workflow.trace.tasks().findAll { it.name.contains('SATIVAEPANG_LOOPLACE') }.every { it.name ==~ /.*\(user-alignment (folds \d+-\d+|fold \d+)\)/ } },
+                { assert workflow.trace.tasks().findAll { it.name.contains('SATIVAEPANG_LOOPLACE') }.size() > 1 },
                 // These two md5s must equal the one_job snapshot above: splitting the
                 // folds cannot change a byte of what comes out.
                 { assert snapshot(
                     file("$outputDir/mislabels/user-alignment.mislabels.tsv"),
                     file("$outputDir/sativaepang/user-alignment.summary.txt")
                 ).match("folds_split") }
+            )
+        }
+    }
+
+    test("-profile test, one fold per job names each job after its fold") {
+
+        when {
+            params {
+                outdir          = "$outputDir"
+                skip_clustering = true
+                folds_per_job   = 1
+            }
+        }
+
+        then {
+            assert workflow.success
+            def names = workflow.trace.tasks().findAll { it.name.contains('SATIVAEPANG_LOOPLACE') }*.name
+            assertAll(
+                { assert names.size() > 1 },
+                { assert names.every { it ==~ /.*\(user-alignment fold \d+\)/ } },
+                { assert names.toSet().size() == names.size() }
             )
         }
     }

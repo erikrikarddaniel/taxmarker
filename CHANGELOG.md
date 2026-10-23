@@ -30,6 +30,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Changed`
 
+- [#65](https://github.com/nf-core/taxmarker/pull/65) - The leave-one-out placement jobs show their fold range in the task name, for example `SATIVAEPANG_LOOPLACE (user-alignment folds 0-4)` or `(user-alignment fold 7)` with `--folds_per_job 1`, so a running or failed job can be told apart
 - [#60](https://github.com/nf-core/taxmarker/pull/60) - `--sequences` and `--taxonomy` only accept their documented suffixes now, with or without `.gz`. The old schema patterns weren't grouped, so any path containing `tsv` or `fa` passed, e.g. `tsvdir/notes.txt`. `.fna`, `.faa`, `.phylip` and `.afa` (the format of the published alignment) are now listed for `--sequences`. Other suffixes such as `.fas` are rejected, and so are paths with whitespace in them
 - [#59](https://github.com/nf-core/taxmarker/pull/59) - Template updated to nf-core/tools 4.2.0 ([#58](https://github.com/nf-core/taxmarker/issues/58)). `manifest.diagram` is left commented out until the minimum Nextflow version is 26.10.0, since 26.04 warns about it on every run. nf-core modules updated (hmmer, `raxmlng/search`, `seqkit/grep`, `vsearch/cluster`), with the same tool versions in Seqera containers
 - [#42](https://github.com/nf-core/taxmarker/pull/42) - The minimum Nextflow version is now 26.04.0, so that boolean and numeric parameters are typed in `main.nf`: `--skip_sativa false` and the like are now real Booleans, and a non-boolean or non-numeric value is rejected
