@@ -6,7 +6,8 @@ split: the parts are chosen bottom-up on the partition tree (default: the constr
 tips. When closing children is not enough (many small children of a flat node), consecutive children are grouped.
 The last part, the root, holds the representatives of everything below it. Every part is a set of original tips plus
 --outgroups tips from neighbouring parts, with the constraint tree pruned to them and the part (and the
-representatives of its child parts) forced to be clades.
+representatives of its child parts) forced to be clades. A part whose constraint tree is binary has nothing to
+search: its tree is written to <outdir>/resolved/ instead of an alignment and a constraint.
 
 graft: takes the tree searched for each part, cuts out the part (rooted on its outgroup) and puts it in place of its
 representatives in the tree of the parent part, starting from the root. The result must keep every clade of the
@@ -224,6 +225,11 @@ def read_fasta(path):
     return records
 
 
+def is_resolved(root):
+    """True when the tree is binary (an unrooted tree has a root of two or three children): RAxML-NG rejects it as a constraint."""
+    return len(root.kids) <= 3 and all(len(x.kids) == 2 for x in post_order(root) if x.kids and x is not root)
+
+
 def split(a):
     if a.min < 2 or a.reps < 1 or a.outgroups < 1:
         sys.exit("--min must be at least 2, --reps and --outgroups at least 1")
@@ -306,11 +312,17 @@ def split(a):
         for clade in ([tips] if og else []) + [o["reps"] for o in jobs[:i] if set(o["reps"]) <= tipset]:
             ensure_clade(tree, clade)
         job = "job_%03d" % i
-        with open("%s/%s.fasta" % (a.outdir, job), "w") as fo:
-            fo.writelines(alignment[t] for t in tips + og)
-        with open("%s/%s.nwk" % (a.outdir, job), "w") as fo:
-            fo.write(write(tree) + ";\n")
-        plan["jobs"].append({"id": job, "n": len(tips), "reps": j["reps"], "outgroups": og, "root": j["root"]})
+        done = is_resolved(tree)
+        if done:
+            os.makedirs("%s/resolved" % a.outdir, exist_ok=True)
+            with open("%s/resolved/%s.resolved.nwk" % (a.outdir, job), "w") as fo:
+                fo.write(write(tree) + ";\n")
+        else:
+            with open("%s/%s.fasta" % (a.outdir, job), "w") as fo:
+                fo.writelines(alignment[t] for t in tips + og)
+            with open("%s/%s.nwk" % (a.outdir, job), "w") as fo:
+                fo.write(write(tree) + ";\n")
+        plan["jobs"].append({"id": job, "n": len(tips), "reps": j["reps"], "outgroups": og, "root": j["root"], "resolved": done})
     with open(a.plan, "w") as fo:
         json.dump(plan, fo, indent=1)
     sizes = sorted((j["n"] for j in plan["jobs"]), reverse=True)
