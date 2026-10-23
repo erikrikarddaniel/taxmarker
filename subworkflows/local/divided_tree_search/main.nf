@@ -28,6 +28,7 @@ workflow DIVIDED_TREE_SEARCH {
         }
     // ch_parts: [ part meta, fasta, constraint, model ]
 
+    // The fasta and constraint inputs are paired by position: both come from ch_parts, so keep it that way.
     RAXMLNG_SEARCH(
         ch_parts.map { part, fasta, _constraint, model -> [ part, fasta, model ] },
         [],

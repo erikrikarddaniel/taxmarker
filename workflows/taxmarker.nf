@@ -310,8 +310,8 @@ workflow TAXMARKER {
     // The later two SWF_SATIVA params are meant to pass a reference tree and a
     // model file respectively. Not implemented yet.
     //
-    def model_selection = ['DNA', 'AA', 'auto']
-    if (run_divided_tree_search && ((!skip_sativa && raxmlng_model in model_selection) || (run_reference && (raxmlng_reference_model ?: raxmlng_model) in model_selection))) {
+    def model_selection = ['DNA', 'AA', 'AUTO']
+    if (run_divided_tree_search && ((!skip_sativa && raxmlng_model.toUpperCase() in model_selection) || (run_reference && (raxmlng_reference_model ?: raxmlng_model).toUpperCase() in model_selection))) {
         error("--run_divided_tree_search needs a fixed model, for example --raxmlng_model GTR+G4 (and --raxmlng_reference_model for --run_reference): the parts cannot select one each.")
     }
     def ch_sativa_mislabels

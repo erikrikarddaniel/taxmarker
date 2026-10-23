@@ -208,4 +208,40 @@ nextflow_pipeline {
             assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
         }
     }
+
+    test("-profile test, divided tree search needs a fixed model whatever its case") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_clustering         = true
+                raxmlng_model           = "dna"
+                run_divided_tree_search = true
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
+        }
+    }
+
+    test("-profile test, divided tree search needs a fixed model for the reference tree too") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_clustering         = true
+                raxmlng_model           = "GTR+G4"
+                raxmlng_reference_model = "DNA"
+                run_reference           = true
+                run_divided_tree_search = true
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
+        }
+    }
 }
