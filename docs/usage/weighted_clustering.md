@@ -7,6 +7,7 @@ Three parameters control this, all optional:
 
 - `--sequence_weights`: a two-column table (`sequence_id<TAB>weight`) used to break ties when picking a representative.
   Sequences absent from the table default to weight 1.
+  The table can be gzipped.
   Omit entirely and every sequence is weight 1, which degrades to "pick the longest sequence per (cluster, taxon) pair".
   The clustering logic itself is generic and doesn't care where the weights came from -- see `--upstream` below for a way to compute it automatically instead of supplying it directly.
 - `--min_weight`: an absolute cutoff applied before clustering.

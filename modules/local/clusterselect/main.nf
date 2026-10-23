@@ -43,7 +43,8 @@ GAP_CHARS = set('-.?')
 # identity) -- see nf-core/taxmarker#15.
 weights = {}
 if weights_in:
-    with open(weights_in) as fh:
+    weights_opener = gzip.open if weights_in.endswith('.gz') else open
+    with weights_opener(weights_in, 'rt') as fh:
         for line in fh:
             line = line.rstrip('\\n')
             if not line:

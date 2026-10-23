@@ -29,14 +29,14 @@ input:
     - taxonomy:
         type: file
         description: |
-          Optional tab-separated taxonomy labels (seq_name<TAB>rank1;rank2;...).
-          Pass `[]` if not available -- taxonomy is then derived from sequences'
-          own FASTA headers instead.
-        pattern: "*.{tax,tsv}"
+          Optional tab-separated taxonomy labels (seq_name<TAB>rank1;rank2;...),
+          plain or gzipped. Pass `[]` if not available -- taxonomy is then
+          derived from sequences' own FASTA headers instead.
+        pattern: "*.{tax,tsv,tax.gz,tsv.gz}"
     - sequences:
         type: file
-        description: Sequences in FASTA format, aligned or not.
-        pattern: "*.{fa,fasta,fna,alnfna,mfa}"
+        description: Sequences in FASTA, Clustal or PHYLIP format, aligned or not, plain or gzipped.
+        pattern: "*.{fa,fasta,fna,faa,afa,mfa,alnfna,alnfaa,aln,phy,phylip,fa.gz,fasta.gz,fna.gz,faa.gz,afa.gz,mfa.gz,alnfna.gz,alnfaa.gz,aln.gz,phy.gz,phylip.gz}"
 output:
   taxonomy:
     - - meta:

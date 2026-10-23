@@ -13,7 +13,8 @@ It takes two logical inputs: a set of sequences (`--sequences`) and their propos
 
 ### Sequences (`--sequences`)
 
-Path to a sequences file, aligned or not: phylip (`.phy`), Clustal (`.aln`), or FASTA (`.fa`, `.fasta`, `.mfa`, `.alnfaa`, `.alnfna`).
+Path to a sequences file, aligned or not: phylip (`.phy`, `.phylip`), Clustal (`.aln`), or FASTA (`.fa`, `.fasta`, `.fna`, `.faa`, `.afa`, `.mfa`, `.alnfaa`, `.alnfna`).
+The file can be gzipped, e.g. `sequences.fna.gz`.
 Aligned vs. unaligned is detected automatically -- no separate mode-switch parameter needed.
 Unaligned content is aligned via [hmmalign](http://hmmer.org) against an HMM profile before continuing through the rest of the pipeline as if it had arrived pre-aligned: pass `--hmm` (path to an HMM profile database) and, if that database holds more than one named profile, `--hmm_name` to pick which one.
 The sequences are aligned in chunks of `--align_chunk_size` (default 10000) in separate jobs, because `hmmalign` needs about 60 kB of memory per sequence.
@@ -27,6 +28,7 @@ The chunks are masked to the profile's match-state columns and concatenated in i
 
 Optional -- see [Taxonomy embedded in sequence headers](#taxonomy-embedded-in-sequence-headers) below if omitted.
 A tab-separated file with two columns and no header: sequence name, and a semicolon-separated taxonomy string.
+It must end in `.tax` or `.tsv`, and can be gzipped, e.g. `.tax.gz`.
 
 ```tsv title="taxonomy.tsv"
 UnpCCeti        Bacteria;Fusobacteria;Fusobacteriia;Fusobacteriales;Fusobacteriaceae;Cetobacterium;Cetobacterium ceti

@@ -94,7 +94,7 @@ if taxonomy_in:
             '--taxonomy was provided; ignoring embedded taxonomy text found in '
             '--sequences record headers.'
         )
-    with open(taxonomy_in) as fh_in:
+    with opener(taxonomy_in) as fh_in:
         for line in fh_in:
             name, _, lineage = line.rstrip('\\n').partition('\\t')
             lineages[name] = trim_lineage(lineage)
