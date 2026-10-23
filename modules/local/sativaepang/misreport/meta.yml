@@ -40,7 +40,14 @@ output:
           description: Groovy Map containing sample information. e.g. `[ id:'sample1' ]`
       - "*.mislabels.tsv":
           type: file
-          description: Putative mislabels, one row per flagged sequence (seq_name, original_label, predicted_label, lwr, mismatch_rank, method).
+          description: |
+            Putative mislabels, one row per flagged sequence (seq_name, original_label,
+            predicted_label, lwr, original_label_exclusion, mismatch_rank, method).
+            original_label_exclusion is sativa-epang's OriginalLabelExclusion, the
+            placement weight outside the declared taxon at the mislabelled rank (NA when
+            the `.mis` has no such column). A stem placement reports lwr 0.51 with an
+            exclusion near 1: confidently outside the declared taxon, but undecided
+            between the neighbouring taxon and its parent.
           pattern: "*.mislabels.tsv"
   summary:
     - - meta:

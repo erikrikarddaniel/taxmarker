@@ -124,11 +124,13 @@ with open(opts.out_alignment, 'w') as fh:
             print(str(record.seq), file=fh)
 
 with open(opts.out_mislabels, 'w') as fh:
-    print('seq_name\\toriginal_label\\tpredicted_label\\tlwr\\tmismatch_rank\\tmethod', file=fh)
+    # original_label_exclusion is sativa-epang's; raxtax has no equivalent, so NA keeps
+    # the schema identical for the merged final report.
+    print('seq_name\\toriginal_label\\tpredicted_label\\tlwr\\toriginal_label_exclusion\\tmismatch_rank\\tmethod', file=fh)
     for name in sorted(flagged):
         info = flagged[name]
         print(f"{name}\\t{';'.join(info['original'])}\\t{';'.join(info['predicted'])}\\t"
-              f"{info['confidence']:.6f}\\t{info['mismatch_rank']}\\traxtax", file=fh)
+              f"{info['confidence']:.6f}\\tNA\\t{info['mismatch_rank']}\\traxtax", file=fh)
 
 with open('versions.yml', 'w') as fh:
     print('"${task.process}":', file=fh)
