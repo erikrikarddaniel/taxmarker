@@ -12,22 +12,35 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [FastQC](#fastqc) - Raw read QC
+- [Mislabels](#mislabels) - Putative mislabels found by sativa-epang and raxtax
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-### FastQC
+### Mislabels
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `fastqc/`
-  - `*_fastqc.html`: FastQC report containing quality metrics.
-  - `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
+- `mislabels/`
+  - `*.mislabels.tsv`: putative mislabels, one row per flagged sequence, from sativa-epang and from the raxtax prefilter.
 
 </details>
 
-[FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) gives general quality metrics about your sequenced reads. It provides information about the quality score distribution across your reads, per base sequence content (%A/T/G/C), adapter contamination and overrepresented sequences. For further reading and documentation see the [FastQC help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
+The table is tab-separated, with a header line and these columns:
+
+| Column                     | Description                                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `seq_name`                 | Sequence name                                                                                                                              |
+| `original_label`           | Declared taxonomy, as a `;`-separated lineage                                                                                              |
+| `predicted_label`          | Taxonomy proposed by the method                                                                                                            |
+| `lwr`                      | Confidence at the mismatching rank: sativa-epang's `Confidence`, or the raxtax confidence                                                  |
+| `original_label_exclusion` | sativa-epang's `OriginalLabelExclusion`: the placement weight outside the declared taxon at the mislabelled rank. `NA` for raxtax rows     |
+| `mismatch_rank`            | Rank where the lineages disagree, counted from the root (1 = first rank): the first differing rank for sativa, the checked rank for raxtax |
+| `method`                   | `sativa` or `raxtax`                                                                                                                       |
+
+A sativa-epang row with `lwr` 0.51 and `original_label_exclusion` near 1 is a stem placement: the sequence was placed on the branch between the proposed taxon and its parent.
+Sativa splits the weight of such a placement 0.49/0.51 between the two (a hardcoded value), so the 0.51 does not come from the data.
+The sequence is confidently outside its declared taxon, but it is not clear which neighbouring taxon it belongs to.
 
 ### MultiQC
 
