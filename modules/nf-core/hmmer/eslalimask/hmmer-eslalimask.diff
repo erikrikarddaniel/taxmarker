@@ -1,5 +1,5 @@
 Changes in component 'nf-core/hmmer/eslalimask'
-'modules/nf-core/hmmer/eslalimask/meta.yml' is unchanged
+'modules/nf-core/hmmer/eslalimask/environment.yml' is unchanged
 Changes in 'hmmer/eslalimask/main.nf':
 --- modules/nf-core/hmmer/eslalimask/main.nf
 +++ modules/nf-core/hmmer/eslalimask/main.nf
@@ -24,8 +24,10 @@ Changes in 'hmmer/eslalimask/main.nf':
      gzip ${prefix}.*mask*
      """
 
-'modules/nf-core/hmmer/eslalimask/environment.yml' is unchanged
-'modules/nf-core/hmmer/eslalimask/tests/nextflow.config' is unchanged
-'modules/nf-core/hmmer/eslalimask/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/hmmer/eslalimask/meta.yml' is unchanged
 'modules/nf-core/hmmer/eslalimask/tests/main.nf.test' is unchanged
+'modules/nf-core/hmmer/eslalimask/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/hmmer/eslalimask/tests/nextflow.config' is unchanged
+'modules/nf-core/hmmer/eslalimask/.conda-lock/linux_arm64-bd-dba1a582dd6d0e9e_1.txt' is unchanged
+'modules/nf-core/hmmer/eslalimask/.conda-lock/linux_amd64-bd-ab3efa7c16f46920_1.txt' is unchanged
 ************************************************************

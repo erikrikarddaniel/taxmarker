@@ -8,6 +8,7 @@ lint:
     - docs/images/nf-core-taxmarker_logo_dark.png
   nextflow_config:
     - params.input
+    - manifest.diagram
 nf_core_version: 4.2.0
 repository_type: pipeline
 template:
