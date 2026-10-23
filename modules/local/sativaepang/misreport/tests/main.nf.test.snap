@@ -89,6 +89,36 @@
             "nextflow": "26.04.4"
         }
     },
+    "stem placement: lwr 0.510 with an exclusion near 1": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,dc6d10a7600b7e2e0c17cc80bdad36f2"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,4dbe2b6191f101721d6acc09c2aa5637"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-10-23T11:30:35.616721009",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.4"
+        }
+    },
     "below-threshold confidence excluded from mislabels but still scored": {
         "content": [
             {

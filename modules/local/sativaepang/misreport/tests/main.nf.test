@@ -192,6 +192,39 @@ nextflow_process {
 
     }
 
+    test("stem placement: lwr 0.510 with an exclusion near 1") {
+
+        when {
+            process {
+                """
+                // A placement on the branch between a genus and its parent splits its weight
+                // 0.49/0.51 (sativa's hardcoded parent_lhw_coeff), so lwr is 0.510 while
+                // almost all of the weight is outside the declared genus.
+                def misFile = File.createTempFile('test', '.mis')
+                misFile.text = ';SeqID\\tMislabeledLevel\\tOriginalLabel\\tProposedLabel\\tConfidence\\tOriginalTaxonomyPath\\tProposedTaxonomyPath\\tPerRankConfidence\\tOriginalLabelExclusion\\n' +
+                    'SeqB\\tGenus\\tg__Methanobrevibacter\\tg__Methanosphaera\\t0.510\\td__Archaea;p__Methanobacteriota;g__Methanobrevibacter\\td__Archaea;p__Methanobacteriota;g__Methanosphaera\\t1.000;1.000;0.510\\t0.998\\n'
+                def taskdir = new File(File.createTempDir(), 'test.l1o_tasks')
+                taskdir.mkdirs()
+                new File(taskdir, 'manifest.json').text = '{"n_folds": 1, "n_leaves": 3}'
+                input[0] = [ [ id:'test' ], file(misFile.toString()), file(taskdir.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def mislabels = path(process.out.mislabels[0][1]).text
+
+            assertAll(
+                { assert mislabels.contains('SeqB') },
+                { assert mislabels.contains('\t0.51\t0.998\t3\tsativa') },
+                { assert snapshot(sanitizeOutput(process.out)).match() }
+            )
+        }
+
+    }
+
     test("stub") {
 
         options "-stub"

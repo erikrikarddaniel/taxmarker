@@ -44,12 +44,8 @@ opts = parser.parse_args()
 # tab-separated data row per flagged sequence:
 #   SeqID  MislabeledLevel  OriginalLabel  ProposedLabel  Confidence
 #   OriginalTaxonomyPath  ProposedTaxonomyPath  PerRankConfidence
-# Of the columns past these eight, only OriginalLabelExclusion (sativa-epang 0.10.2+) is
-# kept, found by its name in the ';'-prefixed header: the placement weight outside the
-# declared taxon at the mislabelled rank. It explains the 0.510 confidence of stem
-# placements (all weight on a branch between two ranks) without being a second filter.
-# Any other extra column (-ranktest adds one) is ignored; a .mis without the column
-# gets NA.
+# Past these eight, only OriginalLabelExclusion (sativa-epang 0.10.2+) is kept, found by its
+# name in the ';'-prefixed header and NA when absent. Other extra columns are ignored.
 # MislabeledLevel is a rank NAME (e.g. "Phylum"), not a position, so the numeric
 # mismatch_rank below is derived from the taxonomy paths themselves (first
 # differing ';'-separated token) rather than trusting that name.
