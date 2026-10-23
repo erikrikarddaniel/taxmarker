@@ -41,6 +41,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Fixed`
 
+- [#NN](https://github.com/nf-core/taxmarker/pull/NN) - Launch the AWS tests with `seqeralabs/action-seqera-launch` and the v2 syntax parser, and stop uploading the debug log as an artifact (by @erikrikarddaniel).
 - [#53](https://github.com/nf-core/taxmarker/pull/53) - `SATIVAEPANG_LOOSCORE` and `SATIVAEPANG_MISREPORT` no longer fail in containers with `FileNotFoundError: ...l1o_tasks/manifest.json` in about 1 run in 256: `SATIVAEPANG_LOOPLACE` and `SATIVAEPANG_MERGEFOLDS` no longer leave symlinks into other tasks' work directories in their output, which were not mounted when two work directories shared their two-character prefix. Their output now holds `manifest.json` and the placements only, as real files
 - [#48](https://github.com/nf-core/taxmarker/pull/48) - `nextflow run . -profile test,docker` (and the other small test profiles) no longer fails with RAxML-NG's `BRLEN out-of-bounds`: the test profiles now set `--raxmlng_blopt nr_safe`, because the fixtures' near-empty sequences crash the default branch-length optimisation for some seeds
 - [#29](https://github.com/nf-core/taxmarker/pull/29) - The raxtax prefilter no longer flags every sequence that is the only member of its taxon at `--raxtax_filter_rank`: raxtax cannot predict a taxon with no other sequence, so these were always reported as mislabelled. After dereplication this covers most species with a single 16S variant
