@@ -323,6 +323,43 @@ nextflow_process {
         }
     }
 
+    test("taxmarker - taxa all smaller than --min are still divided into parts of at most --max tips") {
+
+        when {
+            params {
+                module_args = '--max 11 --min 10 --reps 3 --outgroups 2'
+            }
+            process {
+                """
+                def taxa = ['a', 'b', 'c'].collect { t -> (1..8).collect { t + it } }
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = '(' + taxa.collect { '(' + it.join(',') + ')' }.join(',') + ');\\n'
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = taxa.flatten().collect { '>' + it + '\\n' + 'ACGTACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def fasta = [process.out.fasta[0][1]].flatten()
+            def names = { f -> path(f).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) } }
+
+            assertAll(
+                // No eight-tip taxon fits with another within --max, so a is closed as a part although it is below --min.
+                // Its three representatives then fit with b (3 + 8), which becomes a part, and the root part holds
+                // that part's representatives and c.
+                { assert plan.jobs.size() == 3 },
+                { assert plan.jobs.count { it.root } == 1 },
+                { assert plan.jobs.every { it.n <= 11 } },
+                { assert fasta.every { names(it).size() <= 11 + 2 } }
+            )
+        }
+    }
+
     test("taxmarker - fails when --min or --outgroups would give parts that cannot be grafted") {
 
         when {

@@ -269,4 +269,39 @@ nextflow_pipeline {
             assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
         }
     }
+
+    test("-profile test, divided tree search needs a fixed model for the reference tree when only --raxmlng_model names a selection") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_clustering         = true
+                skip_sativa             = true
+                run_reference           = true
+                run_divided_tree_search = true
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
+        }
+    }
+
+    test("-profile test, divided tree search without a tree to build warns") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_clustering         = true
+                skip_sativa             = true
+                run_divided_tree_search = true
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert new File("$launchDir/meta/nextflow.log").text.contains("WARN  nextflow.Nextflow - --run_divided_tree_search has no effect")
+        }
+    }
 }

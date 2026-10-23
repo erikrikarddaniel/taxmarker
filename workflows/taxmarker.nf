@@ -314,6 +314,9 @@ workflow TAXMARKER {
     if (run_divided_tree_search && ((!skip_sativa && raxmlng_model.toUpperCase() in model_selection) || (run_reference && (raxmlng_reference_model ?: raxmlng_model).toUpperCase() in model_selection))) {
         error("--run_divided_tree_search needs a fixed model, for example --raxmlng_model GTR+G4 (and --raxmlng_reference_model for --run_reference): the parts cannot select one each.")
     }
+    if (run_divided_tree_search && skip_sativa && !run_reference) {
+        log.warn("--run_divided_tree_search has no effect with --skip_sativa unless --run_reference builds a tree.")
+    }
     def ch_sativa_mislabels
     def run_sativa = !skip_sativa
     if (run_sativa) {

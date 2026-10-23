@@ -238,7 +238,7 @@
                     "type": "integer",
                     "default": 10,
                     "minimum": 2,
-                    "description": "Smallest taxon that --run_divided_tree_search searches as a part of its own.",
+                    "description": "Smallest taxon that --run_divided_tree_search searches as a part of its own, unless a node cannot otherwise be brought down to --tree_part_max_tips.",
                     "fa_icon": "fas fa-compress"
                 },
                 "tree_part_reps": {

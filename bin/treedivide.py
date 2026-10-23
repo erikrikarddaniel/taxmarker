@@ -277,7 +277,14 @@ def split(a):
                 size += len(it)
             groups = [g for g in groups + [g] if len(g) > 1]
             if not groups:
-                sys.exit("A node cannot be reduced below --max %d; raise --max or lower --reps or --min" % a.max)
+                # Last resort: an item below --min is closed too, as nothing else can shrink the node.
+                i = max(range(len(items)), key=lambda i: len(items[i]))
+                if len(items[i]) <= a.reps:
+                    sys.exit("A node cannot be reduced below --max %d; raise --max or lower --reps" % a.max)
+                reps = newjob(items[i], v, [items[j] for j in range(len(items)) if j != i])
+                total -= len(items[i]) - len(reps)
+                items[i] = reps
+                continue
             merged = {}
             for g in groups:
                 tips = [t for i in g for t in items[i]]
