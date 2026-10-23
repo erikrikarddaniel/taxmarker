@@ -16,8 +16,8 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "pattern": "^\\S+\\.(tax)|(tsv)",
-                    "description": "Path to a taxonomy file. If omitted, taxonomy is derived from --sequences record headers instead.",
+                    "pattern": "^\\S+\\.(tax|tsv)(\\.gz)?$",
+                    "description": "Path to a taxonomy file (.tax or .tsv, can be gzipped). If omitted, taxonomy is derived from --sequences record headers instead.",
                     "help_text": "TSV file with two columns: Name and semicolon-separated taxonomy. If not given, each --sequences FASTA record's header must carry the taxonomy directly after its id (GTDB-style: `>id taxonomy;string`). If both are given, the file wins -- a warning is logged if header text is also present and being ignored.",
                     "fa_icon": "fas fa-file-alt"
                 },
@@ -25,8 +25,8 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "pattern": "^\\S+\\.(aln)|(phy)|(alnf[na]a)|(mfa)|(f[na]a)|(fa)|(fasta)$",
-                    "description": "Path to a sequences file, aligned or not, in phylip (.phy), Clustal (.aln) or fasta format (.fa, .fasta, .mfa, .alnfaa or .alnfna).",
+                    "pattern": "^\\S+\\.(aln|phy|phylip|alnf[na]a|mfa|f[na]a|fa|afa|fasta)(\\.gz)?$",
+                    "description": "Path to a sequences file, aligned or not, in phylip (.phy or .phylip), Clustal (.aln) or fasta format (.fa, .fasta, .fna, .faa, .afa, .mfa, .alnfaa or .alnfna). Can be gzipped.",
                     "help_text": "Unaligned content is aligned automatically via hmmalign -- see --hmm/--hmm_name.",
                     "fa_icon": "fas fa-file-alt"
                 },
@@ -88,7 +88,7 @@
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "description": "Path to a two-column table (sequence_id<TAB>weight) used to pick a representative sequence per (cluster, taxon) pair. Sequences absent from the table default to weight 1.",
+                    "description": "Path to a two-column table (sequence_id<TAB>weight) used to pick a representative sequence per (cluster, taxon) pair. Sequences absent from the table default to weight 1. Can be gzipped.",
                     "help_text": "The clustering/selection logic only ever sees this generic table -- it doesn't matter where the weights came from (e.g. a GTDB-metadata-derived translation, see --upstream). Omit entirely to treat every sequence as weight 1, which degrades gracefully to picking the longest sequence per (cluster, taxon) pair. If both this and --upstream are given, this file wins (with a warning), the same precedent as --taxonomy winning over embedded taxonomy text.",
                     "fa_icon": "fas fa-balance-scale"
                 },
@@ -414,7 +414,7 @@
                 },
                 "trace_report_suffix": {
                     "type": "string",
-                    "fa_icon": "far calendar",
+                    "fa_icon": "far fa-calendar",
                     "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
                     "hidden": true
                 },

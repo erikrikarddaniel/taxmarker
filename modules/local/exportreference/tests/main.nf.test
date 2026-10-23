@@ -42,8 +42,8 @@ nextflow_process {
                 def verified = file("\${dir}/verified.tax")
                 verified.text = ['X_C', 'X_A', 'X_B', 'X_F', 'Y_1'].collect { n -> "RS_\${n}\\t\${n.startsWith('Y') ? Y : X}\\n" }.join('')
                 def mis = file("\${dir}/mislabels.tsv")
-                mis.text = 'seq_name\\toriginal_label\\tpredicted_label\\tlwr\\tmismatch_rank\\tmethod\\n' +
-                    "RS_X_F\\t\${X}\\t\${Y}\\t1.0\\t7\\tsativa\\n"
+                mis.text = 'seq_name\\toriginal_label\\tpredicted_label\\tlwr\\toriginal_label_exclusion\\tmismatch_rank\\tmethod\\n' +
+                    "RS_X_F\\t\${X}\\t\${Y}\\t1.0\\t1.0\\t7\\tsativa\\n"
                 input[0] = [ [ id:'export_test' ], seqs, tax, sel, verified, mis ]
                 input[1] = [ 1, 3, 'all' ]
                 """
@@ -199,8 +199,8 @@ nextflow_process {
                 def tax = file("\${dir}/checked.tax")
                 tax.text = ['Z_short', 'Z_long', 'Z_flagged'].collect { n -> "\${n}\\t\${Z}\\n" }.join('')
                 def mis = file("\${dir}/mislabels.tsv")
-                mis.text = 'seq_name\\toriginal_label\\tpredicted_label\\tlwr\\tmismatch_rank\\tmethod\\n' +
-                    "Z_flagged\\t\${Z}\\t\${Z}\\t1.0\\t4\\tsativa\\n"
+                mis.text = 'seq_name\\toriginal_label\\tpredicted_label\\tlwr\\toriginal_label_exclusion\\tmismatch_rank\\tmethod\\n' +
+                    "Z_flagged\\t\${Z}\\t\${Z}\\t1.0\\t1.0\\t4\\tsativa\\n"
                 input[0] = [ [ id:'export_test' ], seqs, tax, [], tax, mis ]
                 input[1] = [ 1 ]
                 """

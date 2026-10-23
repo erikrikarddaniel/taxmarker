@@ -73,6 +73,46 @@ nextflow_process {
 
     }
 
+    test("gzipped weight table -- read the same as a plain one") {
+
+        when {
+            process {
+                """
+                def tax = File.createTempFile('test', '.tax')
+                tax.text = 'SeqLongLowWeight\\td__X;p__A\\n' + 'SeqShortHighWeight\\td__X;p__A\\n'
+                def seq = File.createTempFile('test', '.fasta')
+                seq.text = '>SeqLongLowWeight\\n' + ('ACGT' * 25) + '\\n' +
+                    '>SeqShortHighWeight\\n' + ('ACGT' * 12) + 'AC' + '\\n'
+                def weights = File.createTempFile('test', '.weights.tsv.gz')
+                def weights_gz = new java.util.zip.GZIPOutputStream(new FileOutputStream(weights))
+                weights_gz.write(('SeqLongLowWeight\\t1\\n' + 'SeqShortHighWeight\\t3\\n').getBytes('UTF-8'))
+                weights_gz.close()
+                def uc = File.createTempFile('test', '.uc.tsv.gz')
+                def gz = new java.util.zip.GZIPOutputStream(new FileOutputStream(uc))
+                gz.write(('S\\t0\\t100\\t*\\t+\\t0\\t0\\t*\\tSeqLongLowWeight\\t*\\n' +
+                    'H\\t0\\t50\\t100.0\\t+\\t0\\t0\\t50M\\tSeqShortHighWeight\\tSeqLongLowWeight\\n').getBytes('UTF-8'))
+                gz.close()
+                input[0] = [ [ id:'test' ], file(tax.toString()), file(seq.toString()), file(uc.toString()), file(weights.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def sequences = path(process.out.sequences[0][1]).text
+            def selection = path(process.out.selection[0][1]).text
+
+            assertAll(
+                // Without the weights the longer sequence would win; the weight of 3 must have been read.
+                { assert sequences.contains('>SeqShortHighWeight') },
+                { assert !sequences.contains('>SeqLongLowWeight') },
+                { assert selection.contains('SeqShortHighWeight\t50\t3.000000\t1.500000\tTrue') },
+            )
+        }
+
+    }
+
     test("no weight table -- every sequence defaults to weight 1, longest wins") {
 
         when {

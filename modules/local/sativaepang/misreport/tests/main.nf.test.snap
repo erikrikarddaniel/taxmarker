@@ -1,5 +1,5 @@
 {
-    "extra .mis columns are ignored": {
+    "OriginalLabelExclusion is kept, other extra .mis columns are ignored": {
         "content": [
             {
                 "mislabels": [
@@ -7,7 +7,7 @@
                         {
                             "id": "test"
                         },
-                        "test.mislabels.tsv:md5,23ddb0de83d4a430dfc3e4b88fe20a20"
+                        "test.mislabels.tsv:md5,87c21e0831d561ba5fd1ce9fdd59bb0d"
                     ]
                 ],
                 "summary": [
@@ -23,10 +23,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-30T11:05:44.577552",
+        "timestamp": "2026-10-22T12:05:39.781168105",
         "meta": {
-            "nf-test": "0.9.5",
-            "nextflow": "26.04.6"
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.4"
         }
     },
     "no flagged sequences": {
@@ -37,7 +37,7 @@
                         {
                             "id": "test"
                         },
-                        "test.mislabels.tsv:md5,48a47ad1d396f3459a95291cbf9c478c"
+                        "test.mislabels.tsv:md5,c9cb3fda6f15e93aeb2cf0a4e6347661"
                     ]
                 ],
                 "summary": [
@@ -53,10 +53,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-20T14:47:44.21973693",
+        "timestamp": "2026-10-22T12:08:32.208651736",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.6"
+            "nextflow": "26.04.4"
         }
     },
     "taxonomy paths differ only in depth -- mismatch_rank is never null": {
@@ -67,7 +67,7 @@
                         {
                             "id": "test"
                         },
-                        "test.mislabels.tsv:md5,7440abf6427e085e1575eccf03fa7019"
+                        "test.mislabels.tsv:md5,3de79cf039259d631caf231b930df779"
                     ]
                 ],
                 "summary": [
@@ -83,10 +83,40 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-20T14:48:09.35240447",
+        "timestamp": "2026-10-22T12:08:46.547589088",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.6"
+            "nextflow": "26.04.4"
+        }
+    },
+    "stem placement: lwr 0.510 with an exclusion near 1": {
+        "content": [
+            {
+                "mislabels": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.mislabels.tsv:md5,dc6d10a7600b7e2e0c17cc80bdad36f2"
+                    ]
+                ],
+                "summary": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.summary.txt:md5,4dbe2b6191f101721d6acc09c2aa5637"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                ]
+            }
+        ],
+        "timestamp": "2026-10-23T11:30:35.616721009",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.4"
         }
     },
     "below-threshold confidence excluded from mislabels but still scored": {
@@ -97,7 +127,7 @@
                         {
                             "id": "test"
                         },
-                        "test.mislabels.tsv:md5,4652c9ee898f45aa1bb06c876b4e11b1"
+                        "test.mislabels.tsv:md5,e0ef22d64ab99bc4ff7e957d8d617206"
                     ]
                 ],
                 "summary": [
@@ -113,10 +143,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-20T14:47:58.069162673",
+        "timestamp": "2026-10-22T12:08:39.405069851",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.6"
+            "nextflow": "26.04.4"
         }
     },
     "stub": {
@@ -157,7 +187,7 @@
                         {
                             "id": "test"
                         },
-                        "test.mislabels.tsv:md5,6c0b12e905b3a56764519989491258b4"
+                        "test.mislabels.tsv:md5,b4e3b06f275d5e5e78acb60fb1d4c125"
                     ]
                 ],
                 "summary": [
@@ -173,10 +203,10 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-20T14:47:31.35174478",
+        "timestamp": "2026-10-22T12:08:25.155577678",
         "meta": {
             "nf-test": "0.9.4",
-            "nextflow": "26.04.6"
+            "nextflow": "26.04.4"
         }
     }
 }

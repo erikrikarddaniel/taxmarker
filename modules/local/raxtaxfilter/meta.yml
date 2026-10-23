@@ -68,7 +68,8 @@ output:
             Sequences raxtax flagged as likely mislabeled (declared and predicted lineage
             disagree at --filter-rank with at least --min-confidence), in a schema compatible with SATIVASCORE's own
             mislabels output (seq_name, original_label, predicted_label, lwr,
-            mismatch_rank, method), with method always "raxtax".
+            original_label_exclusion, mismatch_rank, method), with
+            original_label_exclusion always NA and method always "raxtax".
           pattern: "*.mislabels.tsv"
   versions:
     - - ${task.process}:

@@ -28,12 +28,16 @@ process WEIGHTFILTER {
     """
     python3 - "${taxonomy}" "${sequences}" "${weights_in}" "${min_weight}" \\
         "${prefix}.weightfiltered.tax" "${prefix}.weightfiltered.fasta" "${prefix}.weightfiltered.ungapped.fasta" "${prefix}.excluded.tsv" << 'PYEOF'
+import gzip
 import sys
 from Bio import SeqIO
 from Bio.Seq import Seq
 
 taxonomy_in, sequences_in, weights_in, min_weight, out_taxonomy, out_sequences, out_ungapped, out_excluded = sys.argv[1:9]
 min_weight = float(min_weight)
+
+def opener(path):
+    return gzip.open(path, 'rt') if path.endswith('.gz') else open(path)
 
 # The caller doesn't guarantee unaligned input at this point (ENSURE_ALIGNED, which
 # detects aligned-vs-not, runs later) -- VSEARCH_CLUSTER needs plain sequences, same
@@ -47,7 +51,7 @@ GAP_CHARS = str.maketrans({c: None for c in '-.?'})
 # identity), not an imposed scale -- see nf-core/taxmarker#15.
 weights = {}
 if weights_in:
-    with open(weights_in) as fh:
+    with opener(weights_in) as fh:
         for line in fh:
             line = line.rstrip('\\n')
             if not line:
