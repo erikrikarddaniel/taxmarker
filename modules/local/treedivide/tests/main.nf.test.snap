@@ -1,0 +1,35 @@
+{
+    "taxmarker - stub": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "job_000.fasta:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "job_000.nwk:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.plan.json:md5,9d5528adc18170e100d100e107d50fd3"
+                ]
+            ]
+        ],
+        "timestamp": "2026-10-22T20:59:09.552941545",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    }
+}
