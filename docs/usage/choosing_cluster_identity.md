@@ -2,7 +2,7 @@
 
 > **Work in progress.**
 > The numbers on this page come from one run on bacterial 16S sequences from GTDB release 232 and will be measured again before the first release.
-> A comparison with the raxtax prefilter switched off will be added.
+> The placements in these runs used GTR+G instead of the RAxML-NG model of the reference tree, which a later fix corrects, so the flag counts will change.
 
 [Weighted clustering](weighted_clustering.md) reduces the input to one representative per (cluster, taxon) pair before alignment, raxtax and placement.
 `--cluster_identity` sets how similar two sequences must be to share a cluster.
@@ -103,6 +103,31 @@ A genus-level comparison cannot say anything about species-level flags, because 
 
 At the phylum level `0.97` therefore dropped many flags that looked wrong and missed few that looked right.
 At genus and species level the loss is larger and could not be checked this way.
+
+## With and without the raxtax prefilter
+
+The `0.97` run was repeated with `--skip_raxtax`.
+Without the prefilter 99,166 sequences were placed instead of 92,406, and SATIVA flagged 17,812 instead of 11,590.
+One placement fold needed 145.7 GB instead of 135.6 GB.
+
+raxtax flagged 14,564 sequences, all at genus level.
+Of these, 7,390 fail the profile coverage filter and are never placed, so SATIVA could not have flagged them.
+The other 7,174 are placed when raxtax is skipped, and SATIVA flags 5,329 of them (74%).
+
+The two runs also differ in the flags on the remaining sequences.
+Of the 91,992 sequences placed in both runs, 8,861 flags are shared, 2,575 are found only with raxtax, and 3,622 only without it.
+Checking the 3,622 against NCBI as above, most flags with a strong hit at phylum to family level point to the declared taxon, so they look like artefacts (for phylum: 161 of 226 in the declared phylum, 51 in the predicted one).
+For flags found in both runs the result is the opposite (361 of 432 in the predicted phylum, 41 in the declared one, in a random sample of 1,500).
+Leaving sequences with a clearly wrong label in the tree therefore creates flags on other sequences that are mostly wrong.
+
+raxtax's own flags are not all right.
+Of the 7,174 that can be placed, 1,845 are not flagged by SATIVA.
+Only 468 of these have a strong NCBI hit, and for 376 of them the hit lies in the declared genus, for 37 in the genus raxtax proposed.
+
+The checks have limits.
+Most of the sequences, 1,348 of the 1,845 and 1,644 of the 3,622, have only weak hits and could not be judged.
+The 2,575 flags found only with raxtax, and the 5,329 that SATIVA confirms, were not checked against NCBI.
+Keep the prefilter on unless there is a reason to test without it.
 
 ## Which value to use
 
