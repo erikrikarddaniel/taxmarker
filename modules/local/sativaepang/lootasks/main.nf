@@ -21,9 +21,7 @@ process SATIVAEPANG_LOOTASKS {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    # sativa-epang takes the model from <refjson name>.model, next to the refjson, and
-    # copies it into the folds. Without it EPA-ng places under GTR+G.
-    [ -e "${refjson.baseName}.model" ] || ln -s "${model}" "${refjson.baseName}.model"
+    # sativa-epang reads <refjson name>.model from the work directory; without it EPA-ng places under GTR+G.
 
     sativa-epang \\
         -stage loo-tasks \\

@@ -21,9 +21,7 @@ process SATIVAEPANG_LOOSCORE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    # The confirmation pass takes the model from <refjson name>.model too: loo-place does
-    # not pass the copy in the task directory on.
-    [ -e "${refjson.baseName}.model" ] || ln -s "${model}" "${refjson.baseName}.model"
+    # sativa-epang reads <refjson name>.model from the work directory; loo-place does not pass the copy in the task directory on.
 
     sativa-epang \\
         -stage loo-score \\
