@@ -31,6 +31,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Changed`
 
+- [#70](https://github.com/nf-core/taxmarker/pull/70) - Template updated to nf-core/tools 4.2.1, which changes the GitHub Actions and the tool versions used by the CI workflows and the pre-commit hooks. The Seqera Platform launch action of the full-size test is unchanged
 - [#65](https://github.com/nf-core/taxmarker/pull/65) - The leave-one-out placement jobs show their fold range in the task name, for example `SATIVAEPANG_LOOPLACE (user-alignment folds 0-4)` or `(user-alignment fold 7)` with `--folds_per_job 1`, so a running or failed job can be told apart
 - [#60](https://github.com/nf-core/taxmarker/pull/60) - `--sequences` and `--taxonomy` only accept their documented suffixes now, with or without `.gz`. The old schema patterns weren't grouped, so any path containing `tsv` or `fa` passed, e.g. `tsvdir/notes.txt`. `.fna`, `.faa`, `.phylip` and `.afa` (the format of the published alignment) are now listed for `--sequences`. Other suffixes such as `.fas` are rejected, and so are paths with whitespace in them
 - [#59](https://github.com/nf-core/taxmarker/pull/59) - Template updated to nf-core/tools 4.2.0 ([#58](https://github.com/nf-core/taxmarker/issues/58)). `manifest.diagram` is left commented out until the minimum Nextflow version is 26.10.0, since 26.04 warns about it on every run. nf-core modules updated (hmmer, `raxmlng/search`, `seqkit/grep`, `vsearch/cluster`), with the same tool versions in Seqera containers
