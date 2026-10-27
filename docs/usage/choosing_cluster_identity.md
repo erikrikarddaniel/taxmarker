@@ -2,7 +2,7 @@
 
 > **Work in progress.**
 > The numbers on this page come from one run on bacterial 16S sequences from GTDB release 232 and will be measured again before the first release.
-> The tables use runs where the placement used the RAxML-NG model of the reference tree, except the raxtax comparison and the NCBI check, which used earlier runs placed under GTR+G.
+> The tables use runs where the placement used the RAxML-NG model of the reference tree, except the raxtax comparison, which used earlier runs placed under GTR+G.
 > The flag counts change with the model, most at species level (see the end of this page).
 
 [Weighted clustering](weighted_clustering.md) reduces the input to one representative per (cluster, taxon) pair before alignment, raxtax and placement.
@@ -128,18 +128,17 @@ Counted over sequences the genus-level shares are 72% and 56%, which shows how m
 
 ## Checking flags against NCBI
 
-This check was made on the first `1.0` and `0.97` runs, placed under GTR+G; the `1.0` run under the corrected model has 3,903 phylum-level flags, 3,197 of them also in the first run, and the others were not checked.
 To see whether the flags that disappeared were right, the sequences were compared with the NCBI RefSeq 16S database (`blastn`, original sequences).
 A top hit with at least 97% identity and 90% coverage was counted as strong.
 The phylum of the hit was taken from the hit's genus through the GTDB taxonomy of the same run.
-Of the 3,892 phylum-level flags of the `1.0` run, 1,507 had only weak hits, because the database has no close relative, so they cannot be judged this way.
+Of the 3,903 phylum-level flags of the `1.0` run, 1,502 had only weak hits, because the database has no close relative, so they cannot be judged this way.
 
 For the flags with a strong hit:
 
-- Flags found in both runs were mostly right: the hit lay in the phylum the flag moved the sequence to for 1,063 of 1,161.
-- Flags found only at `1.0` were mostly wrong: for the 404 whose representative was not flagged at `0.97`, the hit lay in the declared phylum for 386.
+- Flags found in both runs were mostly right: the hit lay in the phylum the flag moved the sequence to for 1,091 of 1,190.
+- Flags found only at `1.0` were mostly wrong: for the 288 whose representative was not flagged at `0.97`, the hit lay in the declared phylum for 278.
   These are sequences whose placement moved when sequences were removed from the tree, a pattern consistent with long-branch artefacts, which has not been tested.
-- 97 flags that look right had no representative flagged, about 7% of the phylum-level flags that look right.
+- 84 flags that look right had no representative flagged, about 6% of the phylum-level flags that look right.
 
 For species with many sequences (_Escherichia coli_, _Klebsiella pneumoniae_, _Staphylococcus aureus_, _Salmonella enterica_, _Pseudomonas aeruginosa_), more than 99% of the sequences that were not flagged had a top hit in the expected genus.
 A genus-level comparison cannot say anything about species-level flags, because 16S sequences of closely related species are too similar.
@@ -191,5 +190,6 @@ Placing under the model of the reference tree instead of GTR+G changes the flags
 At `0.97` 17-18% of the flags differ (10% at phylum and 37% at species level), mostly flags with a low placement weight.
 At `1.0` 34% of the flags of the first run are not found under the corrected model and 38% of the new flags are new; at genus and species level it is 40-45%.
 These flags do not have low placement weights: the median is 1.0.
-Whether a repeat run under the same model also changes this many flags has not been measured.
-Until it is, treat genus- and species-level flags at `1.0` as a list that depends on the model and the tree, not as a fixed result.
+Repeating one `0.97` placement fold changed the top placement of 1.5% of its sequences, all of them ties between equally weighted positions in the tree.
+Such ties are 2.5% of the sequences at `0.97` and 8-12% at `1.0`, so repeats may differ more at `1.0`; this was not measured.
+Treat genus- and species-level flags at `1.0` as a list that depends on the model and the tree, not as a fixed result.
