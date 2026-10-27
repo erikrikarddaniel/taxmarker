@@ -34,7 +34,13 @@ workflow DIVIDED_TREE_SEARCH {
         TREEDIVIDE.out.root_fasta
             .join(ch_input.map { meta, _alignment, _guide_tree, model -> [ meta, model ] })
             .filter { _meta, _fasta, model -> model.toUpperCase() == 'DNA' }
-            .map { meta, fasta, _model -> [ meta, fasta ] }
+            .map { meta, fasta, _model ->
+                def n = fasta.readLines().count { line -> line.startsWith('>') }
+                if (n < 4) {
+                    error("The root part of the divided tree for ${meta.id} has fewer than 4 sequences (${n}), too few for model selection: raise --tree_part_reps or name a model with --raxmlng_model.")
+                }
+                [ meta, fasta ]
+            }
     )
 
     def ch_models = ch_input

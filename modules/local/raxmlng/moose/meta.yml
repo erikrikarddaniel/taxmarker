@@ -21,7 +21,7 @@ input:
         description: Groovy Map containing sample information. e.g. `[ id:'sample1' ]`
     - alignment:
         type: file
-        description: Alignment in FASTA format. The data type goes in `ext.args` (`--data-type DNA`).
+        description: Alignment in FASTA format. RAxML-NG needs the data type, so `ext.args` must contain `--data-type DNA` (or AA, BIN).
         pattern: "*.{fasta,fa}"
         ontologies:
           - edam: http://edamontology.org/format_1929 # FASTA

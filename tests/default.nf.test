@@ -225,6 +225,16 @@ nextflow_pipeline {
         assert found.size() == 1
         found[0].text.split(',')[0].trim()
     }
+    // The --model of the evaluation commands of the divided search.
+    def evaluated = { workDir ->
+        def models = []
+        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f ->
+            if (f.name == '.command.run' && f.readLines().find { it.startsWith('### name:') }?.contains('DIVIDED_TREE_SEARCH:RAXMLNG_EVALUATE')) {
+                models << (new File(f.parentFile, '.command.sh').text =~ /--model (\S+)/)[0][1]
+            }
+        }
+        models
+    }
 
     test("-profile test, divided tree search selects the model on the root part") {
 
@@ -248,6 +258,7 @@ nextflow_pipeline {
                 { assert moose.size() == 1 },
                 { assert searches.size() > 1 },
                 // The tree and model that reach the placement come from the evaluation under the selected model.
+                { assert evaluated(workDir) == [ selected(workDir) ] },
                 { assert new File("$outputDir/raxmlng/user-alignment.raxml.bestModel").text.startsWith(selected(workDir).tokenize('+')[0]) },
                 { assert new File("$outputDir/mislabels/user-alignment.mislabels.tsv").exists() },
             )

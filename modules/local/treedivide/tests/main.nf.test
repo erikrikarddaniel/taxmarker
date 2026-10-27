@@ -444,7 +444,10 @@ nextflow_process {
                 { assert plan.jobs.size() > 1 },
                 { assert names.size() == root.n },
                 { assert names.toSet().size() == names.size() },
-                { assert names.every { it ==~ /[abf][0-9]+|c[12]/ } },
+                // The root part is the representatives of the parts below it, not the whole alignment.
+                { assert names.size() < 26 },
+                { assert names.every { n -> plan.jobs.any { !it.root && it.reps.contains(n) } } },
+                { assert names.any { it.startsWith('a') } && names.any { it.startsWith('b') } && names.any { it.startsWith('f') } },
                 { assert root.outgroups == [] }
             )
         }

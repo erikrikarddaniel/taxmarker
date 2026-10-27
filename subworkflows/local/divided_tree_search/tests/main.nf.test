@@ -114,12 +114,36 @@ nextflow_workflow {
 
             assertAll(
                 { assert moose.size() == 1 },
+                // The selection runs on the alignment of the root part, not on the whole alignment or another part.
+                { assert (new File(moose[0], '.command.sh').text =~ /--msa (\S+)/)[0][1].endsWith('.root.fasta') },
+                { assert new File(moose[0], 'test.root.fasta').readLines().count { it.startsWith('>') } < 18 },
                 // The four searches and the evaluation all got the selected model, none the word DNA.
                 { assert taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').collect(modelOf) == [ chosen ] * 4 },
                 { assert taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_EVALUATE').collect(modelOf) == [ chosen ] },
                 { assert chosen != 'DNA' },
                 { assert broken(path(workflow.out.tree[0][1]).text) == [] }
             )
+        }
+    }
+
+    test("taxmarker - model selection on a root part of fewer than four tips fails with a message") {
+
+        when {
+            params {
+                module_args = '--max 6 --min 2 --reps 1 --outgroups 1'
+            }
+            workflow {
+                inputs + """
+                def two = new File(dir, 'two.nwk')
+                two.text = '((a1,a2,a3,a4,a5,a6),(b1,b2,b3,b4,b5,b6));\\n'
+                input[0] = channel.of([ [ id:'test' ], file(aln.toString()), file(two.toString()), 'DNA' ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert workflow.stdout.join("\n").contains("fewer than 4 sequences")
         }
     }
 
@@ -146,10 +170,14 @@ nextflow_workflow {
 
             def moose = taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_MOOSE')
             def searches = taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').collect(modelOf)
+            def evaluations = taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_EVALUATE').collect(modelOf)
 
             assertAll(
                 { assert moose.size() == 1 },
                 { assert workflow.out.tree.collect { it[0].id }.sort() == [ 'fixed', 'select' ] },
+                // Each input is evaluated under its own model.
+                { assert evaluations.toSet().size() == 2 },
+                { assert evaluations.contains('GTR+G') },
                 // The input with GTR+G keeps it in its own searches; the four searches of the other use the selected model.
                 { assert searches.count('GTR+G') > 0 },
                 { assert searches.findAll { it != 'GTR+G' }.size() == 4 },
