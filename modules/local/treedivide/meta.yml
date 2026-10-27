@@ -5,6 +5,7 @@ description: |
   partition tree (the constraint tree unless another tree is given); a part that is closed is
   represented in its parent by a few tips. Each part gets its alignment and a constraint tree
   pruned to its tips, and the plan needed to graft the searched part trees back together.
+  The `fasta`, `constraints` and `resolved` outputs are each only written when there are parts of that kind.
 keywords:
   - phylogeny
   - constraint
