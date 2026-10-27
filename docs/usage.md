@@ -84,6 +84,9 @@ On large alignments the search itself dominates the run time.
 `--raxmlng_fast` switches to the RAxML-NG fast search: one parsimony starting tree and a simplified topology search that stops early.
 The constraint still applies, and the tree is somewhat less optimal than the default search gives.
 
+For inputs of some thousands of sequences or more, `--run_divided_tree_search` searches parts of the taxonomy in parallel and grafts them together.
+See [Divided tree search](usage/divided_tree_search.md) for when it pays off and why it needs a fixed model.
+
 `--raxmlng_seed` sets the seed of the tree search (default 42).
 A different seed can give a somewhat different tree and so somewhat different flags.
 The published files do not carry the seed in their names, so run another seed with a new `--outdir`.
