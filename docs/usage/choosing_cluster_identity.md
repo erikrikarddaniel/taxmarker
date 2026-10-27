@@ -33,6 +33,30 @@ At `0.97` they ran three at a time with 300 GB each, and the whole pipeline fini
 Memory per fold fell a little faster than the number of sequences (to 0.33 of the memory for 0.39 of the sequences), and time fell much faster (to 0.11).
 Only two sizes were measured, so do not extrapolate these ratios.
 
+### Cost of a complete run
+
+The table above shows one placement fold.
+This table adds up every task of a complete run, so resumes and failed attempts do not count.
+Walltime is the sum of the run time of all tasks, and CPU time is the CPU they used.
+Tasks run in parallel, so the elapsed time is shorter than either sum and depends on how many tasks fit on the machine at once.
+
+|                                  | `1.0`   | `0.99`  | `0.97`  |
+| -------------------------------- | ------- | ------- | ------- |
+| Representatives after clustering | 318,358 | 164,357 | 148,034 |
+| After the raxtax prefilter       | 299,245 | 149,308 | 133,470 |
+| Tasks in a complete run          | 696     | 293     | 269     |
+| Walltime, sum over tasks         | 30.9 h  | 6.8 h   | 5.8 h   |
+| CPU time, sum over tasks         | 242.5 h | 35.2 h  | 28.7 h  |
+| Placement folds, walltime        | 19.8 h  | 2.4 h   | 1.9 h   |
+| Placement folds, CPU time        | 204.3 h | 15.9 h  | 12.1 h  |
+| Tree search, walltime            | 3.3 h   | 2.0 h   | 1.9 h   |
+
+`1.0` costs 5.3 times the walltime and 8.5 times the CPU time of `0.97`.
+At `1.0` the placement folds are 64% of the walltime and 84% of the CPU time.
+At `0.99` and `0.97` they are about a third of the walltime, and the tree search takes as long.
+`0.99` costs 17% more walltime and 23% more CPU time than `0.97`.
+These runs used the corrected model, but the earlier runs with GTR+G cost the same within 10% (28.6 h at `1.0`, 5.8 h at `0.97`).
+
 ### Going below `0.97` saves little
 
 The number of representatives cannot fall below the number of distinct taxa in the input, 96,125 here, because every taxon keeps at least one.
