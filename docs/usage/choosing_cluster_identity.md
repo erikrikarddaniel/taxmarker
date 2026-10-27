@@ -2,7 +2,8 @@
 
 > **Work in progress.**
 > The numbers on this page come from one run on bacterial 16S sequences from GTDB release 232 and will be measured again before the first release.
-> The placements in these runs used GTR+G instead of the RAxML-NG model of the reference tree, which a later fix corrects, so the flag counts will change.
+> The tables use runs where the placement used the RAxML-NG model of the reference tree, except the raxtax comparison and the NCBI check, which used earlier runs placed under GTR+G.
+> The flag counts change with the model, most at species level (see the end of this page).
 
 [Weighted clustering](weighted_clustering.md) reduces the input to one representative per (cluster, taxon) pair before alignment, raxtax and placement.
 `--cluster_identity` sets how similar two sequences must be to share a cluster.
@@ -12,26 +13,26 @@ This page shows what that price was in one large run.
 
 ## What was run
 
-The input was all 1,118,534 bacterial sequences in GTDB's `ssu_all_r232.fna.gz`, with `--upstream GTDB` weights, the raxtax prefilter on, and the same tree search settings and seed in both runs.
-One run used `--cluster_identity 1.0` and the other `--cluster_identity 0.97`.
+The input was all 1,118,534 bacterial sequences in GTDB's `ssu_all_r232.fna.gz`, with `--upstream GTDB` weights, the raxtax prefilter on, and the same tree search settings and seed in all runs.
+The runs used `--cluster_identity 1.0`, `0.99` and `0.97`.
 The placement ran 25 folds, one per job.
 
 ## Size and cost
 
-|                                            | `1.0`        | `0.97`        |
-| ------------------------------------------ | ------------ | ------------- |
-| Representatives after clustering           | 318,358      | 148,034       |
-| After the raxtax prefilter                 | 299,245      | 133,470       |
-| Placed and scored (after profile coverage) | 239,806      | 92,406        |
-| Peak memory of one placement fold          | 414.5 GB     | 135.6 GB      |
-| Time of one placement fold                 | about 42 min | about 4.5 min |
-| Scoring step                               | 1 h 6 min    | 10 min 48 s   |
-| SATIVA flags                               | 40,587       | 11,590        |
+|                                            | `1.0`        | `0.99`        | `0.97`        |
+| ------------------------------------------ | ------------ | ------------- | ------------- |
+| Representatives after clustering           | 318,358      | 164,357       | 148,034       |
+| After the raxtax prefilter                 | 299,245      | 149,308       | 133,470       |
+| Placed and scored (after profile coverage) | 239,806      | 103,225       | 92,406        |
+| Peak memory of one placement fold          | 414.6 GB     | 152.5 GB      | 135.6 GB      |
+| Time of one placement fold                 | about 48 min | about 5.6 min | about 4.5 min |
+| Scoring step                               | 1 h 6 min    | 13 min 12 s   | 10 min 48 s   |
+| SATIVA flags                               | 43,127       | 15,722        | 11,757        |
 
-At `1.0` the folds ran one after the other and took about 17.5 hours in all.
-At `0.97` they ran three at a time with 300 GB each, and the whole pipeline finished in 2 h 17 min.
-Memory per fold fell a little faster than the number of sequences (to 0.33 of the memory for 0.39 of the sequences), and time fell much faster (to 0.11).
-Only two sizes were measured, so do not extrapolate these ratios.
+At `1.0` the 25 folds ran two at a time and took 19.8 hours of walltime in all.
+At `0.97` they ran three at a time with 300 GB each, and the first `0.97` run finished the whole pipeline in 2 h 17 min.
+Memory per fold fell a little faster than the number of sequences (to 0.33 of the memory for 0.39 of the sequences from `1.0` to `0.97`), and time fell much faster (to 0.09).
+Do not extrapolate these ratios far from the three sizes measured.
 
 ### Cost of a complete run
 
@@ -55,7 +56,7 @@ Tasks run in parallel, so the elapsed time is shorter than either sum and depend
 At `1.0` the placement folds are 64% of the walltime and 84% of the CPU time.
 At `0.99` and `0.97` they are about a third of the walltime, and the tree search takes as long.
 `0.99` costs 17% more walltime and 23% more CPU time than `0.97`.
-These runs used the corrected model, but the earlier runs with GTR+G cost the same within 10% (28.6 h at `1.0`, 5.8 h at `0.97`).
+The first runs, placed under GTR+G, cost the same within 10% (28.6 h at `1.0`, 5.8 h at `0.97`).
 
 ### Going below `0.97` saves little
 
@@ -82,34 +83,52 @@ The table compares the two runs on the 89,538 sequences that were placed in both
 
 | Rank | `1.0` flags | Also flagged at `0.97` |
 | ---- | ----------- | ---------------------- |
-| 2    | 2,714       | 93%                    |
-| 3    | 361         | 93%                    |
-| 4    | 665         | 89%                    |
-| 5    | 704         | 85%                    |
-| 6    | 1,544       | 66%                    |
-| 7    | 4,674       | 35%                    |
+| 2    | 2,729       | 95%                    |
+| 3    | 369         | 91%                    |
+| 4    | 660         | 91%                    |
+| 5    | 719         | 85%                    |
+| 6    | 1,672       | 66%                    |
+| 7    | 5,256       | 34%                    |
 
 Species-level flags depend on which sister species are in the tree, so they change when sequences are removed.
 Flags at higher ranks mostly stay.
 
 A flagged sequence that is not a representative at `0.97` is not placed itself.
 It still counts as caught if its representative (same cluster and taxon) is flagged by SATIVA or raxtax, because a cluster member inherits its representative's verdict.
-Counting that, `0.97` catches these shares of the 40,587 flags of the `1.0` run:
+Counting that, `0.97` catches these shares of the 43,127 flags of the `1.0` run:
 
 | Rank | `1.0` flags | Caught at `0.97` |
 | ---- | ----------- | ---------------- |
-| 2    | 3,892       | 83%              |
-| 3    | 422         | 93%              |
-| 4    | 769         | 87%              |
-| 5    | 815         | 85%              |
-| 6    | 8,417       | 56%              |
-| 7    | 26,272      | 39%              |
-| All  | 40,587      | 49%              |
+| 2    | 3,903       | 87%              |
+| 3    | 420         | 91%              |
+| 4    | 741         | 91%              |
+| 5    | 812         | 84%              |
+| 6    | 8,713       | 72%              |
+| 7    | 28,538      | 37%              |
+| All  | 43,127      | 51%              |
 
-Clustering to `0.97` therefore loses about half of the genus-level flags and over half of the species-level ones, which are also the largest group.
+Clustering to `0.97` therefore loses about a quarter of the genus-level flags and about two thirds of the species-level ones, which are also the largest group.
+
+Shares counted over sequences are dominated by a few very large clusters.
+At genus level ten representatives carry 6,074 of the 8,713 flags, so one cluster being flagged or not moves the share by several points.
+Counting each representative once is more stable.
+The table shows the share of the representatives of the `1.0` flags that are themselves flagged (SATIVA or raxtax):
+
+| Rank | `0.97` | `0.99` |
+| ---- | ------ | ------ |
+| 2    | 92%    | 92%    |
+| 3    | 91%    | 91%    |
+| 4    | 91%    | 90%    |
+| 5    | 85%    | 82%    |
+| 6    | 66%    | 64%    |
+| 7    | 29%    | 42%    |
+
+By this measure `0.97` and `0.99` keep the same share at ranks 2 to 6, and `0.99` keeps more species-level flags.
+Counted over sequences the genus-level shares are 72% and 56%, which shows how much that measure depends on a few clusters.
 
 ## Checking flags against NCBI
 
+This check was made on the first `1.0` and `0.97` runs, placed under GTR+G; the `1.0` run under the corrected model has 3,903 phylum-level flags, 3,197 of them also in the first run, and the others were not checked.
 To see whether the flags that disappeared were right, the sequences were compared with the NCBI RefSeq 16S database (`blastn`, original sequences).
 A top hit with at least 97% identity and 90% coverage was counted as strong.
 The phylum of the hit was taken from the hit's genus through the GTDB taxonomy of the same run.
@@ -130,6 +149,7 @@ At genus and species level the loss is larger and could not be checked this way.
 
 ## With and without the raxtax prefilter
 
+Both runs in this section are first runs, placed under GTR+G.
 The `0.97` run was repeated with `--skip_raxtax`.
 Without the prefilter 99,166 sequences were placed instead of 92,406, and SATIVA flagged 17,812 instead of 11,590.
 One placement fold needed 145.7 GB instead of 135.6 GB.
@@ -159,8 +179,17 @@ Neither value is better in general.
 The choice is between two kinds of error, and which one matters more depends on what the result is used for:
 
 - At `1.0`, more genus- and species-level mislabels are found, but many phylum-level flags are artefacts, so correctly labelled sequences are removed.
-- At `0.97`, fewer phylum-level flags are artefacts, so more correctly labelled sequences stay, but about half of the genus- and species-level mislabels are not found and those sequences stay with the wrong label.
+- At `0.97`, fewer phylum-level flags are artefacts, so more correctly labelled sequences stay, but about a quarter of the genus-level and two thirds of the species-level flags of `1.0` are not found, and those sequences stay with the wrong label.
 
 If correct labels at genus and species level matter most, do not lower `--cluster_identity`.
 If keeping correctly labelled sequences matters more, and missed genus- and species-level mislabels are acceptable, a lower value is reasonable.
 The reduction in memory and time is a side effect of that choice, not the reason for it.
+
+## How much the flags depend on the model
+
+Placing under the model of the reference tree instead of GTR+G changes the flags, and the change is large at species level.
+At `0.97` 17-18% of the flags differ (10% at phylum and 37% at species level), mostly flags with a low placement weight.
+At `1.0` 34% of the flags of the first run are not found under the corrected model and 38% of the new flags are new; at genus and species level it is 40-45%.
+These flags do not have low placement weights: the median is 1.0.
+Whether a repeat run under the same model also changes this many flags has not been measured.
+Until it is, treat genus- and species-level flags at `1.0` as a list that depends on the model and the tree, not as a fixed result.
