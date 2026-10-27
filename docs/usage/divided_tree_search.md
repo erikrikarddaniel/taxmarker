@@ -30,13 +30,13 @@ The search is reproducible: the same input, parameters and `--raxmlng_seed` give
 
 ## Parameters
 
-| Parameter                   | Default | Meaning                                                                                                    |
-| --------------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `--run_divided_tree_search` | `false` | Search the reference trees in parts.                                                                        |
-| `--tree_part_max_tips`      | 2000    | Largest number of sequences in a part.                                                                      |
+| Parameter                   | Default | Meaning                                                                                                            |
+| --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| `--run_divided_tree_search` | `false` | Search the reference trees in parts.                                                                               |
+| `--tree_part_max_tips`      | 2000    | Largest number of sequences in a part.                                                                             |
 | `--tree_part_min_tips`      | 10      | Smallest taxon that is searched as a part of its own, unless a node cannot otherwise be brought down to the limit. |
-| `--tree_part_reps`          | 3       | Sequences that represent a closed part in the part above it.                                               |
-| `--tree_part_outgroups`     | 4       | Outgroup sequences added to each part.                                                                      |
+| `--tree_part_reps`          | 3       | Sequences that represent a closed part in the part above it.                                                       |
+| `--tree_part_outgroups`     | 4       | Outgroup sequences added to each part.                                                                             |
 
 The defaults worked for 239,806 bacterial sequences.
 Change them only if the parts turn out too large for the memory or time of one job.
