@@ -17,12 +17,15 @@ components:
   - treegraft
   - raxmlng/search
   - raxmlng/evaluate
+  - raxmlng/moose
 input:
   - ch_input:
       type: file
       description: |
-        Alignment, taxonomy guide tree (multifurcating Newick) and a fixed RAxML-NG model.
-        Model selection ("DNA"/"AA"/"auto") is not supported, since every part would select its own.
+        Alignment, taxonomy guide tree (multifurcating Newick) and a RAxML-NG model: a fixed model string, or "DNA"
+        to select one with RAxML-NG's model selection (raxmlng/moose) on the root part, which holds representatives of
+        every taxon. The other parts and the final evaluation use the selected model as a fixed model.
+        Model selection for "AA"/"auto" is not supported.
         Structure: [ val(meta), path(alignment), path(guide_tree), val(model) ]
       pattern: "*.{fa,fasta,fna,mfa,nwk}"
 output:

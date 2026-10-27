@@ -1,0 +1,72 @@
+nextflow_process {
+
+    name "Test Process RAXMLNG_MOOSE"
+    script "../main.nf"
+    config "./nextflow.config"
+    process "RAXMLNG_MOOSE"
+
+    tag "modules"
+    tag "modules_local"
+    tag "taxmarker"
+    tag "raxmlng"
+    tag "raxmlng/moose"
+
+    // Three taxa of six tips and 400 sites, built inline.
+    def inputs = """
+        def rnd = new Random(1)
+        def bases = ['A', 'C', 'G', 'T']
+        def root = (1..400).collect { bases[rnd.nextInt(4)] }
+        def seqs = [:]
+        ['a', 'b', 'c'].each { taxon ->
+            def ts = root.collect { c -> rnd.nextDouble() < 0.2 ? bases[rnd.nextInt(4)] : c }
+            (1..6).each { i -> seqs[taxon + i] = ts.collect { c -> rnd.nextDouble() < 0.05 ? bases[rnd.nextInt(4)] : c }.join() }
+        }
+        def dir = java.nio.file.Files.createTempDirectory('moose').toFile()
+        def aln = new File(dir, 'aln.fasta')
+        aln.text = seqs.collect { name, s -> '>' + name + '\\n' + s + '\\n' }.join()
+    """
+
+    test("taxmarker - the selected model is written as a model string") {
+
+        when {
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def model = path(process.out.best_model[0][1]).text.trim()
+
+            assertAll(
+                // "<model>, noname = 1-<sites>": the model alone, without fitted parameter values.
+                { assert model ==~ /[A-Za-z0-9+]+, noname = 1-400/ },
+                { assert !model.contains('{') },
+                { assert path(process.out.log[0][1]).text.contains('Model selection') }
+            )
+        }
+    }
+
+    test("taxmarker - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(sanitizeOutput(process.out)).match() }
+            )
+        }
+    }
+}

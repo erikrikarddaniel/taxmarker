@@ -310,9 +310,12 @@ workflow TAXMARKER {
     // The later two SWF_SATIVA params are meant to pass a reference tree and a
     // model file respectively. Not implemented yet.
     //
-    def model_selection = ['DNA', 'AA', 'AUTO']
-    if (run_divided_tree_search && ((!skip_sativa && raxmlng_model.toUpperCase() in model_selection) || (run_reference && (raxmlng_reference_model ?: raxmlng_model).toUpperCase() in model_selection))) {
-        error("--run_divided_tree_search needs a fixed model, for example --raxmlng_model GTR+G4 (and --raxmlng_reference_model for --run_reference): the parts cannot select one each.")
+    if (!raxmlng_model?.trim()) {
+        error("--raxmlng_model must not be empty: name a RAxML-NG model, for example GTR+G4, or DNA to select one.")
+    }
+    def no_division_selection = ['AA', 'AUTO']
+    if (run_divided_tree_search && ((!skip_sativa && raxmlng_model.toUpperCase() in no_division_selection) || (run_reference && (raxmlng_reference_model ?: raxmlng_model).toUpperCase() in no_division_selection))) {
+        error("--run_divided_tree_search selects a model only for DNA: name a fixed model for AA or AUTO, for example --raxmlng_model GTR+G4 (and --raxmlng_reference_model for --run_reference).")
     }
     if (run_divided_tree_search && skip_sativa && !run_reference) {
         log.warn("--run_divided_tree_search has no effect with --skip_sativa unless --run_reference builds a tree.")

@@ -79,6 +79,7 @@ Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+G4`, to sk
 Any model string that RAxML-NG accepts for `--model` works.
 `--raxmlng_model` applies to the tree the placement test scores against.
 The tree of `--run_reference` takes `--raxmlng_reference_model` and, when that is not set, the same model as `--raxmlng_model`.
+With `--run_divided_tree_search` the selection runs once, on the top part of the divided tree, and the other parts use the model it picks.
 
 On large alignments the search itself dominates the run time.
 `--raxmlng_fast` switches to the RAxML-NG fast search: one parsimony starting tree and a simplified topology search that stops early.

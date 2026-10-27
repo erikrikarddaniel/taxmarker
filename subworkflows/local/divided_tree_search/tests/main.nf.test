@@ -14,6 +14,7 @@ nextflow_workflow {
     tag "raxmlng"
     tag "raxmlng/search"
     tag "raxmlng/evaluate"
+    tag "raxmlng/moose"
 
     // Three taxa of six tips and 400 sites, built inline: the taxon sequences differ from the root in 20% of the sites,
     // tips from their taxon sequence in 5%.
@@ -80,6 +81,79 @@ nextflow_workflow {
                 { assert (tree.replaceAll(/:[0-9.eE+-]+/, '') =~ /[abc][1-6]/).collect { it }.sort() == taxa.collectMany { t -> (1..6).collect { t + it } }.sort() },
                 { assert broken(tree) == [] },
                 { assert path(workflow.out.model[0][1]).text.startsWith('GTR') }
+            )
+        }
+    }
+
+    // Work directories of the tasks of a process, found through the name in the header of .command.run.
+    def taskDirs = { workDir, String process ->
+        def runs = []
+        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f -> if (f.name == '.command.run') { runs << f } }
+        runs.findAll { f -> f.readLines().find { it.startsWith('### name:') }?.contains(process) }*.parentFile
+    }
+    def modelOf = { File dir -> (new File(dir, '.command.sh').text =~ /--model (\S+)/)[0][1] }
+
+    test("taxmarker - the model is selected on the root part and used for every part") {
+
+        when {
+            params {
+                module_args = '--max 10 --min 2 --reps 3 --outgroups 1'
+            }
+            workflow {
+                inputs + """
+                input[0] = channel.of([ [ id:'test' ], file(aln.toString()), file(guide.toString()), 'DNA' ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def moose = taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_MOOSE')
+            def chosen = moose[0].listFiles().find { it.name.endsWith('.raxml.moose.bestModel') }.text.split(',')[0].trim()
+
+            assertAll(
+                { assert moose.size() == 1 },
+                // The four searches and the evaluation all got the selected model, none the word DNA.
+                { assert taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').collect(modelOf) == [ chosen ] * 4 },
+                { assert taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_EVALUATE').collect(modelOf) == [ chosen ] },
+                { assert chosen != 'DNA' },
+                { assert broken(path(workflow.out.tree[0][1]).text) == [] }
+            )
+        }
+    }
+
+    test("taxmarker - an input with a fixed model is not put through selection") {
+
+        when {
+            params {
+                module_args = '--max 10 --min 2 --reps 3 --outgroups 1'
+            }
+            workflow {
+                inputs + """
+                def guide2 = new File(dir, 'guide2.nwk')
+                guide2.text = '((a1,a2,a3),(a4,a5,a6),(b1,b2,b3,b4,b5,b6),(c1,c2,c3,c4,c5,c6));\\n'
+                input[0] = channel.of(
+                    [ [ id:'select' ], file(aln.toString()), file(guide.toString()),  'DNA' ],
+                    [ [ id:'fixed' ],  file(aln.toString()), file(guide2.toString()), 'GTR+G' ]
+                )
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def moose = taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_MOOSE')
+            def searches = taskDirs(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').collect(modelOf)
+
+            assertAll(
+                { assert moose.size() == 1 },
+                { assert workflow.out.tree.collect { it[0].id }.sort() == [ 'fixed', 'select' ] },
+                // The input with GTR+G keeps it in its own searches; the four searches of the other use the selected model.
+                { assert searches.count('GTR+G') > 0 },
+                { assert searches.findAll { it != 'GTR+G' }.size() == 4 },
+                { assert searches.findAll { it != 'GTR+G' }.unique().size() == 1 }
             )
         }
     }

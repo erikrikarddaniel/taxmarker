@@ -420,6 +420,74 @@ nextflow_process {
         }
     }
 
+    test("taxmarker - the alignment of the root part is written") {
+
+        when {
+            params {
+                module_args = '--max 8'
+            }
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def root  = plan.jobs.find { it.root }
+            def names = path(process.out.root_fasta[0][1]).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) }
+
+            assertAll(
+                { assert plan.jobs.size() > 1 },
+                { assert names.size() == root.n },
+                { assert names.toSet().size() == names.size() },
+                { assert names.every { it ==~ /[abf][0-9]+|c[12]/ } },
+                { assert root.outgroups == [] }
+            )
+        }
+    }
+
+    test("taxmarker - the alignment of the root part is written when its tree is fully resolved") {
+
+        when {
+            params {
+                module_args = '--max 6 --min 4 --reps 2 --outgroups 1'
+            }
+            process {
+                """
+                def a = (1..6).collect { 'a' + it }
+                def b = (1..6).collect { 'b' + it }
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = '((' + a.join(',') + '),(' + b.join(',') + '));\\n'
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = (a + b).collect { '>' + it + '\\n' + 'ACGTACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def root  = plan.jobs.find { it.root }
+            def names = path(process.out.root_fasta[0][1]).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) }
+            def id    = { f -> new File(f.toString()).name.tokenize('.')[0] }
+
+            assertAll(
+                // Two representatives of each of the two parts: ((a,a),(b,b)) is binary, so there is nothing to search.
+                { assert root.resolved },
+                { assert names.size() == 4 },
+                { assert names.findAll { it.startsWith('a') }.size() == 2 },
+                { assert names.findAll { it.startsWith('b') }.size() == 2 },
+                { assert ![process.out.fasta[0][1]].flatten().collect { id(it) }.contains(root.id) }
+            )
+        }
+    }
+
     test("taxmarker - stub") {
 
         options "-stub"
