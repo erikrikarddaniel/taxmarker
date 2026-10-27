@@ -225,6 +225,16 @@ nextflow_pipeline {
         assert found.size() == 1
         found[0].text.split(',')[0].trim()
     }
+    // The commands of the tasks of a process of the divided search.
+    def commands = { workDir, String process ->
+        def found = []
+        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f ->
+            if (f.name == '.command.run' && f.readLines().find { it.startsWith('### name:') }?.contains(process)) {
+                found << new File(f.parentFile, '.command.sh').text
+            }
+        }
+        found
+    }
     // The --model of the evaluation commands of the divided search.
     def evaluated = { workDir ->
         def models = []
@@ -259,6 +269,11 @@ nextflow_pipeline {
                 { assert searches.size() > 1 },
                 // The tree and model that reach the placement come from the evaluation under the selected model.
                 { assert evaluated(workDir) == [ selected(workDir) ] },
+                // FreeRate models are numerically unstable below 2000 taxa without per-rate scalers: the selection, every part and the evaluation use them.
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_MOOSE').every { it.contains('--rate-scalers on') } },
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').size() > 1 },
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').every { it.contains('--rate-scalers on') } },
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_EVALUATE').every { it.contains('--rate-scalers on') } },
                 { assert new File("$outputDir/raxmlng/user-alignment.raxml.bestModel").text.startsWith(selected(workDir).tokenize('+')[0]) },
                 { assert new File("$outputDir/mislabels/user-alignment.mislabels.tsv").exists() },
             )
