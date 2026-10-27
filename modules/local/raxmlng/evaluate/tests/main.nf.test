@@ -55,7 +55,7 @@ nextflow_process {
     }
     def logl = { log -> (path(log).text =~ /Final LogLikelihood: (-[0-9.]+)/)[0][1] as double }
 
-    test("taxmarker - the topology is kept, only branch lengths and model are optimised") {
+    test("raxmlng/evaluate - the topology is kept, only branch lengths and model are optimised") {
 
         when {
             process {
@@ -85,7 +85,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - stub") {
+    test("raxmlng/evaluate - stub") {
 
         options "-stub"
 

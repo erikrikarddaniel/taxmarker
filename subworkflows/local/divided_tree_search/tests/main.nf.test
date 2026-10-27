@@ -55,7 +55,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - tree divided into parts keeps every taxon a clade") {
+    test("divided_tree_search - tree divided into parts keeps every taxon a clade") {
 
         when {
             params {
@@ -93,7 +93,7 @@ nextflow_workflow {
     }
     def modelOf = { File dir -> (new File(dir, '.command.sh').text =~ /--model (\S+)/)[0][1] }
 
-    test("taxmarker - the model is selected on the root part and used for every part") {
+    test("divided_tree_search - the model is selected on the root part and used for every part") {
 
         when {
             params {
@@ -126,7 +126,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - model selection on a root part of fewer than four tips fails with a message") {
+    test("divided_tree_search - model selection on a root part of fewer than four tips fails with a message") {
 
         when {
             params {
@@ -147,7 +147,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - an input with a fixed model is not put through selection") {
+    test("divided_tree_search - an input with a fixed model is not put through selection") {
 
         when {
             params {
@@ -186,7 +186,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - tree that needs no dividing is searched as one part") {
+    test("divided_tree_search - tree that needs no dividing is searched as one part") {
 
         when {
             params {
@@ -212,7 +212,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - two inputs do not mix their parts") {
+    test("divided_tree_search - two inputs do not mix their parts") {
 
         when {
             params {
@@ -244,7 +244,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - a part with a fully resolved constraint tree is not searched but grafted") {
+    test("divided_tree_search - a part with a fully resolved constraint tree is not searched but grafted") {
 
         when {
             params {
@@ -275,7 +275,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - a tree that is fully resolved is only evaluated") {
+    test("divided_tree_search - a tree that is fully resolved is only evaluated") {
 
         when {
             params {
@@ -302,7 +302,7 @@ nextflow_workflow {
         }
     }
 
-    test("taxmarker - stub") {
+    test("divided_tree_search - stub") {
 
         options "-stub"
 

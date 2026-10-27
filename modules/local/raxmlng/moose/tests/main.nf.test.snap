@@ -1,5 +1,5 @@
 {
-    "taxmarker - stub": {
+    "raxmlng/moose - stub": {
         "content": [
             {
                 "best_model": [
@@ -28,6 +28,40 @@
             }
         ],
         "timestamp": "2026-10-27T13:14:52.157554659",
+        "meta": {
+            "nf-test": "0.9.4",
+            "nextflow": "26.04.6"
+        }
+    },
+    "raxmlng/moose - model selection on random sequences": {
+        "content": [
+            {
+                "best_model": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raxml.moose.bestModel:md5,4248a7163c6fc1fb802605d4a80d5043"
+                    ]
+                ],
+                "log": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.raxml.log"
+                    ]
+                ],
+                "versions_raxmlng": [
+                    [
+                        "RAXMLNG_MOOSE",
+                        "raxmlng",
+                        "2.0.3"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-10-27T15:44:51.75882416",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.6"

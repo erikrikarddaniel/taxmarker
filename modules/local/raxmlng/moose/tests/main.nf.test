@@ -26,7 +26,7 @@ nextflow_process {
         aln.text = seqs.collect { name, s -> '>' + name + '\\n' + s + '\\n' }.join()
     """
 
-    test("taxmarker - the selected model is written as a model string") {
+    test("raxmlng/moose - model selection on random sequences") {
 
         when {
             process {
@@ -42,15 +42,16 @@ nextflow_process {
             def model = path(process.out.best_model[0][1]).text.trim()
 
             assertAll(
-                // "<model>, noname = 1-<sites>": the model alone, without fitted parameter values.
-                { assert model ==~ /[A-Za-z0-9+]+, noname = 1-400/ },
-                { assert !model.contains('{') },
-                { assert path(process.out.log[0][1]).text.contains('Model selection') }
+                // Random sequences carry no signal for rate variation or unequal frequencies, so the simplest model wins.
+                // "<model>, <partition name> = <sites>": RAxML-NG's partition format, one partition named noname over all 400 sites.
+                { assert model == 'F81+FE, noname = 1-400' },
+                { assert path(process.out.log[0][1]).text.contains('Model selection') },
+                { assert snapshot(sanitizeOutput(process.out, unstableKeys: ["log"])).match() }
             )
         }
     }
 
-    test("taxmarker - stub") {
+    test("raxmlng/moose - stub") {
 
         options "-stub"
 

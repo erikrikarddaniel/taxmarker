@@ -23,7 +23,7 @@ nextflow_process {
         aln.text = all.collect { '>' + it + '\\n' + 'ACGTACGT' + '\\n' }.join('')
     """
 
-    test("taxmarker - flat taxon and two taxa are divided into parts of at most --max tips") {
+    test("treedivide - flat taxon and two taxa are divided into parts of at most --max tips") {
 
         when {
             params {
@@ -74,7 +74,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - input that fits in one part is not divided") {
+    test("treedivide - input that fits in one part is not divided") {
 
         when {
             params {
@@ -106,7 +106,7 @@ nextflow_process {
 
     // Same tips, but a phylogeny chooses the parts: the flat taxon is resolved so that f1 pairs with f12,
     // f2 with f11, and so on. Cutting the constraint tree instead groups f1 with f2 to f8.
-    test("taxmarker - partition tree decides which tips share a part") {
+    test("treedivide - partition tree decides which tips share a part") {
 
         when {
             params {
@@ -138,7 +138,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - each part and the representatives of its child parts are clades of its constraint tree") {
+    test("treedivide - each part and the representatives of its child parts are clades of its constraint tree") {
 
         when {
             params {
@@ -189,7 +189,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - a flat taxon that leaves two tips over gives no duplicated sequence") {
+    test("treedivide - a flat taxon that leaves two tips over gives no duplicated sequence") {
 
         when {
             params {
@@ -223,7 +223,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - trees with line breaks, comments, quoted names and no final semicolon are read") {
+    test("treedivide - trees with line breaks, comments, quoted names and no final semicolon are read") {
 
         when {
             params {
@@ -255,7 +255,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails on a malformed constraint tree with a non-zero exit status") {
+    test("treedivide - fails on a malformed constraint tree with a non-zero exit status") {
 
         when {
             process {
@@ -275,7 +275,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails when a sequence name occurs twice in the alignment") {
+    test("treedivide - fails when a sequence name occurs twice in the alignment") {
 
         when {
             process {
@@ -295,7 +295,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails with a clear message when the partition tree conflicts with the constraint tree") {
+    test("treedivide - fails with a clear message when the partition tree conflicts with the constraint tree") {
 
         when {
             params {
@@ -323,7 +323,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - taxa all smaller than --min are still divided into parts of at most --max tips") {
+    test("treedivide - taxa all smaller than --min are still divided into parts of at most --max tips") {
 
         when {
             params {
@@ -360,7 +360,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails when --min or --outgroups would give parts that cannot be grafted") {
+    test("treedivide - fails when --min or --outgroups would give parts that cannot be grafted") {
 
         when {
             params {
@@ -379,7 +379,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - a part whose constraint tree is fully resolved is handed over as a tree, not searched") {
+    test("treedivide - a part whose constraint tree is fully resolved is handed over as a tree, not searched") {
 
         when {
             params {
@@ -420,7 +420,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - the alignment of the root part is written") {
+    test("treedivide - the alignment of the root part is written") {
 
         when {
             params {
@@ -453,7 +453,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - the alignment of the root part is written when its tree is fully resolved") {
+    test("treedivide - the alignment of the root part is written when its tree is fully resolved") {
 
         when {
             params {
@@ -491,7 +491,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - stub") {
+    test("treedivide - stub") {
 
         options "-stub"
 
