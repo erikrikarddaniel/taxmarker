@@ -42,7 +42,7 @@ workflow TAXMARKER {
     sequence_weights   // value:   path to a two-column weight table, or null/empty if not supplied
     min_weight         // value:   absolute weight cutoff, or null/empty to skip it
     skip_raxtax        // value:   skip the raxtax prefilter?
-    skip_gapfilter     // value:   skip the gap filter (already-aligned input)?
+    skip_gapfilter     // value:   skip the gap filter (already-aligned or MAFFT-aligned input)?
     skip_profile_cover // value:   skip the profile-coverage filter (hmmalign-derived input)?
     skip_sativa        // value:   skip the phylogenetic placement subworkflow entirely?
     taxcode            // value:   taxonomic code for sativa-epang (bac/bot/zoo/vir)
@@ -52,7 +52,7 @@ workflow TAXMARKER {
     export_n_per_species // value: comma-separated sequences per species to export (a number or 'all'), or null to skip the export
     run_reference      // value:   build the reference tree for phylogenetic placement from the sequences that pass every step?
     run_divided_tree_search // value: search the reference trees in parts and graft them, for large inputs?
-    hmm                // value:   path to an HMM profile database, or null/empty if not needed
+    hmm                // value:   path to an HMM profile database, or null/empty to align unaligned input with MAFFT
     hmm_name           // value:   name of a specific profile within hmm, or null/empty
     align_chunk_size   // value:   sequences aligned per hmmalign job
     multiqc_config
@@ -238,7 +238,8 @@ workflow TAXMARKER {
     //
     // Transparently accepts unaligned input too, with no separate mode-switch param:
     // already-aligned content passes straight through; unaligned content is aligned
-    // via hmmalign against the hmm/hmm_name profile before continuing. Only past this
+    // via hmmalign against the hmm/hmm_name profile, or with MAFFT when no HMM is given,
+    // before continuing. Only past this
     // point is the data actually guaranteed to be an alignment.
     //
     ENSURE_ALIGNED(ch_sequences_for_alignment, hmm, hmm_name, align_chunk_size)
@@ -250,7 +251,7 @@ workflow TAXMARKER {
     // separately rather than silently discarding them -- but applied to ENSURE_ALIGNED's
     // two branches independently, since they have structurally different non-gap
     // distributions (see ensure_aligned/main.nf): GAPFILTER (params.min_nongap) for
-    // already-aligned input, PROFILECOVER (params.min_profile_cover) for hmmalign-
+    // already-aligned and MAFFT-aligned input, PROFILECOVER (params.min_profile_cover) for hmmalign-
     // derived input, already masked down to the HMM's match-state columns.
     //
     def ch_taxonomy_gapfiltered
@@ -258,19 +259,19 @@ workflow TAXMARKER {
     def run_gapfilter = !skip_gapfilter
     if (run_gapfilter) {
         GAPFILTER(
-            ch_taxonomy_for_alignment.combine(ENSURE_ALIGNED.out.alignment_passthrough).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
+            ch_taxonomy_for_alignment.combine(ENSURE_ALIGNED.out.alignment_native).map { tax, aln -> [ [ id: 'user-alignment' ], tax, aln ] }
         )
         ch_taxonomy_gapfiltered  = GAPFILTER.out.taxonomy.map { _meta, tax -> tax }
         ch_alignment_gapfiltered = GAPFILTER.out.alignment.map { _meta, aln -> aln }
     } else {
         // ch_taxonomy_for_alignment alone would still emit its one item even when
-        // alignment_passthrough is empty (e.g. unaligned input took the hmm branch
+        // alignment_native is empty (e.g. unaligned input took the hmm branch
         // instead), desyncing this pair's cardinality -- 1 taxonomy item vs 0
         // alignment items -- which then corrupts the .mix() below (the stray taxonomy
         // item pairs with the *other* branch's real alignment downstream). Gate it by
         // the same alignment channel instead, so it collapses to 0 items exactly when
-        // alignment_passthrough does.
-        ch_alignment_gapfiltered = ENSURE_ALIGNED.out.alignment_passthrough
+        // alignment_native does.
+        ch_alignment_gapfiltered = ENSURE_ALIGNED.out.alignment_native
         ch_taxonomy_gapfiltered  = ch_taxonomy_for_alignment.combine(ch_alignment_gapfiltered).map { tax, _aln -> tax }
     }
 

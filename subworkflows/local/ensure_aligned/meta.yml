@@ -5,14 +5,16 @@ description: |
   separate mode-switch param. Content already the same length passes through
   unchanged; content that isn't is aligned via hmmalign against an HMM profile
   (hmm, optionally a single named profile from it via hmm_name), then converted
-  back to plain FASTA.
+  back to plain FASTA, or, when no HMM is given, aligned from scratch with MAFFT.
 keywords:
   - alignment
   - hmmer
   - hmmalign
+  - mafft
   - taxmarker
 components:
   - checkaligned
+  - mafft/align
   - hmmer/hmmfetch
   - hmmer/hmmalign
   - hmmer/eslalimask
@@ -29,7 +31,8 @@ input:
       type: string
       description: |
         Path to an HMM profile database, used to align ch_sequences via hmmalign if it
-        turns out to be unaligned. Null/empty if not needed (already-aligned input).
+        turns out to be unaligned. Null/empty to align unaligned input from scratch
+        with MAFFT instead (already-aligned input needs neither).
   - hmm_name:
       type: string
       description: |
@@ -41,11 +44,12 @@ input:
         Number of sequences each hmmalign job aligns. The masked chunks are
         concatenated in input order, so the alignment does not depend on it.
 output:
-  - alignment_passthrough:
+  - alignment_native:
       type: file
       description: |
-        The input, when it was already aligned on entry (passed through unchanged).
-        Empty channel when the input was unaligned instead.
+        The input, when it was already aligned on entry (passed through unchanged),
+        or aligned by MAFFT when it was unaligned and no HMM was given.
+        Empty channel when the input was unaligned and aligned via hmmalign instead.
         Structure: path(alignment.fasta)
       pattern: "*.fasta"
   - alignment_from_hmm:
@@ -53,7 +57,7 @@ output:
       description: |
         The input, when it was unaligned on entry: aligned via hmmalign then masked
         down to the HMM's match-state columns only. Empty channel when the input
-        was already aligned instead.
+        was already aligned or no HMM was given.
         Structure: path(alignment.fasta)
       pattern: "*.fasta"
   - versions:
