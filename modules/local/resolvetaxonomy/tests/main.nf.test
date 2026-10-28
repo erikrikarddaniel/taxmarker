@@ -325,7 +325,7 @@ nextflow_process {
                 { assert lines.contains('SpSpace\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
                 { assert lines.contains('SpSpaceDot\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
                 { assert lines.contains('TwoLetterPrefix\tsk__V;ph__A;cl__C;or__O;fa__F') },
-                // Real names that merely contain or end like a placeholder stay.
+                // Names the default does not match stay: sp must end the name, and a number or nov after it is not a placeholder.
                 { assert lines.contains('SimilarRealNames\tk__V;p__A;c__C;o__O;f__Spiraceae;g__Spiraea;s__Spiraea_spinosa') },
                 { assert lines.contains('SpNov\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp_nov') },
                 { assert lines.contains('SpNumbered\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp1') },
