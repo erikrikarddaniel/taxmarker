@@ -44,10 +44,10 @@ Named placeholders are removed from the end too, as UNITE writes them (`g__Orchi
 Without this, sequences that are only unresolved would be grouped and tested as one genus or species.
 `--unresolved_rank_pattern` decides what counts as a placeholder.
 It is a Python regular expression, searched in the rank name without its rank prefix (one to three letters and `__`, such as `g__`).
-The default is `(?i)[ _]sp[.]?$|Incertae[ _]sedis|^unidentified`: a rank ending in `sp` or `sp.` after a space or underscore, a rank containing `Incertae sedis` or `Incertae_sedis`, and a rank starting with `unidentified`, in any case.
+The default is `(?i)[ _]spp?[.]?$|Incertae[ _]sedis|^unidentified`: a rank ending in `sp`, `sp.`, `spp` or `spp.` after a space or underscore (`spp` is common in BOLD and NCBI-derived names), a rank containing `Incertae sedis` or `Incertae_sedis`, and a rank starting with `unidentified`, in any case.
 GTDB's `Genus sp000001` names a real species cluster and stays.
-Names such as `Genus_sp1` or `Genus_sp_nov` are not matched by the default, because `sp` must end the name.
-A bare `sp. nov.` can stand for several different undescribed species, so add it to the pattern if your database uses it, for example `(?i)[ _]sp[.]?([ _]nov[.]?)?$`.
+Names such as `Genus_sp1`, `Genus_spp1` or `Genus_sp_nov` are not matched by the default, because `sp` or `spp` must end the name.
+A bare `sp. nov.` can stand for several different undescribed species, so add it to the pattern if your database uses it, for example `(?i)[ _]spp?[.]?([ _]nov[.]?)?$`.
 The pattern is case-sensitive unless it starts with `(?i)`, which must come first, and it must not contain a single quote.
 Set it for databases that use other words, for example `--unresolved_rank_pattern '(?i)^uncultured|^unclassified'`.
 To trim only empty ranks, give an empty string with an equals sign, `--unresolved_rank_pattern=''`; without the equals sign Nextflow drops the empty argument.

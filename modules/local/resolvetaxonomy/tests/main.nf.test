@@ -292,8 +292,14 @@ nextflow_process {
                     'SimilarRealNames\\tk__V;p__A;c__C;o__O;f__Spiraceae;g__Spiraea;s__Spiraea_spinosa',
                     'SpNov\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp_nov',
                     'SpNumbered\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp1',
+                    'Spp\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp',
+                    'SppDot\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp.',
+                    'SppSpace\\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx;s__Gx spp',
+                    'SppSpaceDot\\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx;s__Gx spp.',
+                    'SppNumbered\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp1',
+                    'SppInName\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gxspp',
                 ].join('\\n') + '\\n'
-                def names = ['GenusAndSpecies', 'SpOnly', 'SpDot', 'Unidentified', 'FamilyToSpecies', 'AllPlaceholders', 'NoPrefix', 'InteriorIncertae', 'GtdbPlaceholder', 'SpSpace', 'SpSpaceDot', 'TwoLetterPrefix', 'SimilarRealNames', 'SpNov', 'SpNumbered']
+                def names = ['GenusAndSpecies', 'SpOnly', 'SpDot', 'Unidentified', 'FamilyToSpecies', 'AllPlaceholders', 'NoPrefix', 'InteriorIncertae', 'GtdbPlaceholder', 'SpSpace', 'SpSpaceDot', 'TwoLetterPrefix', 'SimilarRealNames', 'SpNov', 'SpNumbered', 'Spp', 'SppDot', 'SppSpace', 'SppSpaceDot', 'SppNumbered', 'SppInName']
                 def fasta = File.createTempFile('resolvetaxonomy_unresolved', '.fasta')
                 fasta.text = names.collect { ">\\${it}\\nACGT\\n" }.join()
                 input[1] = params.unresolved_rank_pattern
@@ -329,6 +335,14 @@ nextflow_process {
                 { assert lines.contains('SimilarRealNames\tk__V;p__A;c__C;o__O;f__Spiraceae;g__Spiraea;s__Spiraea_spinosa') },
                 { assert lines.contains('SpNov\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp_nov') },
                 { assert lines.contains('SpNumbered\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp1') },
+                // spp, as in BOLD and NCBI-derived names, is a placeholder too, with or without a dot and after a space or underscore.
+                { assert lines.contains('Spp\tk__V;p__A;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('SppDot\tk__V;p__A;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('SppSpace\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('SppSpaceDot\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
+                // As for sp: a number after it, or no separator before it, is not a placeholder.
+                { assert lines.contains('SppNumbered\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp1') },
+                { assert lines.contains('SppInName\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gxspp') },
             )
         }
 
