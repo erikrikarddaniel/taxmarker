@@ -25,7 +25,7 @@ nextflow_process {
         constraint.text = '((a1,a2,a3,a4),(b1,b2,b3,b4));\\n'
     """
 
-    test("taxmarker - part tree replaces its representatives in the root tree") {
+    test("treegraft - part tree replaces its representatives in the root tree") {
 
         when {
             process {
@@ -54,7 +54,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - the tree of a part that was not searched has no branch lengths and is grafted like a searched one") {
+    test("treegraft - the tree of a part that was not searched has no branch lengths and is grafted like a searched one") {
 
         when {
             process {
@@ -79,7 +79,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - a single root part is passed through") {
+    test("treegraft - a single root part is passed through") {
 
         when {
             process {
@@ -99,7 +99,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - part tree rooted elsewhere is cut at the outgroup") {
+    test("treegraft - part tree rooted elsewhere is cut at the outgroup") {
 
         when {
             process {
@@ -125,7 +125,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - a unary node in the constraint tree is not a broken clade") {
+    test("treegraft - a unary node in the constraint tree is not a broken clade") {
 
         when {
             process {
@@ -141,7 +141,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - a clade of all tips but one is not a broken clade") {
+    test("treegraft - a clade of all tips but one is not a broken clade") {
 
         when {
             process {
@@ -158,7 +158,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails when the grafted tree breaks a clade of the constraint tree") {
+    test("treegraft - fails when the grafted tree breaks a clade of the constraint tree") {
 
         when {
             process {
@@ -176,7 +176,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails when a part has no tree") {
+    test("treegraft - fails when a part has no tree") {
 
         when {
             process {
@@ -192,7 +192,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - stub") {
+    test("treegraft - stub") {
 
         options "-stub"
 

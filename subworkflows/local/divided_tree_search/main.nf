@@ -1,12 +1,13 @@
 include { TREEDIVIDE       } from '../../../modules/local/treedivide/main'
 include { TREEGRAFT        } from '../../../modules/local/treegraft/main'
 include { RAXMLNG_EVALUATE } from '../../../modules/local/raxmlng/evaluate/main'
+include { RAXMLNG_MOOSE    } from '../../../modules/local/raxmlng/moose/main'
 include { RAXMLNG_SEARCH   } from '../../../modules/nf-core/raxmlng/search/main'
 
 workflow DIVIDED_TREE_SEARCH {
 
     take:
-    ch_input // channel: [ val(meta), path(alignment), path(guide_tree), val(model) ]
+    ch_input // channel: [ val(meta), path(alignment), path(guide_tree), val(model) ]; a model of DNA is selected on the root part
 
     main:
     TREEDIVIDE(
@@ -16,16 +17,42 @@ workflow DIVIDED_TREE_SEARCH {
     // fasta and constraints hold one file per part with the same base name; the part id
     // is the meta id so that the search names its tree <id>.raxml.bestTree, which is how
     // TREEGRAFT finds the trees again.
-    def ch_parts = TREEDIVIDE.out.fasta
+    def ch_split = TREEDIVIDE.out.fasta
         .join(TREEDIVIDE.out.constraints)
         .join(ch_input.map { meta, _alignment, _guide_tree, model -> [ meta, model ] })
         .flatMap { meta, fastas, constraints, model ->
             def by_name = [ constraints ].flatten().collectEntries { c -> [ c.baseName, c ] }
-            def fasta_list = [ fastas ].flatten()
-            fasta_list.collect { f ->
+            [ fastas ].flatten().collect { f ->
                 [ [ id: f.baseName, parent: meta.id ], f, by_name[f.baseName], model ]
             }
         }
+    // ch_split: [ part meta, fasta, constraint, model of the input ]
+
+    // The model is selected once, on the root part, which holds representatives of every taxon.
+    // The other parts and the final evaluation use it as a fixed model.
+    RAXMLNG_MOOSE(
+        TREEDIVIDE.out.root_fasta
+            .join(ch_input.map { meta, _alignment, _guide_tree, model -> [ meta, model ] })
+            .filter { _meta, _fasta, model -> model.toUpperCase() == 'DNA' }
+            .map { meta, fasta, _model ->
+                def n = fasta.readLines().count { line -> line.startsWith('>') }
+                if (n < 4) {
+                    error("The root part of the divided tree for ${meta.id} has fewer than 4 sequences (${n}), too few for model selection: raise --tree_part_reps or name a model with --raxmlng_model.")
+                }
+                [ meta, fasta ]
+            }
+    )
+
+    def ch_models = ch_input
+        .filter { _meta, _alignment, _guide_tree, model -> model.toUpperCase() != 'DNA' }
+        .map { meta, _alignment, _guide_tree, model -> [ meta.id, model ] }
+        .mix(RAXMLNG_MOOSE.out.best_model.map { meta, best -> [ meta.id, best.text.split(',')[0].trim() ] })
+    // ch_models: [ input id, fixed model ]
+
+    def ch_parts = ch_split
+        .map { part, fasta, constraint, _model -> [ part.parent, part, fasta, constraint ] }
+        .combine(ch_models, by: 0)
+        .map { _id, part, fasta, constraint, model -> [ part, fasta, constraint, model ] }
     // ch_parts: [ part meta, fasta, constraint, model ]
 
     // The fasta and constraint inputs are paired by position: both come from ch_parts, so keep it that way.
@@ -61,9 +88,10 @@ workflow DIVIDED_TREE_SEARCH {
 
     RAXMLNG_EVALUATE(
         ch_input
-            .map { meta, alignment, _guide_tree, model -> [ meta, alignment, model ] }
-            .join(TREEGRAFT.out.tree)
-            .map { meta, alignment, model, tree -> [ meta, alignment, tree, model ] }
+            .map { meta, alignment, _guide_tree, _model -> [ meta.id, meta, alignment ] }
+            .join(TREEGRAFT.out.tree.map { meta, tree -> [ meta.id, tree ] })
+            .join(ch_models)
+            .map { _id, meta, alignment, tree, model -> [ meta, alignment, tree, model ] }
     )
 
     emit:

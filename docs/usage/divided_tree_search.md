@@ -41,13 +41,21 @@ The search is reproducible: the same input, parameters and `--raxmlng_seed` give
 The defaults worked for 239,806 bacterial sequences.
 Change them only if the parts turn out too large for the memory or time of one job.
 
-## Needs a fixed model
+## The model
 
-The parts cannot select a model each, so `--run_divided_tree_search` needs one named with `--raxmlng_model`, for example `--raxmlng_model GTR+G4`.
-With `--run_reference` it needs `--raxmlng_reference_model` as well, or the reference tree uses the model of `--raxmlng_model`.
-The pipeline stops with an error at the start if a model would be selected.
+With `--raxmlng_model DNA`, the default, RAxML-NG selects the substitution model once, on the top part of the divided tree.
+The top part holds representatives of every taxon, so the model is chosen from the whole taxonomy and not from one clade.
+The other parts and the final evaluation use the selected model as a fixed model.
+With `--run_reference` the reference tree does the same, unless `--raxmlng_reference_model` names a model.
+
+A fixed model, for example `--raxmlng_model GTR+G4`, is used as given and skips the selection.
+The selection can pick a FreeRate model such as `+R9` or `+R10`.
+The leave-one-out placement then needs more memory than with a Gamma model: on 7,051 sequences about 39 GB per job against about 24 GB, in one test with GTDB archaea.
+For large inputs, where the divided search is meant to be used, consider naming a `+G4` model.
+Model selection for `AA` and `AUTO` is not supported with the divided search, and the pipeline stops at the start if one of them is asked for.
+The top part needs at least four sequences for the selection, which RAxML-NG requires.
+With a very small `--tree_part_reps` it can have fewer, and the pipeline then stops with a message.
 See [Reference tree model](../usage.md#reference-tree-model).
-If you do not know which model to use, run RAxML-NG's model selection on a subsample first and pass the model it picks.
 
 ## Resources
 

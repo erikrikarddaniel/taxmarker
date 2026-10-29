@@ -242,23 +242,69 @@ nextflow_pipeline {
         }
     }
 
-    test("-profile test, divided tree search needs a fixed model") {
+    // Model of the one selection task, read from its work directory.
+    def selected = { workDir ->
+        def found = []
+        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f -> if (f.name.endsWith('.raxml.moose.bestModel')) { found << f } }
+        assert found.size() == 1
+        found[0].text.split(',')[0].trim()
+    }
+    // The commands of the tasks of a process of the divided search.
+    def commands = { workDir, String process ->
+        def found = []
+        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f ->
+            if (f.name == '.command.run' && f.readLines().find { it.startsWith('### name:') }?.contains(process)) {
+                found << new File(f.parentFile, '.command.sh').text
+            }
+        }
+        found
+    }
+    // The --model of the evaluation commands of the divided search.
+    def evaluated = { workDir ->
+        def models = []
+        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f ->
+            if (f.name == '.command.run' && f.readLines().find { it.startsWith('### name:') }?.contains('DIVIDED_TREE_SEARCH:RAXMLNG_EVALUATE')) {
+                models << (new File(f.parentFile, '.command.sh').text =~ /--model (\S+)/)[0][1]
+            }
+        }
+        models
+    }
+
+    test("-profile test, divided tree search selects the model on the root part") {
 
         when {
             params {
-                outdir                  = "$outputDir"
-                skip_clustering         = true
-                run_divided_tree_search = true
+                outdir                   = "$outputDir"
+                skip_clustering          = true
+                run_divided_tree_search  = true
+                tree_part_max_tips       = 15
+                tree_part_min_tips       = 2
+                tree_part_reps           = 3
+                tree_part_outgroups      = 2
             }
         }
 
         then {
-            assert workflow.failed
-            assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
+            assert workflow.success
+            def moose = workflow.trace.succeeded().findAll { it.name.contains('RAXMLNG_MOOSE') }
+            def searches = workflow.trace.succeeded().findAll { it.name.contains('RAXMLNG_SEARCH') }
+            assertAll(
+                { assert moose.size() == 1 },
+                { assert searches.size() > 1 },
+                // The tree and model that reach the placement come from the evaluation under the selected model.
+                { assert evaluated(workDir) == [ selected(workDir) ] },
+                // FreeRate models are numerically unstable below 2000 taxa without per-rate scalers: the selection, every part and the evaluation use them.
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_MOOSE').every { it.contains('--rate-scalers on') } },
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').size() > 1 },
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH').every { it.contains('--rate-scalers on') } },
+                { assert commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_EVALUATE').every { it.contains('--rate-scalers on') } },
+                { assert new File("$outputDir/raxmlng/user-alignment.raxml.bestModel").text.startsWith(selected(workDir).tokenize('+')[0]) },
+                { assert new File("$outputDir/mislabels/user-alignment.mislabels.tsv").exists() },
+            )
         }
     }
 
-    test("-profile test, divided tree search needs a fixed model whatever its case") {
+    test("-profile test, divided tree search selects the model whatever its case") {
 
         when {
             params {
@@ -266,23 +312,68 @@ nextflow_pipeline {
                 skip_clustering         = true
                 raxmlng_model           = "dna"
                 run_divided_tree_search = true
+                tree_part_max_tips      = 15
+                tree_part_min_tips      = 2
+                tree_part_outgroups     = 2
+            }
+        }
+
+        then {
+            assert workflow.success
+            assert workflow.trace.succeeded().findAll { it.name.contains('RAXMLNG_MOOSE') }.size() == 1
+        }
+    }
+
+    test("-profile test, divided tree search selects a model for the reference tree too") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_clustering         = true
+                run_reference           = true
+                run_divided_tree_search = true
+                tree_part_max_tips      = 15
+                tree_part_min_tips      = 2
+                tree_part_outgroups     = 2
+            }
+        }
+
+        then {
+            assert workflow.success
+            def moose = workflow.trace.succeeded().findAll { it.name.contains('RAXMLNG_MOOSE') }
+            assertAll(
+                { assert moose.size() == 2 },
+                { assert moose.any { it.name.contains('TAXONOMY2PHYLOGENY_REFERENCE') } },
+                { assert new File("$outputDir/export/user-alignment.raxml.bestModel").exists() },
+            )
+        }
+    }
+
+    test("-profile test, divided tree search selects only among DNA models") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_clustering         = true
+                raxmlng_model           = "AUTO"
+                run_divided_tree_search = true
             }
         }
 
         then {
             assert workflow.failed
-            assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
+            assert workflow.stdout.join("\n").contains("--run_divided_tree_search selects a model only for DNA")
         }
     }
 
-    test("-profile test, divided tree search needs a fixed model for the reference tree too") {
+    test("-profile test, divided tree search selects only among DNA models for the reference tree too") {
 
         when {
             params {
                 outdir                  = "$outputDir"
                 skip_clustering         = true
                 raxmlng_model           = "GTR+G4"
-                raxmlng_reference_model = "DNA"
+                raxmlng_reference_model = "AA"
                 run_reference           = true
                 run_divided_tree_search = true
             }
@@ -290,25 +381,22 @@ nextflow_pipeline {
 
         then {
             assert workflow.failed
-            assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
+            assert workflow.stdout.join("\n").contains("--run_divided_tree_search selects a model only for DNA")
         }
     }
 
-    test("-profile test, divided tree search needs a fixed model for the reference tree when only --raxmlng_model names a selection") {
+    test("-profile test, an empty model is refused") {
 
         when {
             params {
-                outdir                  = "$outputDir"
-                skip_clustering         = true
-                skip_sativa             = true
-                run_reference           = true
-                run_divided_tree_search = true
+                outdir        = "$outputDir"
+                raxmlng_model = ""
             }
         }
 
         then {
             assert workflow.failed
-            assert workflow.stdout.join("\n").contains("--run_divided_tree_search needs a fixed model")
+            assert workflow.stdout.join("\n").contains("--raxmlng_model must not be empty")
         }
     }
 

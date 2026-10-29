@@ -6,7 +6,7 @@ workflow TAXONOMY2PHYLOGENY {
 
     take:
     ch_taxonomy_alignment // channel: [ val(meta), path(taxonomy), path(alignment), val(raxmlng_model) ]
-    divided               // value:   search the parts of the taxonomy separately and graft them, instead of the whole tree at once; needs a fixed model
+    divided               // value:   search the parts of the taxonomy separately and graft them, instead of the whole tree at once; the model is selected on the top part when raxmlng_model is DNA
 
     main:
     TAXONOMYTREE(

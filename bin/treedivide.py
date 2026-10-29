@@ -319,6 +319,9 @@ def split(a):
         for clade in ([tips] if og else []) + [o["reps"] for o in jobs[:i] if set(o["reps"]) <= tipset]:
             ensure_clade(tree, clade)
         job = "job_%03d" % i
+        if j["root"]:
+            with open(a.root_fasta, "w") as fo:
+                fo.writelines(alignment[t] for t in tips)
         done = is_resolved(tree)
         if done:
             os.makedirs("%s/resolved" % a.outdir, exist_ok=True)
@@ -399,6 +402,7 @@ def main():
     s.add_argument("--partition-tree")
     s.add_argument("--outdir", required=True)
     s.add_argument("--plan", required=True)
+    s.add_argument("--root-fasta", required=True, help="alignment of the root part, written whether or not it is searched")
     s.add_argument("--max", type=int, default=2000, help="most tips in a part")
     s.add_argument("--min", type=int, default=10, help="fewest tips for which a child is closed as a part")
     s.add_argument("--reps", type=int, default=3, help="tips representing a closed part in its parent")

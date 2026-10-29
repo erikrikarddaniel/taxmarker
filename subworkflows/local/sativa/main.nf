@@ -72,7 +72,7 @@ workflow SATIVA {
 
     raxmlng_model // value:   RAxML-NG model for the reference tree; DNA runs model selection
 
-    divided_tree_search // value: search the reference tree in parts and graft them (needs a fixed model)
+    divided_tree_search // value: search the reference tree in parts and graft them (a model of DNA is selected on the top part)
 
     folds_per_job // value:   folds each leave-one-out placement job places, or null for all in one
 

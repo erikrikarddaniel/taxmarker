@@ -23,7 +23,7 @@ nextflow_process {
         aln.text = all.collect { '>' + it + '\\n' + 'ACGTACGT' + '\\n' }.join('')
     """
 
-    test("taxmarker - flat taxon and two taxa are divided into parts of at most --max tips") {
+    test("treedivide - flat taxon and two taxa are divided into parts of at most --max tips") {
 
         when {
             params {
@@ -74,7 +74,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - input that fits in one part is not divided") {
+    test("treedivide - input that fits in one part is not divided") {
 
         when {
             params {
@@ -106,7 +106,7 @@ nextflow_process {
 
     // Same tips, but a phylogeny chooses the parts: the flat taxon is resolved so that f1 pairs with f12,
     // f2 with f11, and so on. Cutting the constraint tree instead groups f1 with f2 to f8.
-    test("taxmarker - partition tree decides which tips share a part") {
+    test("treedivide - partition tree decides which tips share a part") {
 
         when {
             params {
@@ -138,7 +138,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - each part and the representatives of its child parts are clades of its constraint tree") {
+    test("treedivide - each part and the representatives of its child parts are clades of its constraint tree") {
 
         when {
             params {
@@ -189,7 +189,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - a flat taxon that leaves two tips over gives no duplicated sequence") {
+    test("treedivide - a flat taxon that leaves two tips over gives no duplicated sequence") {
 
         when {
             params {
@@ -223,7 +223,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - trees with line breaks, comments, quoted names and no final semicolon are read") {
+    test("treedivide - trees with line breaks, comments, quoted names and no final semicolon are read") {
 
         when {
             params {
@@ -255,7 +255,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails on a malformed constraint tree with a non-zero exit status") {
+    test("treedivide - fails on a malformed constraint tree with a non-zero exit status") {
 
         when {
             process {
@@ -275,7 +275,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails when a sequence name occurs twice in the alignment") {
+    test("treedivide - fails when a sequence name occurs twice in the alignment") {
 
         when {
             process {
@@ -295,7 +295,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails with a clear message when the partition tree conflicts with the constraint tree") {
+    test("treedivide - fails with a clear message when the partition tree conflicts with the constraint tree") {
 
         when {
             params {
@@ -323,7 +323,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - taxa all smaller than --min are still divided into parts of at most --max tips") {
+    test("treedivide - taxa all smaller than --min are still divided into parts of at most --max tips") {
 
         when {
             params {
@@ -360,7 +360,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - fails when --min or --outgroups would give parts that cannot be grafted") {
+    test("treedivide - fails when --min or --outgroups would give parts that cannot be grafted") {
 
         when {
             params {
@@ -379,7 +379,7 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - a part whose constraint tree is fully resolved is handed over as a tree, not searched") {
+    test("treedivide - a part whose constraint tree is fully resolved is handed over as a tree, not searched") {
 
         when {
             params {
@@ -420,7 +420,78 @@ nextflow_process {
         }
     }
 
-    test("taxmarker - stub") {
+    test("treedivide - the alignment of the root part is written") {
+
+        when {
+            params {
+                module_args = '--max 8'
+            }
+            process {
+                inputs + """
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def root  = plan.jobs.find { it.root }
+            def names = path(process.out.root_fasta[0][1]).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) }
+
+            assertAll(
+                { assert plan.jobs.size() > 1 },
+                { assert names.size() == root.n },
+                { assert names.toSet().size() == names.size() },
+                // The root part is the representatives of the parts below it, not the whole alignment.
+                { assert names.size() < 26 },
+                { assert names.every { n -> plan.jobs.any { !it.root && it.reps.contains(n) } } },
+                { assert names.any { it.startsWith('a') } && names.any { it.startsWith('b') } && names.any { it.startsWith('f') } },
+                { assert root.outgroups == [] }
+            )
+        }
+    }
+
+    test("treedivide - the alignment of the root part is written when its tree is fully resolved") {
+
+        when {
+            params {
+                module_args = '--max 6 --min 4 --reps 2 --outgroups 1'
+            }
+            process {
+                """
+                def a = (1..6).collect { 'a' + it }
+                def b = (1..6).collect { 'b' + it }
+                def constraint = File.createTempFile('test', '.nwk')
+                constraint.text = '((' + a.join(',') + '),(' + b.join(',') + '));\\n'
+                def aln = File.createTempFile('test', '.fasta')
+                aln.text = (a + b).collect { '>' + it + '\\n' + 'ACGTACGT' + '\\n' }.join('')
+                input[0] = [ [ id:'test' ], file(aln.toString()), file(constraint.toString()), [] ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def plan  = new groovy.json.JsonSlurper().parseText(path(process.out.plan[0][1]).text)
+            def root  = plan.jobs.find { it.root }
+            def names = path(process.out.root_fasta[0][1]).text.readLines().findAll { it.startsWith('>') }.collect { it.substring(1) }
+            def id    = { f -> new File(f.toString()).name.tokenize('.')[0] }
+
+            assertAll(
+                // Two representatives of each of the two parts: ((a,a),(b,b)) is binary, so there is nothing to search.
+                { assert root.resolved },
+                { assert names.size() == 4 },
+                { assert names.findAll { it.startsWith('a') }.size() == 2 },
+                { assert names.findAll { it.startsWith('b') }.size() == 2 },
+                { assert ![process.out.fasta[0][1]].flatten().collect { id(it) }.contains(root.id) }
+            )
+        }
+    }
+
+    test("treedivide - stub") {
 
         options "-stub"
 
@@ -438,6 +509,7 @@ nextflow_process {
         then {
             assert process.success
             assert process.out.versions_python[0][0] == 'TREEDIVIDE'
+            assert path(process.out.root_fasta[0][1]).text.readLines().count { it.startsWith('>') } >= 4
             assert snapshot(process.out.fasta, process.out.constraints, process.out.plan).match()
         }
     }
