@@ -16,9 +16,10 @@ It takes two logical inputs: a set of sequences (`--sequences`) and their propos
 Path to a sequences file, aligned or not: phylip (`.phy`, `.phylip`), Clustal (`.aln`), or FASTA (`.fa`, `.fasta`, `.fna`, `.faa`, `.afa`, `.mfa`, `.alnfaa`, `.alnfna`).
 The file can be gzipped, e.g. `sequences.fna.gz`.
 Aligned vs. unaligned is detected automatically -- no separate mode-switch parameter needed.
-Unaligned content is aligned via [hmmalign](http://hmmer.org) against an HMM profile before continuing through the rest of the pipeline as if it had arrived pre-aligned: pass `--hmm` (path to an HMM profile database) and, if that database holds more than one named profile, `--hmm_name` to pick which one.
-The sequences are aligned in chunks of `--align_chunk_size` (default 10000) in separate jobs, because `hmmalign` needs about 60 kB of memory per sequence.
-The chunks are masked to the profile's match-state columns and concatenated in input order, so the alignment is the same whatever the chunk size.
+Unaligned content is aligned before continuing through the rest of the pipeline as if it had arrived pre-aligned.
+With `--hmm` (path to an HMM profile database) it is aligned via [hmmalign](http://hmmer.org) against that profile, and `--hmm_name` picks one profile if the database holds more than one.
+Without `--hmm` it is aligned from scratch with [MAFFT](https://mafft.cbrc.jp/alignment/software/), in a single job.
+See [Aligning the sequences](usage/aligning_sequences.md) for which to choose and what each costs.
 
 ```bash
 --sequences sequences.fasta

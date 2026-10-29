@@ -27,15 +27,15 @@
                     "exists": true,
                     "pattern": "^\\S+\\.(aln|phy|phylip|alnf[na]a|mfa|f[na]a|fa|afa|fasta)(\\.gz)?$",
                     "description": "Path to a sequences file, aligned or not, in phylip (.phy or .phylip), Clustal (.aln) or fasta format (.fa, .fasta, .fna, .faa, .afa, .mfa, .alnfaa or .alnfna). Can be gzipped.",
-                    "help_text": "Unaligned content is aligned automatically via hmmalign -- see --hmm/--hmm_name.",
+                    "help_text": "Unaligned content is aligned automatically: via hmmalign if --hmm is given, otherwise with MAFFT. See --hmm/--hmm_name and the usage page on aligning the sequences.",
                     "fa_icon": "fas fa-file-alt"
                 },
                 "hmm": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "description": "Path to an HMM profile database, used to align --sequences via hmmalign if it turns out to be unaligned. Only required when the input is unaligned.",
-                    "help_text": "Not needed at all if --sequences is already a multiple sequence alignment (detected automatically). If the database holds more than one named profile, also set --hmm_name.",
+                    "description": "Path to an HMM profile database, used to align --sequences via hmmalign if it turns out to be unaligned. Without it, unaligned input is aligned with MAFFT.",
+                    "help_text": "Not needed if --sequences is already a multiple sequence alignment (detected automatically). Unaligned input without an HMM is aligned with MAFFT in a single job, which suits up to some thousands of sequences; give an HMM for larger inputs. If the database holds more than one named profile, also set --hmm_name.",
                     "fa_icon": "fas fa-dna"
                 },
                 "hmm_name": {
@@ -151,14 +151,14 @@
                 },
                 "skip_gapfilter": {
                     "type": "boolean",
-                    "description": "For already-aligned input: skip filtering out sequences with too high a proportion of alignment gaps, and run every sequence straight through the rest of the pipeline.",
+                    "description": "For already-aligned or MAFFT-aligned input: skip filtering out sequences with too high a proportion of alignment gaps, and run every sequence straight through the rest of the pipeline.",
                     "fa_icon": "fas fa-forward"
                 },
                 "min_nongap": {
                     "type": "number",
                     "default": 0.3,
-                    "description": "For already-aligned input: minimum proportion of non-gap columns a sequence must have in the alignment to be kept. Sequences below this are too short/incomplete to place reliably, and are reported separately instead of being placed.",
-                    "help_text": "A taxonomically broad reference alignment is naturally wide, with many columns that are only real sequence for a handful of divergent taxa -- a low default keeps that from penalising genuinely full-length sequences. Raise it for a narrower (e.g. single-genus) alignment where a stricter threshold makes sense. Only applies to input that was already aligned on entry -- see --min_profile_cover for hmmalign-derived input.",
+                    "description": "For already-aligned or MAFFT-aligned input: minimum proportion of non-gap columns a sequence must have in the alignment to be kept. Sequences below this are too short/incomplete to place reliably, and are reported separately instead of being placed.",
+                    "help_text": "A taxonomically broad reference alignment is naturally wide, with many columns that are only real sequence for a handful of divergent taxa -- a low default keeps that from penalising genuinely full-length sequences. Raise it for a narrower (e.g. single-genus) alignment where a stricter threshold makes sense. Only applies to input that was already aligned on entry or aligned by MAFFT -- see --min_profile_cover for hmmalign-derived input.",
                     "fa_icon": "fas fa-ruler"
                 },
                 "skip_profile_cover": {
@@ -185,7 +185,7 @@
                 "skip_sativa": {
                     "type": "boolean",
                     "description": "Skip the phylogenetic placement subworkflow (reference tree, leave-one-out placement, scoring) entirely.",
-                    "help_text": "Turns the rest of the pipeline into a general-purpose taxonomy-resolution/alignment/prefilter QC tool: taxonomy resolution, name-consistency checking, optional alignment (via hmmalign) and gap/profile-coverage filtering, and the optional raxtax prefilter all still run as configured. The final mislabels report then contains only raxtax-flagged mislabels (or is empty if --skip_raxtax is also set) -- no EPA-ng-based placement is performed. The cleaned, filtered alignment and taxonomy are still published, under whichever upstream step (raxtax prefilter, gap/profile-coverage filter, or name-consistency check) produced them last.",
+                    "help_text": "Turns the rest of the pipeline into a general-purpose taxonomy-resolution/alignment/prefilter QC tool: taxonomy resolution, name-consistency checking, optional alignment (via hmmalign or MAFFT) and gap/profile-coverage filtering, and the optional raxtax prefilter all still run as configured. The final mislabels report then contains only raxtax-flagged mislabels (or is empty if --skip_raxtax is also set) -- no EPA-ng-based placement is performed. The cleaned, filtered alignment and taxonomy are still published, under whichever upstream step (raxtax prefilter, gap/profile-coverage filter, or name-consistency check) produced them last.",
                     "fa_icon": "fas fa-forward"
                 },
                 "taxcode": {
