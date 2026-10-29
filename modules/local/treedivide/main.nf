@@ -41,7 +41,7 @@ process TREEDIVIDE {
     """
     mkdir parts
     touch parts/job_000.fasta parts/job_000.nwk
-    touch ${prefix}.root.fasta
+    printf '>a\\nACGT\\n>b\\nACGT\\n>c\\nACGT\\n>d\\nACGT\\n' > ${prefix}.root.fasta
     echo '{"jobs": [{"id": "job_000", "n": 0, "reps": [], "outgroups": [], "root": true, "resolved": false}]}' > ${prefix}.plan.json
     """
 }

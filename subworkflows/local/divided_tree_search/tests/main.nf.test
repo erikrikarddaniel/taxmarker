@@ -324,4 +324,28 @@ nextflow_workflow {
             )
         }
     }
+
+    test("divided_tree_search - stub, model selection") {
+
+        options "-stub"
+
+        when {
+            params {
+                module_args = '--max 8'
+            }
+            workflow {
+                inputs + """
+                input[0] = channel.of([ [ id:'test' ], file(aln.toString()), file(guide.toString()), 'DNA' ])
+                """
+            }
+        }
+
+        then {
+            assert workflow.success
+            assertAll(
+                { assert workflow.trace.succeeded().findAll { it.name.startsWith('DIVIDED_TREE_SEARCH:RAXMLNG_MOOSE') }.size() == 1 },
+                { assert snapshot(workflow.out).match() }
+            )
+        }
+    }
 }

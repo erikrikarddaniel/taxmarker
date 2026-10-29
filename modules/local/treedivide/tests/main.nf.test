@@ -509,6 +509,7 @@ nextflow_process {
         then {
             assert process.success
             assert process.out.versions_python[0][0] == 'TREEDIVIDE'
+            assert path(process.out.root_fasta[0][1]).text.readLines().count { it.startsWith('>') } >= 4
             assert snapshot(process.out.fasta, process.out.constraints, process.out.plan).match()
         }
     }
