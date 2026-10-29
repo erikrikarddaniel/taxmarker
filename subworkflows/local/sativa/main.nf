@@ -31,7 +31,7 @@ main.nf
               │     unaligned sequences that drops severely mislabeled sequences before
               │     alignment, reporting them directly instead
               ├── ENSURE_ALIGNED        (subworkflows/local/ensure_aligned/) -- transparently
-              │     aligns unaligned input via hmmalign (params.hmm); already-aligned
+              │     aligns unaligned input via hmmalign (params.hmm) or MAFFT; already-aligned
               │     input passes through unchanged
               ├── GAPFILTER / PROFILECOVER (modules/local/{gapfilter,profilecover}/)
               ├── SATIVA (this subworkflow)
@@ -63,7 +63,7 @@ workflow SATIVA {
 
     ch_alignment  // channel: [ val(meta), path(alignment) ]
                   //   Aligned, labeled sequences in FASTA format -- normalised to
-                  //   FASTA and, if it arrived unaligned, aligned via hmmalign, both
+                  //   FASTA and, if it arrived unaligned, aligned via hmmalign or MAFFT, both
                   //   by the caller (workflows/sativa.nf; see EMBOSS_SEQRET and
                   //   ENSURE_ALIGNED there) before this subworkflow ever sees it.
                   //   Sequence IDs must match the first column of ch_taxonomy.
