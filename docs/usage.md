@@ -97,6 +97,9 @@ If RAxML-NG stops with a branch length error (BRLEN out-of-bounds), for example 
 
 ## Reference export
 
+The final products of a run are all in `export/`: the files below, the reference of `--run_reference` (next section) and a copy of the mislabels table (`*.mislabels.tsv`, see [Output](output.md#mislabels)).
+The other output directories hold intermediate results, which most users can skip.
+
 `--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes four files to `export/` for each.
 The word `all` can be used as a number, e.g. `1,5,all`, to export every sequence that passed (the files are then named `*.all.*` instead of `*.n<N>.*`).
 The files are:
@@ -113,7 +116,7 @@ Sequences dropped by a filter before the last check, such as short fragments, ar
 
 ## Reference for phylogenetic placement
 
-`--run_reference` builds a reference phylogeny for placing unknown sequences, from one sequence per species, and writes it to `reference/`:
+`--run_reference` builds a reference phylogeny for placing unknown sequences, from one sequence per species, and writes it to `export/`, next to the other final products:
 
 - `*.raxml.bestTree`: the phylogeny, constrained by the taxonomy.
 - `*.raxml.bestModel`: the RAxML-NG model, selected for this alignment unless a model is given (see `--raxmlng_reference_model`).
@@ -123,7 +126,7 @@ Sequences dropped by a filter before the last check, such as short fragments, ar
 
 The sequences are the same as in the one-per-species reference export (`--export_n_per_species`, number 1), which `--run_reference` writes to `export/` even when that option is not given.
 `export/*.n1.names.txt` lists them.
-The names in `reference/` and in `*.names.txt` are the sequence names the pipeline works with, in which characters other than letters, digits, `_`, `.`, `-`, `|` and `/` have been replaced by `_`; the headers in `export/*.fna.gz` keep the original ones.
+The names in the reference files and in `*.names.txt` are the sequence names the pipeline works with, in which characters other than letters, digits, `_`, `.`, `-`, `|` and `/` have been replaced by `_`; the headers in `export/*.fna.gz` keep the original ones.
 A species with no sequence that passed every check has none in the reference.
 The tree is a second RAxML-NG search, run with the settings of the first one (`--raxmlng_fast`, `--raxmlng_seed`, `--raxmlng_blopt`) and, unless `--raxmlng_reference_model` is set, its model.
 

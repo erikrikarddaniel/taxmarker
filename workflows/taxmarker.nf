@@ -375,10 +375,11 @@ workflow TAXMARKER {
     // detection source), so collectFile with keepHeader can concatenate them directly --
     // no bridging process needed just to reshape/combine two files.
     //
-    ch_raxtax_mislabels
+    def ch_mislabels = ch_raxtax_mislabels
         .mix(ch_sativa_mislabels)
         .map { _meta, tsv -> tsv }
-        .collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/mislabels", keepHeader: true, skip: 1)
+    ch_mislabels.collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/mislabels", keepHeader: true, skip: 1)
+    ch_mislabels.collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/export", keepHeader: true, skip: 1)
 
     //
     // MODULE: MultiQC

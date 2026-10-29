@@ -138,7 +138,7 @@
                 "run_reference": {
                     "type": "boolean",
                     "description": "Build a reference phylogeny and model for phylogenetic placement of new sequences, from one sequence per species.",
-                    "help_text": "The sequences are the ones in the one-per-species export (`export/*.n1.*`, which is written even without --export_n_per_species), taken from the alignment. The tree is built under the taxonomy constraint, like the one the placement test uses, and RAxML-NG selects the model unless --raxmlng_model names one. The tree, model, alignment and taxonomy go to `reference/`. This is a second RAxML-NG search.",
+                    "help_text": "The sequences are the ones in the one-per-species export (`export/*.n1.*`, which is written even without --export_n_per_species), taken from the alignment. The tree is built under the taxonomy constraint, like the one the placement test uses, and RAxML-NG selects the model unless --raxmlng_model names one. The tree, model, alignment and taxonomy go to `export/`. This is a second RAxML-NG search.",
                     "fa_icon": "fas fa-tree"
                 },
                 "skip_gapfilter": {
