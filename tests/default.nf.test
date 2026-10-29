@@ -344,7 +344,7 @@ nextflow_pipeline {
             assertAll(
                 { assert moose.size() == 2 },
                 { assert moose.any { it.name.contains('TAXONOMY2PHYLOGENY_REFERENCE') } },
-                { assert new File("$outputDir/reference/user-alignment.raxml.bestModel").exists() },
+                { assert new File("$outputDir/export/user-alignment.raxml.bestModel").exists() },
             )
         }
     }
