@@ -37,6 +37,13 @@ input:
         type: file
         description: Sequences in FASTA, Clustal or PHYLIP format, aligned or not, plain or gzipped.
         pattern: "*.{fa,fasta,fna,faa,afa,mfa,alnfna,alnfaa,aln,phy,phylip,fa.gz,fasta.gz,fna.gz,faa.gz,afa.gz,mfa.gz,alnfna.gz,alnfaa.gz,aln.gz,phy.gz,phylip.gz}"
+  - unresolved_pattern:
+      type: string
+      description: |
+        Python regular expression for placeholder ranks (e.g. UNITE's `s__Genus_sp`) that are
+        removed from the end of a lineage like empty ranks, tested against the rank name without
+        its rank prefix (one to three letters and `__`). A lineage keeps its first rank. An empty
+        string trims only empty ranks. Must not contain a single quote.
 output:
   taxonomy:
     - - meta:

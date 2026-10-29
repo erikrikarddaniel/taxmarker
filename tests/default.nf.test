@@ -31,6 +31,30 @@ nextflow_pipeline {
         }
     }
 
+    test("-profile test, --unresolved_rank_pattern reaches the taxonomy resolution") {
+
+        when {
+            params {
+                outdir                  = "$outputDir"
+                skip_sativa             = true
+                unresolved_rank_pattern = 'Cetobacterium ceti'
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def lines = path("$outputDir/resolvetaxonomy/user-alignment.resolved.tax").readLines()
+
+            assertAll(
+                // The species matching the pattern is trimmed from the end of its lineage ...
+                { assert lines.contains('UnpCCeti\tBacteria;Fusobacteria;Fusobacteriia;Fusobacteriales;Fusobacteriaceae;Cetobacterium') },
+                // ... and the sibling species that does not match keeps its rank.
+                { assert lines.contains('UnpSomer\tBacteria;Fusobacteria;Fusobacteriia;Fusobacteriales;Fusobacteriaceae;Cetobacterium;Cetobacterium somerae') },
+            )
+        }
+    }
+
     // The two tests below are the same run with the folds split differently, so their
     // mislabels/summary snapshots must be byte-identical. Clustering is skipped in both:
     // it isn't what's under test here, and leaving it out keeps them quick.

@@ -14,6 +14,7 @@ nextflow_process {
         when {
             process {
                 """
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [
                     [ id:'resolvetaxonomy_test' ],
                     [],
@@ -49,6 +50,7 @@ nextflow_process {
         when {
             process {
                 """
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [
                     [ id:'resolvetaxonomy_test' ],
                     file(params.pipelines_testdata_base_path + 'taxmarker/testdata/resolvetaxonomy_test.tax', checkIfExists: true),
@@ -84,6 +86,7 @@ nextflow_process {
         when {
             process {
                 """
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [
                     [ id:'resolvetaxonomy_test' ],
                     file(params.pipelines_testdata_base_path + 'taxmarker/testdata/gapfilter_test.tax', checkIfExists: true),
@@ -113,6 +116,7 @@ nextflow_process {
                 """
                 def fasta = File.createTempFile('resolvetaxonomy_brackets', '.fasta')
                 fasta.text = '>SeqA Bacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA [locus_tag=abc] [location=1..100]\\nACGT\\n'
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(fasta.toString()) ]
                 """
             }
@@ -141,6 +145,7 @@ nextflow_process {
                 fasta.text = '>SeqA Bacteria;PhylumA;ClassA;OrderA;FamilyA;GenusA;SpeciesA\\nACGT\\n'
                 def gz = new File(fasta.toString() + '.gz')
                 new java.util.zip.GZIPOutputStream(gz.newOutputStream()).withCloseable { it << fasta.bytes }
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(gz.toString()) ]
                 """
             }
@@ -173,6 +178,7 @@ nextflow_process {
                 new java.util.zip.GZIPOutputStream(gz.newOutputStream()).withCloseable { it << tax.bytes }
                 def fasta = File.createTempFile('resolvetaxonomy_gz', '.fasta')
                 fasta.text = '>SeqA\\nACGT\\n'
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [ [ id:'resolvetaxonomy_test' ], file(gz.toString()), file(fasta.toString()) ]
                 """
             }
@@ -208,6 +214,7 @@ nextflow_process {
                 ].join('\\n') + '\\n'
                 def fasta = File.createTempFile('resolvetaxonomy_partial', '.fasta')
                 fasta.text = ['Full', 'Placeholder', 'Genus', 'Empty', 'Spaces', 'Interior'].collect { ">\${it}\\nACGT\\n" }.join()
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [ [ id:'resolvetaxonomy_test' ], file(tax.toString()), file(fasta.toString()) ]
                 """
             }
@@ -242,6 +249,7 @@ nextflow_process {
                     '>Genus d__A;p__B;c__C;o__O;f__F;g__;s__',
                     '>Interior d__A;p__B;c__;o__O;f__F;g__;s__',
                 ].collect { it + '\\nACGT\\n' }.join()
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(fasta.toString()) ]
                 """
             }
@@ -262,6 +270,244 @@ nextflow_process {
 
     }
 
+    test("taxmarker - trailing named placeholder ranks are dropped, interior ones and similar real names kept") {
+
+        when {
+            process {
+                """
+                def tax = File.createTempFile('resolvetaxonomy_unresolved', '.tax')
+                tax.text = [
+                    'GenusAndSpecies\\tk__V;p__A;c__C;o__O;f__Orchid;g__Orchid_gen_Incertae_sedis;s__Orchid_sp',
+                    'SpOnly\\tk__V;p__A;c__C;o__O;f__F;g__Hoya;s__Hoya_sp',
+                    'SpDot\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp.',
+                    'Unidentified\\tk__V;p__A;c__C;o__O;f__F;g__unidentified;s__unidentified',
+                    'FamilyToSpecies\\tk__V;p__A;c__C;o__O;f__O_fam_Incertae_sedis;g__O_gen_Incertae_sedis;s__O_sp',
+                    'AllPlaceholders\\tk__V;p__V_phy_Incertae_sedis;c__V_cls_Incertae_sedis;o__V_ord_Incertae_sedis;f__V_fam_Incertae_sedis;g__V_gen_Incertae_sedis;s__V_sp',
+                    'NoPrefix\\tBacteria;PhylumA;Genus_sp',
+                    'InteriorIncertae\\tk__V;p__A;c__C;o__Eud;f__Eud_fam_Incertae_sedis;g__Gx;s__Gx_one',
+                    'GtdbPlaceholder\\td__Bacteria;p__P;c__C;o__O;f__F;g__Escherichia;s__Escherichia sp000001',
+                    'SpSpace\\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx;s__Gx sp',
+                    'SpSpaceDot\\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx;s__Gx sp.',
+                    'TwoLetterPrefix\\tsk__V;ph__A;cl__C;or__O;fa__F;ge__unidentified',
+                    'SimilarRealNames\\tk__V;p__A;c__C;o__O;f__Spiraceae;g__Spiraea;s__Spiraea_spinosa',
+                    'SpNov\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp_nov',
+                    'SpNumbered\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp1',
+                    'Spp\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp',
+                    'SppDot\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp.',
+                    'SppSpace\\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx;s__Gx spp',
+                    'SppSpaceDot\\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx;s__Gx spp.',
+                    'SppNumbered\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp1',
+                    'SppInName\\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gxspp',
+                ].join('\\n') + '\\n'
+                def names = ['GenusAndSpecies', 'SpOnly', 'SpDot', 'Unidentified', 'FamilyToSpecies', 'AllPlaceholders', 'NoPrefix', 'InteriorIncertae', 'GtdbPlaceholder', 'SpSpace', 'SpSpaceDot', 'TwoLetterPrefix', 'SimilarRealNames', 'SpNov', 'SpNumbered', 'Spp', 'SppDot', 'SppSpace', 'SppSpaceDot', 'SppNumbered', 'SppInName']
+                def fasta = File.createTempFile('resolvetaxonomy_unresolved', '.fasta')
+                fasta.text = names.collect { ">\\${it}\\nACGT\\n" }.join()
+                input[1] = params.unresolved_rank_pattern
+                input[0] = [ [ id:'resolvetaxonomy_test' ], file(tax.toString()), file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def lines = path(process.out.taxonomy[0][1]).readLines()
+
+            assertAll(
+                // Placeholder species and genus: the lineage ends at the last named rank.
+                { assert lines.contains('GenusAndSpecies\tk__V;p__A;c__C;o__O;f__Orchid') },
+                { assert lines.contains('SpOnly\tk__V;p__A;c__C;o__O;f__F;g__Hoya') },
+                { assert lines.contains('SpDot\tk__V;p__A;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('Unidentified\tk__V;p__A;c__C;o__O;f__F') },
+                { assert lines.contains('FamilyToSpecies\tk__V;p__A;c__C;o__O') },
+                // A lineage of nothing but placeholders keeps its first named rank.
+                { assert lines.contains('AllPlaceholders\tk__V') },
+                { assert lines.contains('NoPrefix\tBacteria;PhylumA') },
+                // A placeholder with a named rank after it is not trailing and stays.
+                { assert lines.contains('InteriorIncertae\tk__V;p__A;c__C;o__Eud;f__Eud_fam_Incertae_sedis;g__Gx;s__Gx_one') },
+                // GTDB's sp<accession> species are real species clusters and stay.
+                { assert lines.contains('GtdbPlaceholder\td__Bacteria;p__P;c__C;o__O;f__F;g__Escherichia;s__Escherichia sp000001') },
+                // NCBI style placeholders, with a space, are trimmed; so is a longer rank prefix.
+                { assert lines.contains('SpSpace\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('SpSpaceDot\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('TwoLetterPrefix\tsk__V;ph__A;cl__C;or__O;fa__F') },
+                // Names the default does not match stay: sp must end the name, and a number or nov after it is not a placeholder.
+                { assert lines.contains('SimilarRealNames\tk__V;p__A;c__C;o__O;f__Spiraceae;g__Spiraea;s__Spiraea_spinosa') },
+                { assert lines.contains('SpNov\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp_nov') },
+                { assert lines.contains('SpNumbered\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_sp1') },
+                // spp, as in BOLD and NCBI-derived names, is a placeholder too, with or without a dot and after a space or underscore.
+                { assert lines.contains('Spp\tk__V;p__A;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('SppDot\tk__V;p__A;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('SppSpace\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('SppSpaceDot\td__Bacteria;p__P;c__C;o__O;f__F;g__Gx') },
+                // As for sp: a number after it, or no separator before it, is not a placeholder.
+                { assert lines.contains('SppNumbered\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gx_spp1') },
+                { assert lines.contains('SppInName\tk__V;p__A;c__C;o__O;f__F;g__Gx;s__Gxspp') },
+            )
+        }
+
+    }
+
+    test("taxmarker - embedded taxonomy drops trailing named placeholder ranks") {
+
+        when {
+            process {
+                """
+                def fasta = File.createTempFile('resolvetaxonomy_embedded_unresolved', '.fasta')
+                fasta.text = [
+                    '>GenusAndSpecies k__V;p__A;c__C;o__O;f__Orchid;g__Orchid_gen_Incertae_sedis;s__Orchid_sp [locus_tag=abc]',
+                    '>SpOnly k__V;p__A;c__C;o__O;f__F;g__Hoya;s__Hoya_sp',
+                    '>Interior k__V;p__A;c__C;o__Eud;f__Eud_fam_Incertae_sedis;g__Gx;s__Gx_one',
+                ].collect { it + '\\nACGT\\n' }.join()
+                input[1] = params.unresolved_rank_pattern
+                input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def lines = path(process.out.taxonomy[0][1]).readLines()
+
+            assertAll(
+                { assert lines.contains('GenusAndSpecies\tk__V;p__A;c__C;o__O;f__Orchid') },
+                { assert lines.contains('SpOnly\tk__V;p__A;c__C;o__O;f__F;g__Hoya') },
+                { assert lines.contains('Interior\tk__V;p__A;c__C;o__Eud;f__Eud_fam_Incertae_sedis;g__Gx;s__Gx_one') },
+            )
+        }
+
+    }
+
+    test("taxmarker - a custom placeholder pattern replaces the default one") {
+
+        when {
+            process {
+                """
+                def tax = File.createTempFile('resolvetaxonomy_pattern', '.tax')
+                tax.text = [
+                    'Uncultured\\td__A;p__B;c__C;o__O;f__F;g__Gx;s__Uncultured_bacterium',
+                    'WithSpace\\td__A;p__B;c__C;o__O;f__F;g__Gx;s__Gx environmental sample',
+                    'SpKept\\td__A;p__B;c__C;o__O;f__F;g__Gx;s__Gx_sp',
+                    'IncertaeKept\\td__A;p__B;c__C;o__O;f__F_Incertae_sedis',
+                    'BlankStillTrimmed\\td__A;p__B;c__C;o__O;f__F;g__;s__',
+                ].join('\\n') + '\\n'
+                def fasta = File.createTempFile('resolvetaxonomy_pattern', '.fasta')
+                fasta.text = ['Uncultured', 'WithSpace', 'SpKept', 'IncertaeKept', 'BlankStillTrimmed'].collect { ">\\${it}\\nACGT\\n" }.join()
+                input[1] = '(?i)^uncultured|environmental sample'
+                input[0] = [ [ id:'resolvetaxonomy_test' ], file(tax.toString()), file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def lines = path(process.out.taxonomy[0][1]).readLines()
+
+            assertAll(
+                // The custom pattern trims what it matches ...
+                { assert lines.contains('Uncultured\td__A;p__B;c__C;o__O;f__F;g__Gx') },
+                { assert lines.contains('WithSpace\td__A;p__B;c__C;o__O;f__F;g__Gx') },
+                // ... and the UNITE default no longer applies.
+                { assert lines.contains('SpKept\td__A;p__B;c__C;o__O;f__F;g__Gx;s__Gx_sp') },
+                { assert lines.contains('IncertaeKept\td__A;p__B;c__C;o__O;f__F_Incertae_sedis') },
+                // Empty ranks are trimmed whatever the pattern.
+                { assert lines.contains('BlankStillTrimmed\td__A;p__B;c__C;o__O;f__F') },
+            )
+        }
+
+    }
+
+    test("taxmarker - a lineage is never trimmed below its first rank") {
+
+        when {
+            process {
+                """
+                def tax = File.createTempFile('resolvetaxonomy_root', '.tax')
+                tax.text = [
+                    'RootPlaceholder\\tk__V_sp',
+                    'AllUnidentified\\tunidentified;unidentified',
+                    'MatchAll\\tk__V;p__A_sp',
+                ].join('\\n') + '\\n'
+                def fasta = File.createTempFile('resolvetaxonomy_root', '.fasta')
+                fasta.text = ['RootPlaceholder', 'AllUnidentified', 'MatchAll'].collect { ">\\${it}\\nACGT\\n" }.join()
+                input[1] = params.unresolved_rank_pattern
+                input[0] = [ [ id:'resolvetaxonomy_test' ], file(tax.toString()), file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def lines = path(process.out.taxonomy[0][1]).readLines()
+            def warnings = path(process.out.warnings[0][1]).text
+
+            assertAll(
+                // The sequences were annotated, so they stay with their first rank, not dropped as unannotated.
+                { assert lines.contains('RootPlaceholder\tk__V_sp') },
+                { assert lines.contains('AllUnidentified\tunidentified') },
+                { assert lines.contains('MatchAll\tk__V') },
+                { assert !warnings.contains('without any taxonomic annotation') },
+            )
+        }
+
+    }
+
+    test("taxmarker - an invalid placeholder pattern fails and names the parameter") {
+
+        when {
+            process {
+                """
+                def tax = File.createTempFile('resolvetaxonomy_badpattern', '.tax')
+                tax.text = 'A\\td__A;p__B\\n'
+                def fasta = File.createTempFile('resolvetaxonomy_badpattern', '.fasta')
+                fasta.text = '>A\\nACGT\\n'
+                input[1] = 'x(?i)abc'
+                input[0] = [ [ id:'resolvetaxonomy_test' ], file(tax.toString()), file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+            assert process.errorReport.contains('--unresolved_rank_pattern')
+        }
+
+    }
+
+    test("taxmarker - an empty placeholder pattern trims only empty ranks") {
+
+        when {
+            process {
+                """
+                def tax = File.createTempFile('resolvetaxonomy_nopattern', '.tax')
+                tax.text = [
+                    'Placeholders\\td__A;p__B;c__C;o__O;f__F;g__Gx_gen_Incertae_sedis;s__Gx_sp',
+                    'Empty\\td__A;p__B;c__C;o__O;f__F;g__;s__',
+                ].join('\\n') + '\\n'
+                def fasta = File.createTempFile('resolvetaxonomy_nopattern', '.fasta')
+                fasta.text = ['Placeholders', 'Empty'].collect { ">\\${it}\\nACGT\\n" }.join()
+                input[1] = ''
+                input[0] = [ [ id:'resolvetaxonomy_test' ], file(tax.toString()), file(fasta.toString()) ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def lines = path(process.out.taxonomy[0][1]).readLines()
+
+            assertAll(
+                { assert lines.contains('Placeholders\td__A;p__B;c__C;o__O;f__F;g__Gx_gen_Incertae_sedis;s__Gx_sp') },
+                { assert lines.contains('Empty\td__A;p__B;c__C;o__O;f__F') },
+            )
+        }
+
+    }
+
     test("taxmarker - sequences without any annotation are dropped from taxonomy and sequences, with a warning") {
 
         when {
@@ -276,6 +522,7 @@ nextflow_process {
                 ].join('\\n') + '\\n'
                 def fasta = File.createTempFile('resolvetaxonomy_unannotated', '.fasta')
                 fasta.text = ['Named', 'Blank', 'Placeholders', 'NoLineage'].collect { ">\${it}\\nACGT\\n" }.join()
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [ [ id:'resolvetaxonomy_test' ], file(tax.toString()), file(fasta.toString()) ]
                 """
             }
@@ -309,6 +556,7 @@ nextflow_process {
                     '>Blank ;;;;;; [locus_tag=ghi]\\nACGT\\n',
                     '>Fine d__A;p__B;c__D\\nACGT\\n',
                 ].join()
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [ [ id:'resolvetaxonomy_test' ], [], file(fasta.toString()) ]
                 """
             }
@@ -335,6 +583,7 @@ nextflow_process {
         when {
             process {
                 """
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [
                     [ id:'resolvetaxonomy_test' ],
                     [],
@@ -358,6 +607,7 @@ nextflow_process {
         when {
             process {
                 """
+                input[1] = params.unresolved_rank_pattern
                 input[0] = [
                     [ id:'resolvetaxonomy_test' ],
                     [],
