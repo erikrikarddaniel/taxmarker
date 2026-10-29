@@ -40,7 +40,22 @@ Sequence names in the taxonomy file must match those in `--sequences` (after the
 
 Lineages may stop at any rank.
 Trailing empty ranks and bare placeholders such as `g__` or `s__` are removed, so a sequence annotated only to genus ends at the genus.
-Empty ranks inside a lineage are kept.
+Named placeholders are removed from the end too, as UNITE writes them (`g__Orchidaceae_gen_Incertae_sedis`, `s__Orchidaceae_sp`): a sequence whose genus and species are such placeholders ends at its last named rank, for example the family.
+Without this, sequences that are only unresolved would be grouped and tested as one genus or species.
+`--unresolved_rank_pattern` decides what counts as a placeholder.
+It is a Python regular expression, searched in the rank name without its rank prefix (one to three letters and `__`, such as `g__`).
+The default is `(?i)[ _]spp?[.]?$|Incertae[ _]sedis|^unidentified`: a rank ending in `sp`, `sp.`, `spp` or `spp.` after a space or underscore (`spp` is common in BOLD and NCBI-derived names), a rank containing `Incertae sedis` or `Incertae_sedis`, and a rank starting with `unidentified`, in any case.
+GTDB's `Genus sp000001` names a real species cluster and stays.
+Names such as `Genus_sp1`, `Genus_spp1` or `Genus_sp_nov` are not matched by the default, because `sp` or `spp` must end the name.
+A bare `sp. nov.` can stand for several different undescribed species, so add it to the pattern if your database uses it, for example `(?i)[ _]spp?[.]?([ _]nov[.]?)?$`.
+The pattern is case-sensitive unless it starts with `(?i)`, which must come first, and it must not contain a single quote.
+Set it for databases that use other words, for example `--unresolved_rank_pattern '(?i)^uncultured|^unclassified'`.
+To trim only empty ranks, give an empty string with an equals sign, `--unresolved_rank_pattern=''`; without the equals sign Nextflow drops the empty argument.
+
+A lineage is never trimmed below its first rank: a sequence whose only rank is a placeholder keeps it.
+Placeholders in the middle of a lineage, followed by a named rank, are kept like empty ranks there, so sequences with an unresolved genus but a named species still share that placeholder genus.
+Sequences that end at the same rank after trimming share one taxon, so unresolved species of one genus count as one taxon, for example when clustering picks a representative per taxon.
+The mislabel tables show the lineage as trimmed.
 Sequences without any annotation, such as a lineage of only `;;;;;;`, are dropped from both the taxonomy and the sequences, with a warning, since they cannot be checked.
 
 ### Taxonomy embedded in sequence headers
@@ -98,6 +113,9 @@ If RAxML-NG stops with a branch length error (BRLEN out-of-bounds), for example 
 
 ## Reference export
 
+The final products of a run are all in `export/`: the files below, the reference of `--run_reference` (next section) and a copy of the mislabels table (`*.mislabels.tsv`, see [Output](output.md#mislabels)).
+The other output directories hold intermediate results, which most users can skip.
+
 `--export_n_per_species` takes a comma-separated list of numbers, e.g. `1,5,20`, and writes four files to `export/` for each.
 The word `all` can be used as a number, e.g. `1,5,all`, to export every sequence that passed (the files are then named `*.all.*` instead of `*.n<N>.*`).
 The files are:
@@ -114,7 +132,7 @@ Sequences dropped by a filter before the last check, such as short fragments, ar
 
 ## Reference for phylogenetic placement
 
-`--run_reference` builds a reference phylogeny for placing unknown sequences, from one sequence per species, and writes it to `reference/`:
+`--run_reference` builds a reference phylogeny for placing unknown sequences, from one sequence per species, and writes it to `export/`, next to the other final products:
 
 - `*.raxml.bestTree`: the phylogeny, constrained by the taxonomy.
 - `*.raxml.bestModel`: the RAxML-NG model, selected for this alignment unless a model is given (see `--raxmlng_reference_model`).
@@ -124,7 +142,7 @@ Sequences dropped by a filter before the last check, such as short fragments, ar
 
 The sequences are the same as in the one-per-species reference export (`--export_n_per_species`, number 1), which `--run_reference` writes to `export/` even when that option is not given.
 `export/*.n1.names.txt` lists them.
-The names in `reference/` and in `*.names.txt` are the sequence names the pipeline works with, in which characters other than letters, digits, `_`, `.`, `-`, `|` and `/` have been replaced by `_`; the headers in `export/*.fna.gz` keep the original ones.
+The names in the reference files and in `*.names.txt` are the sequence names the pipeline works with, in which characters other than letters, digits, `_`, `.`, `-`, `|` and `/` have been replaced by `_`; the headers in `export/*.fna.gz` keep the original ones.
 A species with no sequence that passed every check has none in the reference.
 The tree is a second RAxML-NG search, run with the settings of the first one (`--raxmlng_fast`, `--raxmlng_seed`, `--raxmlng_blopt`) and, unless `--raxmlng_reference_model` is set, its model.
 

@@ -35,6 +35,7 @@ workflow TAXMARKER {
     ch_taxonomy        // channel: taxonomy file, or [] if not provided (derived from --sequences headers instead)
     ch_sequences       // channel: sequences file, aligned or not
     seqgrep              // value: keep only --sequences records whose header matches this pattern, or null/empty to skip filtering
+    unresolved_rank_pattern // value: regular expression for placeholder ranks to trim from the end of a lineage, or null/empty for none
     upstream             // value: name of an upstream data source ('GTDB'), or null/empty for none
     gtdb_bac120_metadata // value: path to GTDB bac120 metadata, or null/empty if not needed
     gtdb_ar53_metadata   // value: path to GTDB ar53 metadata, or null/empty if not needed
@@ -121,7 +122,8 @@ workflow TAXMARKER {
         // list Nextflow recognises as "optional path input, absent" when it's one
         // element of a freshly-built tuple, as opposed to a channel item in its own
         // right (which .combine() would silently flatten away).
-        ch_taxonomy.combine(ch_sequences_for_resolve).map { tax, seq -> [ [ id: 'user-alignment' ], tax ?: [], seq ] }
+        ch_taxonomy.combine(ch_sequences_for_resolve).map { tax, seq -> [ [ id: 'user-alignment' ], tax ?: [], seq ] },
+        unresolved_rank_pattern ?: ''
     )
     RESOLVETAXONOMY.out.warnings.subscribe { _meta, warnings_file ->
         def text = warnings_file.text.trim()
@@ -378,10 +380,11 @@ workflow TAXMARKER {
     // detection source), so collectFile with keepHeader can concatenate them directly --
     // no bridging process needed just to reshape/combine two files.
     //
-    ch_raxtax_mislabels
+    def ch_mislabels = ch_raxtax_mislabels
         .mix(ch_sativa_mislabels)
         .map { _meta, tsv -> tsv }
-        .collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/mislabels", keepHeader: true, skip: 1)
+    ch_mislabels.collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/mislabels", keepHeader: true, skip: 1)
+    ch_mislabels.collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/export", keepHeader: true, skip: 1)
 
     //
     // MODULE: MultiQC

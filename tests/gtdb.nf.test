@@ -36,6 +36,8 @@ nextflow_pipeline {
                 { assert summary.contains('putative mislabels: 2') },
                 { assert mislabels.contains('DupHaloA') },
                 { assert mislabels.contains('DupSulfoA') },
+                // The final table is copied into export/, next to the other final products.
+                { assert path("$outputDir/export/user-alignment.mislabels.tsv").text == mislabels },
                 // Export: flagged sequences left out, at most N per species, original
                 // IDs restored, alignment gaps removed.
                 { assert !general5.any { it.contains('DupHaloA') || it.contains('DupSulfoA') } },
@@ -124,9 +126,9 @@ nextflow_pipeline {
 
             def tips   = { file -> (path(file).text =~ /[(,]([^(),:;]+):/).collect { it[1] } }
             def names  = { file -> path(file).readLines().findAll { it.startsWith('>') }.collect { it.substring(1).tokenize(' ')[0] } }
-            def refTips   = tips("$outputDir/reference/user-alignment.raxml.bestTree")
-            def refNames  = names("$outputDir/reference/user-alignment.reference.fasta")
-            def refTax    = path("$outputDir/reference/user-alignment.reference.tax").readLines()
+            def refTips   = tips("$outputDir/export/user-alignment.raxml.bestTree")
+            def refNames  = names("$outputDir/export/user-alignment.reference.fasta")
+            def refTax    = path("$outputDir/export/user-alignment.reference.tax").readLines()
             def n1Names   = path("$outputDir/export/user-alignment.n1.names.txt").readLines()
             def n1Ids     = path("$outputDir/export/user-alignment.n1.general.fna.gz").linesGzip.findAll { it.startsWith('>') }
                 .collect { it.substring(1).tokenize(' ')[0].replaceAll('[^A-Za-z0-9_.|/-]', '_') }
@@ -148,8 +150,10 @@ nextflow_pipeline {
                 { assert trainTips.containsAll(['DupHaloA', 'DupSulfoA']) },
                 { assert refTips.size() < trainTips.size() },
                 // The model found for the reference tree is published with it.
-                { assert path("$outputDir/reference/user-alignment.raxml.bestModel").text.trim() },
-                { assert new File("$outputDir/reference/user-alignment.guide.nwk").exists() },
+                { assert path("$outputDir/export/user-alignment.raxml.bestModel").text.trim() },
+                { assert new File("$outputDir/export/user-alignment.guide.nwk").exists() },
+                // Everything final is in export/; there is no separate reference/.
+                { assert !new File("$outputDir/reference").exists() },
             )
         }
 
@@ -175,13 +179,13 @@ nextflow_pipeline {
         then {
             assert workflow.success
 
-            def tips  = (path("$outputDir/reference/user-alignment.raxml.bestTree").text =~ /[(,]([^(),:;]+):/).collect { it[1] }
-            def names = path("$outputDir/reference/user-alignment.reference.fasta").readLines().findAll { it.startsWith('>') }.collect { it.substring(1).tokenize(' ')[0] }
+            def tips  = (path("$outputDir/export/user-alignment.raxml.bestTree").text =~ /[(,]([^(),:;]+):/).collect { it[1] }
+            def names = path("$outputDir/export/user-alignment.reference.fasta").readLines().findAll { it.startsWith('>') }.collect { it.substring(1).tokenize(' ')[0] }
 
             assertAll(
                 { assert tips.toSet() == names.toSet() },
                 { assert tips.size() == names.size() },
-                { assert path("$outputDir/reference/user-alignment.raxml.bestModel").text.startsWith("GTR") },
+                { assert path("$outputDir/export/user-alignment.raxml.bestModel").text.startsWith("GTR") },
                 // Ten tips cut at six: a binary part that is not searched, and the top part that is.
                 { assert workflow.trace.succeeded().findAll { it.name.contains('TREEGRAFT') }.size() == 1 },
                 { assert workflow.trace.succeeded().findAll { it.name.contains('RAXMLNG_SEARCH') }.size() == 1 },
@@ -189,7 +193,7 @@ nextflow_pipeline {
                 { assert !new File("$outputDir/raxmlng").exists() },
                 { assert !new File("$outputDir/treedivide").exists() },
                 { assert !new File("$outputDir/treegraft").exists() },
-                { assert new File("$outputDir/reference").list().findAll { it.contains('job_') }.isEmpty() },
+                { assert new File("$outputDir/export").list().findAll { it.contains('job_') }.isEmpty() },
             )
         }
 
@@ -209,13 +213,13 @@ nextflow_pipeline {
         then {
             assert workflow.success
 
-            def tips  = (path("$outputDir/reference/user-alignment.raxml.bestTree").text =~ /[(,]([^(),:;]+):/).collect { it[1] }
-            def names = path("$outputDir/reference/user-alignment.reference.fasta").readLines().findAll { it.startsWith('>') }.collect { it.substring(1).tokenize(' ')[0] }
+            def tips  = (path("$outputDir/export/user-alignment.raxml.bestTree").text =~ /[(,]([^(),:;]+):/).collect { it[1] }
+            def names = path("$outputDir/export/user-alignment.reference.fasta").readLines().findAll { it.startsWith('>') }.collect { it.substring(1).tokenize(' ')[0] }
 
             assertAll(
                 { assert names.toSet() == path("$outputDir/export/user-alignment.n1.names.txt").readLines().toSet() },
                 { assert tips.toSet() == names.toSet() },
-                { assert path("$outputDir/reference/user-alignment.raxml.bestModel").text.trim() },
+                { assert path("$outputDir/export/user-alignment.raxml.bestModel").text.trim() },
                 // The reference search has its own directory; skipping SATIVA leaves the
                 // default one empty.
                 { assert !new File("$outputDir/raxmlng").exists() },
@@ -241,7 +245,7 @@ nextflow_pipeline {
             assert workflow.success
 
             def placementModel = path("$outputDir/raxmlng/user-alignment.raxml.bestModel").text
-            def referenceModel = path("$outputDir/reference/user-alignment.raxml.bestModel").text
+            def referenceModel = path("$outputDir/export/user-alignment.raxml.bestModel").text
 
             assertAll(
                 // Each tree is built under its own model.
@@ -267,7 +271,7 @@ nextflow_pipeline {
         then {
             assert workflow.success
 
-            def referenceModel = path("$outputDir/reference/user-alignment.raxml.bestModel").text
+            def referenceModel = path("$outputDir/export/user-alignment.raxml.bestModel").text
 
             assertAll(
                 { assert referenceModel.contains('G4') },
@@ -297,6 +301,7 @@ nextflow_pipeline {
                 { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
                 // Only the swapped-label pair disagrees at genus with high confidence.
                 { assert mislabels.readLines().size() - 1 == 2 },
+                { assert path("$outputDir/export/user-alignment.mislabels.tsv").text == mislabels },
                 // ...but the phylogenetic placement subworkflow never runs at all: no
                 // reference tree, no leave-one-out placement, no scoring. This is the
                 // whole point of --skip_sativa -- a pure taxonomy-resolution/alignment/

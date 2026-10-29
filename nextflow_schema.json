@@ -57,6 +57,14 @@
                     "help_text": "Passed to `seqkit grep -n -r -p`, so it's a regular expression matched against each record's whole header line (id plus any trailing text), not just the id. Useful for restricting a shared/combined reference set -- e.g. GTDB's own ssu_all distribution, which covers more than one domain in a single file -- to just the records wanted, by matching against embedded text such as `d__Archaea`.",
                     "fa_icon": "fas fa-filter"
                 },
+                "unresolved_rank_pattern": {
+                    "type": "string",
+                    "default": "(?i)[ _]spp?[.]?$|Incertae[ _]sedis|^unidentified",
+                    "description": "Regular expression for placeholder ranks that are removed from the end of a lineage, like empty ranks.",
+                    "help_text": "Some databases fill ranks they cannot resolve with a named placeholder, such as `g__Orchidaceae_gen_Incertae_sedis` or `s__Orchidaceae_sp` in UNITE. The pattern (a Python regular expression, searched in the rank name without its rank prefix such as `g__`) is tested on the last rank of each lineage, and a match removes it, repeatedly, so the lineage ends at its last named rank. A lineage is never trimmed below its first rank. The default matches UNITE's placeholders and the `sp`/`spp` of BOLD and NCBI-derived names, in any case, and leaves GTDB's `Genus sp000001` alone. Placeholders followed by a named rank stay. The pattern is case-sensitive unless it starts with `(?i)`, which must come first, and it must not contain a single quote. To trim only empty ranks, give an empty string with an equals sign: `--unresolved_rank_pattern=''`.",
+                    "fa_icon": "fas fa-scissors",
+                    "pattern": "^[^']*$"
+                },
                 "upstream": {
                     "type": "string",
                     "enum": ["GTDB"],
@@ -138,7 +146,7 @@
                 "run_reference": {
                     "type": "boolean",
                     "description": "Build a reference phylogeny and model for phylogenetic placement of new sequences, from one sequence per species.",
-                    "help_text": "The sequences are the ones in the one-per-species export (`export/*.n1.*`, which is written even without --export_n_per_species), taken from the alignment. The tree is built under the taxonomy constraint, like the one the placement test uses, and RAxML-NG selects the model unless --raxmlng_model names one. The tree, model, alignment and taxonomy go to `reference/`. This is a second RAxML-NG search.",
+                    "help_text": "The sequences are the ones in the one-per-species export (`export/*.n1.*`, which is written even without --export_n_per_species), taken from the alignment. The tree is built under the taxonomy constraint, like the one the placement test uses, and RAxML-NG selects the model unless --raxmlng_model names one. The tree, model, alignment and taxonomy go to `export/`. This is a second RAxML-NG search.",
                     "fa_icon": "fas fa-tree"
                 },
                 "skip_gapfilter": {
