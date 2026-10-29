@@ -32,6 +32,7 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 
 ### `Changed`
 
+- [#NN](https://github.com/nf-core/taxmarker/pull/NN) - Everything the pipeline produces for use afterwards is in one directory, `export/`: the DADA2 and general FASTA files and name lists, the reference phylogeny of `--run_reference` with its model, alignment, taxonomy and guide tree, which moved from `reference/`, and a copy of the final `user-alignment.mislabels.tsv`. The other directories hold intermediate results
 - [#70](https://github.com/nf-core/taxmarker/pull/70) - Template updated to nf-core/tools 4.2.1, which changes the GitHub Actions and the tool versions used by the CI workflows and the pre-commit hooks. The Seqera Platform launch action of the full-size test is unchanged
 - [#65](https://github.com/nf-core/taxmarker/pull/65) - The leave-one-out placement jobs show their fold range in the task name, for example `SATIVAEPANG_LOOPLACE (user-alignment folds 0-4)` or `(user-alignment fold 7)` with `--folds_per_job 1`, so a running or failed job can be told apart
 - [#60](https://github.com/nf-core/taxmarker/pull/60) - `--sequences` and `--taxonomy` only accept their documented suffixes now, with or without `.gz`. The old schema patterns weren't grouped, so any path containing `tsv` or `fa` passed, e.g. `tsvdir/notes.txt`. `.fna`, `.faa`, `.phylip` and `.afa` (the format of the published alignment) are now listed for `--sequences`. Other suffixes such as `.fas` are rejected, and so are paths with whitespace in them
