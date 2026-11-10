@@ -27,15 +27,15 @@
                     "exists": true,
                     "pattern": "^\\S+\\.(aln|phy|phylip|alnf[na]a|mfa|f[na]a|fa|afa|fasta)(\\.gz)?$",
                     "description": "Path to a sequences file, aligned or not, in phylip (.phy or .phylip), Clustal (.aln) or fasta format (.fa, .fasta, .fna, .faa, .afa, .mfa, .alnfaa or .alnfna). Can be gzipped.",
-                    "help_text": "Unaligned content is aligned automatically via hmmalign -- see --hmm/--hmm_name.",
+                    "help_text": "Unaligned content is aligned automatically: via hmmalign if --hmm is given, otherwise with MAFFT. See --hmm/--hmm_name and the usage page on aligning the sequences.",
                     "fa_icon": "fas fa-file-alt"
                 },
                 "hmm": {
                     "type": "string",
                     "format": "file-path",
                     "exists": true,
-                    "description": "Path to an HMM profile database, used to align --sequences via hmmalign if it turns out to be unaligned. Only required when the input is unaligned.",
-                    "help_text": "Not needed at all if --sequences is already a multiple sequence alignment (detected automatically). If the database holds more than one named profile, also set --hmm_name.",
+                    "description": "Path to an HMM profile database, used to align --sequences via hmmalign if it turns out to be unaligned. Without it, unaligned input is aligned with MAFFT.",
+                    "help_text": "Not needed if --sequences is already a multiple sequence alignment (detected automatically). Unaligned input without an HMM is aligned with MAFFT in a single job, which suits up to some thousands of sequences; give an HMM for larger inputs. If the database holds more than one named profile, also set --hmm_name.",
                     "fa_icon": "fas fa-dna"
                 },
                 "hmm_name": {
@@ -56,6 +56,14 @@
                     "description": "Keep only --sequences records whose whole FASTA header matches this pattern, dropping the rest before anything else runs.",
                     "help_text": "Passed to `seqkit grep -n -r -p`, so it's a regular expression matched against each record's whole header line (id plus any trailing text), not just the id. Useful for restricting a shared/combined reference set -- e.g. GTDB's own ssu_all distribution, which covers more than one domain in a single file -- to just the records wanted, by matching against embedded text such as `d__Archaea`.",
                     "fa_icon": "fas fa-filter"
+                },
+                "unresolved_rank_pattern": {
+                    "type": "string",
+                    "default": "(?i)[ _]spp?[.]?$|Incertae[ _]sedis|^unidentified",
+                    "description": "Regular expression for placeholder ranks that are removed from the end of a lineage, like empty ranks.",
+                    "help_text": "Some databases fill ranks they cannot resolve with a named placeholder, such as `g__Orchidaceae_gen_Incertae_sedis` or `s__Orchidaceae_sp` in UNITE. The pattern (a Python regular expression, searched in the rank name without its rank prefix such as `g__`) is tested on the last rank of each lineage, and a match removes it, repeatedly, so the lineage ends at its last named rank. A lineage is never trimmed below its first rank. The default matches UNITE's placeholders and the `sp`/`spp` of BOLD and NCBI-derived names, in any case, and leaves GTDB's `Genus sp000001` alone. Placeholders followed by a named rank stay. The pattern is case-sensitive unless it starts with `(?i)`, which must come first, and it must not contain a single quote. To trim only empty ranks, give an empty string with an equals sign: `--unresolved_rank_pattern=''`.",
+                    "fa_icon": "fas fa-scissors",
+                    "pattern": "^[^']*$"
                 },
                 "upstream": {
                     "type": "string",
@@ -143,14 +151,14 @@
                 },
                 "skip_gapfilter": {
                     "type": "boolean",
-                    "description": "For already-aligned input: skip filtering out sequences with too high a proportion of alignment gaps, and run every sequence straight through the rest of the pipeline.",
+                    "description": "For already-aligned or MAFFT-aligned input: skip filtering out sequences with too high a proportion of alignment gaps, and run every sequence straight through the rest of the pipeline.",
                     "fa_icon": "fas fa-forward"
                 },
                 "min_nongap": {
                     "type": "number",
                     "default": 0.3,
-                    "description": "For already-aligned input: minimum proportion of non-gap columns a sequence must have in the alignment to be kept. Sequences below this are too short/incomplete to place reliably, and are reported separately instead of being placed.",
-                    "help_text": "A taxonomically broad reference alignment is naturally wide, with many columns that are only real sequence for a handful of divergent taxa -- a low default keeps that from penalising genuinely full-length sequences. Raise it for a narrower (e.g. single-genus) alignment where a stricter threshold makes sense. Only applies to input that was already aligned on entry -- see --min_profile_cover for hmmalign-derived input.",
+                    "description": "For already-aligned or MAFFT-aligned input: minimum proportion of non-gap columns a sequence must have in the alignment to be kept. Sequences below this are too short/incomplete to place reliably, and are reported separately instead of being placed.",
+                    "help_text": "A taxonomically broad reference alignment is naturally wide, with many columns that are only real sequence for a handful of divergent taxa -- a low default keeps that from penalising genuinely full-length sequences. Raise it for a narrower (e.g. single-genus) alignment where a stricter threshold makes sense. Only applies to input that was already aligned on entry or aligned by MAFFT -- see --min_profile_cover for hmmalign-derived input.",
                     "fa_icon": "fas fa-ruler"
                 },
                 "skip_profile_cover": {
@@ -177,7 +185,7 @@
                 "skip_sativa": {
                     "type": "boolean",
                     "description": "Skip the phylogenetic placement subworkflow (reference tree, leave-one-out placement, scoring) entirely.",
-                    "help_text": "Turns the rest of the pipeline into a general-purpose taxonomy-resolution/alignment/prefilter QC tool: taxonomy resolution, name-consistency checking, optional alignment (via hmmalign) and gap/profile-coverage filtering, and the optional raxtax prefilter all still run as configured. The final mislabels report then contains only raxtax-flagged mislabels (or is empty if --skip_raxtax is also set) -- no EPA-ng-based placement is performed. The cleaned, filtered alignment and taxonomy are still published, under whichever upstream step (raxtax prefilter, gap/profile-coverage filter, or name-consistency check) produced them last.",
+                    "help_text": "Turns the rest of the pipeline into a general-purpose taxonomy-resolution/alignment/prefilter QC tool: taxonomy resolution, name-consistency checking, optional alignment (via hmmalign or MAFFT) and gap/profile-coverage filtering, and the optional raxtax prefilter all still run as configured. The final mislabels report then contains only raxtax-flagged mislabels (or is empty if --skip_raxtax is also set) -- no EPA-ng-based placement is performed. The cleaned, filtered alignment and taxonomy are still published, under whichever upstream step (raxtax prefilter, gap/profile-coverage filter, or name-consistency check) produced them last.",
                     "fa_icon": "fas fa-forward"
                 },
                 "taxcode": {
@@ -223,7 +231,7 @@
                 "run_divided_tree_search": {
                     "type": "boolean",
                     "description": "Build the reference trees by searching parts of the taxonomy separately and grafting the results, for large inputs.",
-                    "help_text": "The taxonomy is cut into parts of at most --tree_part_max_tips sequences, each part is searched under its own part of the taxonomy constraint (in parallel), the part trees are grafted into the top tree and one RAxML-NG evaluation gives branch lengths and model parameters of the full tree. The result has the same form as the whole-tree search and breaks no taxon of the taxonomy. It needs a fixed model (--raxmlng_model, and --raxmlng_reference_model for --run_reference), since the parts cannot select one each.",
+                    "help_text": "The taxonomy is cut into parts of at most --tree_part_max_tips sequences, each part is searched under its own part of the taxonomy constraint (in parallel), the part trees are grafted into the top tree and one RAxML-NG evaluation gives branch lengths and model parameters of the full tree. The result has the same form as the whole-tree search and breaks no taxon of the taxonomy. With --raxmlng_model DNA (the default) the model is selected once, on the top part, which holds representatives of every taxon, and used for all parts; a fixed model is used as given. Model selection for AA or AUTO is not supported with the divided search.",
                     "fa_icon": "fas fa-code-branch"
                 },
                 "tree_part_max_tips": {

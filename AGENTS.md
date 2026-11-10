@@ -75,11 +75,12 @@ main.nf
               │     unaligned sequences that flags severely mislabeled sequences before
               │     alignment and the expensive placement step
               ├── ENSURE_ALIGNED        (subworkflows/local/ensure_aligned/) -- transparently
-              │     aligns unaligned input via hmmalign (--hmm/--hmm_name); already-aligned
-              │     input passes through unchanged
+              │     aligns unaligned input via hmmalign (--hmm/--hmm_name), or with MAFFT
+              │     when no --hmm is given; already-aligned input passes through unchanged
               ├── GAPFILTER / PROFILECOVER (modules/local/{gapfilter,profilecover}/) --
               │     drop sequences too short/incomplete to place reliably (whichever of
-              │     ENSURE_ALIGNED's two branches ran); each has its own skip flag
+              │     ENSURE_ALIGNED's two branches ran: GAPFILTER for given or MAFFT-aligned
+              │     input, PROFILECOVER for hmmalign-derived); each has its own skip flag
               ├── SATIVA (subworkflows/local/sativa/) -- optional, --skip_sativa to disable;
               │     builds the reference tree with RAxML-NG, delegates leave-one-out
               │     placement/scoring to Auguste Gardette's sativa-epang fork (EPA-ng-based)

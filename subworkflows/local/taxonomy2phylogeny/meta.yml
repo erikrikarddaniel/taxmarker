@@ -29,7 +29,7 @@ input:
       type: boolean
       description: |
         Search the parts of the taxonomy separately and graft them (divided_tree_search) instead of searching the
-        whole tree at once. Needs a fixed model.
+        whole tree at once. With model selection (DNA) the model is selected once, on the top part.
 output:
   - tree:
       type: file

@@ -18,6 +18,10 @@
 
 > Eddy SR. Accelerated Profile HMM Searches. PLoS Comput Biol. 2011 Oct 20;7(10):e1002195. doi: 10.1371/journal.pcbi.1002195. PubMed PMID: 22039361.
 
+- [MAFFT](https://pubmed.ncbi.nlm.nih.gov/23329690/)
+
+> Katoh K, Standley DM. MAFFT multiple sequence alignment software version 7: improvements in performance and usability. Mol Biol Evol. 2013 Apr;30(4):772-80. doi: 10.1093/molbev/mst010. PubMed PMID: 23329690.
+
 - [raxtax](https://pubmed.ncbi.nlm.nih.gov/41259660/)
 
 > Wahl NA, Koutsovoulos G, Bettisworth B, Stamatakis A. raxtax: a k-mer-based non-Bayesian taxonomic classifier. Bioinformatics. 2025 Dec;41(12):btaf620. doi: 10.1093/bioinformatics/btaf620. PubMed PMID: 41259660.

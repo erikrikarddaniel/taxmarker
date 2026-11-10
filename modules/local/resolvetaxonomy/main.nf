@@ -15,6 +15,7 @@ process RESOLVETAXONOMY {
 
     input:
     tuple val(meta), path(taxonomy), path(sequences)
+    val unresolved_pattern
 
     output:
     tuple val(meta), path("*.resolved.tax"),                     emit: taxonomy
@@ -34,12 +35,17 @@ process RESOLVETAXONOMY {
     def taxonomy_in = taxonomy ? "${taxonomy}" : ''
     def sequences_ext = resolvedExtension(sequences)
     """
-    python3 - "${taxonomy_in}" "${sequences}" "${prefix}.resolved.tax" "${prefix}.resolved.${sequences_ext}" "${prefix}.warnings.txt" << 'PYEOF'
+    python3 - "${taxonomy_in}" "${sequences}" "${prefix}.resolved.tax" "${prefix}.resolved.${sequences_ext}" "${prefix}.warnings.txt" '${unresolved_pattern}' << 'PYEOF'
 import gzip
+import re
 import sys
 from Bio import SeqIO
 
-taxonomy_in, sequences_in, taxonomy_out, sequences_out, warnings_out = sys.argv[1:6]
+taxonomy_in, sequences_in, taxonomy_out, sequences_out, warnings_out, unresolved_pattern = sys.argv[1:7]
+try:
+    unresolved = re.compile(unresolved_pattern) if unresolved_pattern else None
+except re.error as err:
+    sys.exit('--unresolved_rank_pattern is not a valid Python regular expression (a (?i) flag must come first): ' + str(err))
 
 def opener(path):
     return gzip.open(path, 'rt') if path.endswith('.gz') else open(path)
@@ -71,16 +77,22 @@ def embedded_taxonomy(record):
     text = record.description[len(record.id):].strip()
     return text.split(' [', 1)[0]
 
-def is_blank_rank(rank):
-    rank = rank.strip()
-    return not rank or (len(rank) == 3 and rank[0].isalpha() and rank[1:] == '__')
+RANK_PREFIX = re.compile('^[A-Za-z]{1,3}__')
+
+def rank_name(rank):
+    return RANK_PREFIX.sub('', rank.strip(), count=1)
 
 # SATIVA reads a trailing placeholder or empty rank as a real taxon name, so every
-# lineage must end at its last named rank.
+# lineage must end at its last named rank. A rank matching the pattern is never the
+# only one left: an annotated sequence keeps its first rank.
 def trim_lineage(lineage):
     ranks = lineage.split(';')
-    while ranks and is_blank_rank(ranks[-1]):
-        ranks.pop()
+    while ranks:
+        name = rank_name(ranks[-1])
+        if not name or (len(ranks) > 1 and unresolved is not None and unresolved.search(name)):
+            ranks.pop()
+        else:
+            break
     return ';'.join(ranks)
 
 lineages = {}

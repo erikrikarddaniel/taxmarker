@@ -49,7 +49,7 @@ input:
       type: boolean
       description: |
         Search the reference tree in parts and graft them (see taxonomy2phylogeny);
-        needs a fixed model.
+        a model of DNA is selected once, on the top part.
   - folds_per_job:
       type: integer
       description: |

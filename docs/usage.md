@@ -16,9 +16,10 @@ It takes two logical inputs: a set of sequences (`--sequences`) and their propos
 Path to a sequences file, aligned or not: phylip (`.phy`, `.phylip`), Clustal (`.aln`), or FASTA (`.fa`, `.fasta`, `.fna`, `.faa`, `.afa`, `.mfa`, `.alnfaa`, `.alnfna`).
 The file can be gzipped, e.g. `sequences.fna.gz`.
 Aligned vs. unaligned is detected automatically -- no separate mode-switch parameter needed.
-Unaligned content is aligned via [hmmalign](http://hmmer.org) against an HMM profile before continuing through the rest of the pipeline as if it had arrived pre-aligned: pass `--hmm` (path to an HMM profile database) and, if that database holds more than one named profile, `--hmm_name` to pick which one.
-The sequences are aligned in chunks of `--align_chunk_size` (default 10000) in separate jobs, because `hmmalign` needs about 60 kB of memory per sequence.
-The chunks are masked to the profile's match-state columns and concatenated in input order, so the alignment is the same whatever the chunk size.
+Unaligned content is aligned before continuing through the rest of the pipeline as if it had arrived pre-aligned.
+With `--hmm` (path to an HMM profile database) it is aligned via [hmmalign](http://hmmer.org) against that profile, and `--hmm_name` picks one profile if the database holds more than one.
+Without `--hmm` it is aligned from scratch with [MAFFT](https://mafft.cbrc.jp/alignment/software/), in a single job.
+See [Aligning the sequences](usage/aligning_sequences.md) for which to choose and what each costs.
 
 ```bash
 --sequences sequences.fasta
@@ -40,7 +41,22 @@ Sequence names in the taxonomy file must match those in `--sequences` (after the
 
 Lineages may stop at any rank.
 Trailing empty ranks and bare placeholders such as `g__` or `s__` are removed, so a sequence annotated only to genus ends at the genus.
-Empty ranks inside a lineage are kept.
+Named placeholders are removed from the end too, as UNITE writes them (`g__Orchidaceae_gen_Incertae_sedis`, `s__Orchidaceae_sp`): a sequence whose genus and species are such placeholders ends at its last named rank, for example the family.
+Without this, sequences that are only unresolved would be grouped and tested as one genus or species.
+`--unresolved_rank_pattern` decides what counts as a placeholder.
+It is a Python regular expression, searched in the rank name without its rank prefix (one to three letters and `__`, such as `g__`).
+The default is `(?i)[ _]spp?[.]?$|Incertae[ _]sedis|^unidentified`: a rank ending in `sp`, `sp.`, `spp` or `spp.` after a space or underscore (`spp` is common in BOLD and NCBI-derived names), a rank containing `Incertae sedis` or `Incertae_sedis`, and a rank starting with `unidentified`, in any case.
+GTDB's `Genus sp000001` names a real species cluster and stays.
+Names such as `Genus_sp1`, `Genus_spp1` or `Genus_sp_nov` are not matched by the default, because `sp` or `spp` must end the name.
+A bare `sp. nov.` can stand for several different undescribed species, so add it to the pattern if your database uses it, for example `(?i)[ _]spp?[.]?([ _]nov[.]?)?$`.
+The pattern is case-sensitive unless it starts with `(?i)`, which must come first, and it must not contain a single quote.
+Set it for databases that use other words, for example `--unresolved_rank_pattern '(?i)^uncultured|^unclassified'`.
+To trim only empty ranks, give an empty string with an equals sign, `--unresolved_rank_pattern=''`; without the equals sign Nextflow drops the empty argument.
+
+A lineage is never trimmed below its first rank: a sequence whose only rank is a placeholder keeps it.
+Placeholders in the middle of a lineage, followed by a named rank, are kept like empty ranks there, so sequences with an unresolved genus but a named species still share that placeholder genus.
+Sequences that end at the same rank after trimming share one taxon, so unresolved species of one genus count as one taxon, for example when clustering picks a representative per taxon.
+The mislabel tables show the lineage as trimmed.
 Sequences without any annotation, such as a lineage of only `;;;;;;`, are dropped from both the taxonomy and the sequences, with a warning, since they cannot be checked.
 
 ### Taxonomy embedded in sequence headers
@@ -79,6 +95,7 @@ Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+G4`, to sk
 Any model string that RAxML-NG accepts for `--model` works.
 `--raxmlng_model` applies to the tree the placement test scores against.
 The tree of `--run_reference` takes `--raxmlng_reference_model` and, when that is not set, the same model as `--raxmlng_model`.
+With `--run_divided_tree_search` the selection runs once, on the top part of the divided tree, and the other parts use the model it picks.
 
 On large alignments the search itself dominates the run time.
 `--raxmlng_fast` switches to the RAxML-NG fast search: one parsimony starting tree and a simplified topology search that stops early.
