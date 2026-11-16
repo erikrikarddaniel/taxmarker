@@ -98,8 +98,19 @@ The tree of `--run_reference` takes `--raxmlng_reference_model` and, when that i
 With `--run_divided_tree_search` the selection runs once, on the top part of the divided tree, and the other parts use the model it picks.
 
 On large alignments the search itself dominates the run time.
-`--raxmlng_fast` switches to the RAxML-NG fast search: one parsimony starting tree and a simplified topology search that stops early.
-The constraint still applies, and the tree is somewhat less optimal than the default search gives.
+By default the pipeline uses the RAxML-NG fast search (`--raxmlng_fast`): one parsimony starting tree and a simplified topology search that stops early.
+The constraint still applies, and the tree is somewhat less optimal than the thorough search gives.
+On 5,226 archaeal 16S sequences from GTDB with the same model, the fast search took 3,533 s against 34,657 s and its log-likelihood was 0.03% lower.
+The sets of flagged sequences overlapped as much as the sets of two fast searches with different seeds do (Jaccard index 0.86 in both cases).
+The fast search also builds the parts of `--run_divided_tree_search` and the tree of `--run_reference`.
+Use `--raxmlng_fast false` for the thorough search.
+
+For inputs of some thousands of sequences or more, set a model with `--raxmlng_model`: on archaeal 16S sequences the model selection took a quarter to a half of the run time.
+No model suits every data set, so the table lists what has been tested.
+
+| Data          | Model          | Note                                                                                                                                                                                                                         |
+| ------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GTDB 16S rRNA | `GTR+FO+I+R10` | Recommended for GTDB. Model selection chose it in all five archaeal runs tested, and `GTR+FO+R10` or `GTR+FO+I+R10` on bacterial subsets. `GTR+G4` was faster but lost about half of the strong flags on a bacterial subset. |
 
 For inputs of some thousands of sequences or more, `--run_divided_tree_search` searches parts of the taxonomy in parallel and grafts them together.
 See [Divided tree search](usage/divided_tree_search.md) for when it pays off and why it needs a fixed model.

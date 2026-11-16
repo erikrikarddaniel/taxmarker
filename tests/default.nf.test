@@ -148,18 +148,16 @@ nextflow_pipeline {
             assertAll(
                 { assert log.contains("--model GTR+G4") },
                 { assert !log.contains("Model selection") },
-                { assert !log.contains("simplified") },
             )
         }
     }
 
-    test("-profile test, raxmlng fast search") {
+    test("-profile test, the fast search is the default") {
 
         when {
             params {
                 outdir          = "$outputDir"
                 skip_clustering = true
-                raxmlng_fast    = true
             }
         }
 
@@ -236,10 +234,17 @@ nextflow_pipeline {
             assert workflow.success
             def log = new File("$outputDir/raxmlng/user-alignment.raxml.log").text
             def searches = workflow.trace.succeeded().findAll { it.name.contains('RAXMLNG_SEARCH') }
+            def partCommands = []
+            new File("$launchDir/work").traverse(nameFilter: ~/\.command\.sh/) { f ->
+                if (f.text.contains("--force perf_threads")) partCommands << f.text
+            }
             assertAll(
                 // The tree and model that reach the placement step come from the evaluation of the grafted tree.
                 { assert log.contains("--evaluate") },
                 { assert searches.size() > 1 },
+                // Only the part searches run with --force perf_threads.
+                { assert partCommands.size() > 1 },
+                { assert partCommands.every { c -> c.contains("--fast") } },
                 { assert new File("$outputDir/raxmlng/user-alignment.raxml.bestTree").text.trim().endsWith(";") },
                 { assert new File("$outputDir/raxmlng/user-alignment.raxml.bestModel").text.startsWith("GTR") },
                 { assert new File("$outputDir/mislabels/user-alignment.mislabels.tsv").exists() },

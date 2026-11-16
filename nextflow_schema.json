@@ -210,8 +210,9 @@
                 },
                 "raxmlng_fast": {
                     "type": "boolean",
-                    "description": "Build the reference tree with the RAxML-NG fast search.",
-                    "help_text": "Runs one parsimony starting tree and a simplified topology search with an early stopping rule (raxml-ng --fast), still under the taxonomy constraint. It is much faster than the default adaptive search on large alignments, at the price of a somewhat less optimal tree. How that affects which sequences are flagged has not been measured yet.",
+                    "default": true,
+                    "description": "Build the reference tree with the RAxML-NG fast search. Use false for the thorough search.",
+                    "help_text": "Runs one parsimony starting tree and a simplified topology search with an early stopping rule (raxml-ng --fast), still under the taxonomy constraint. It is much faster than the thorough adaptive search on large alignments, at the price of a somewhat less optimal tree. On 5,226 archaeal 16S sequences it was about ten times faster, the log-likelihood was 0.03% lower, and the flagged sequences overlapped as much as those of two fast searches with different seeds.",
                     "fa_icon": "fas fa-bolt"
                 },
                 "raxmlng_seed": {
