@@ -1,7 +1,6 @@
 # nf-core/taxmarker: Choosing `--cluster_identity`
 
-> **Work in progress.**
-> The numbers on this page come from one run on bacterial 16S sequences from GTDB release 232 and will be measured again before the first release.
+> The numbers on this page come from one run on bacterial 16S sequences from GTDB release 232.
 > The tables use runs where the placement used the RAxML-NG model of the reference tree, except the raxtax comparison, which used earlier runs placed under GTR+G.
 > The flag counts change with the model, most at species level (see the end of this page).
 
@@ -13,9 +12,10 @@ This page shows what that price was in one large run.
 
 ## What was run
 
-The input was all 1,118,534 bacterial sequences in GTDB's `ssu_all_r232.fna.gz`, with `--upstream GTDB` weights, the raxtax prefilter on, and the same tree search settings and seed in all runs.
+The input was all 1,118,534 bacterial sequences in GTDB's `ssu_all_r232.fna.gz`, with `--upstream GTDB` weights, the raxtax prefilter on, and the same tree search settings in all runs: `--run_divided_tree_search`, `--raxmlng_fast`, the fixed model `GTR+FO+G4m` and seed 42.
 The runs used `--cluster_identity 1.0`, `0.99` and `0.97`.
 The placement ran 25 folds, one per job.
+The memory of the placement depends on the model: a FreeRate model such as `GTR+FO+I+R10` needs more than the Gamma model used here (see [Divided tree search](divided_tree_search.md#the-model)).
 
 ## Size and cost
 
