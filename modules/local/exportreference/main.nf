@@ -100,12 +100,16 @@ for candidates in by_taxon.values():
 def labels(taxon):
     return [re.sub(r'^[a-z]__', '', rank) for rank in taxon.split(';')]
 
+# Without rank prefixes the last two ranks are taken as genus and species, which is only
+# right for a lineage as deep as the deepest one.
+max_depth = max((len(taxon.split(';')) for taxon in by_taxon), default=0)
+
 def species_name(taxon):
     ranks = taxon.split(';')
     if any(re.match(r'^[a-z]__', r) for r in ranks):
         by_rank = {r[0]: r[3:] for r in ranks if re.match(r'^[a-z]__', r)}
         genus, species = by_rank.get('g', ''), by_rank.get('s', '')
-    elif len(ranks) >= 2:
+    elif len(ranks) >= max(2, max_depth):
         genus, species = ranks[-2], ranks[-1]
     else:
         return None

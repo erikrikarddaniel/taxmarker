@@ -31,7 +31,7 @@ main.nf
               │     unaligned sequences that drops severely mislabeled sequences before
               │     alignment, reporting them directly instead
               ├── ENSURE_ALIGNED        (subworkflows/local/ensure_aligned/) -- transparently
-              │     aligns unaligned input via hmmalign (params.hmm); already-aligned
+              │     aligns unaligned input via hmmalign (params.hmm) or MAFFT; already-aligned
               │     input passes through unchanged
               ├── GAPFILTER / PROFILECOVER (modules/local/{gapfilter,profilecover}/)
               ├── SATIVA (this subworkflow)
@@ -63,7 +63,7 @@ workflow SATIVA {
 
     ch_alignment  // channel: [ val(meta), path(alignment) ]
                   //   Aligned, labeled sequences in FASTA format -- normalised to
-                  //   FASTA and, if it arrived unaligned, aligned via hmmalign, both
+                  //   FASTA and, if it arrived unaligned, aligned via hmmalign or MAFFT, both
                   //   by the caller (workflows/sativa.nf; see EMBOSS_SEQRET and
                   //   ENSURE_ALIGNED there) before this subworkflow ever sees it.
                   //   Sequence IDs must match the first column of ch_taxonomy.
@@ -71,6 +71,8 @@ workflow SATIVA {
     taxcode       // value:   sativa-epang taxonomic code: bac/bot/zoo/vir
 
     raxmlng_model // value:   RAxML-NG model for the reference tree; DNA runs model selection
+
+    divided_tree_search // value: search the reference tree in parts and graft them (a model of DNA is selected on the top part)
 
     folds_per_job // value:   folds each leave-one-out placement job places, or null for all in one
 
@@ -101,7 +103,8 @@ workflow SATIVA {
     TAXONOMY2PHYLOGENY(
         ch_taxonomy_meta
             .join(ch_alignment_meta)
-            .map { meta, taxonomy, alignment -> [ meta, taxonomy, alignment, raxmlng_model ] }
+            .map { meta, taxonomy, alignment -> [ meta, taxonomy, alignment, raxmlng_model ] },
+        divided_tree_search
     )
 
     def ch_tree  = TAXONOMY2PHYLOGENY.out.tree
@@ -127,7 +130,11 @@ workflow SATIVA {
         ch_reference_input.map { meta, _alignment, _taxonomy, _taxcode, _reftree, refmodel -> refmodel }
     )
 
-    SATIVAEPANG_LOOTASKS(SATIVAEPANG_REFERENCE.out.refjson)
+    // The model travels with the refjson: without it the placement falls back to GTR+G.
+    def ch_reference = SATIVAEPANG_REFERENCE.out.refjson.join(SATIVAEPANG_REFERENCE.out.model)
+    // ch_reference: [ meta, refjson, model ]
+
+    SATIVAEPANG_LOOTASKS(ch_reference)
 
     // One job per folds_per_job folds, sliced from the fold count lootasks actually
     // wrote into its manifest: deriving the job count from the work means no job is
@@ -180,7 +187,7 @@ workflow SATIVA {
     // other guaranteed correlation -- join explicitly rather than relying on
     // emission order.
     SATIVAEPANG_LOOSCORE(
-        SATIVAEPANG_REFERENCE.out.refjson.join(ch_taskdir)
+        ch_reference.join(ch_taskdir)
     )
 
     SATIVAEPANG_MISREPORT(

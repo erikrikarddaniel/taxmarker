@@ -23,6 +23,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - `mislabels/`
   - `*.mislabels.tsv`: putative mislabels, one row per flagged sequence, from sativa-epang and from the raxtax prefilter.
+- `export/`
+  - `*.mislabels.tsv`: a copy of the same table, next to the other final products.
 
 </details>
 

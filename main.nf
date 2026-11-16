@@ -32,6 +32,11 @@ params {
     skip_profile_cover: Boolean
     skip_sativa: Boolean
     run_reference: Boolean
+    run_divided_tree_search: Boolean
+    tree_part_max_tips: Integer
+    tree_part_min_tips: Integer
+    tree_part_reps: Integer
+    tree_part_outgroups: Integer
     raxmlng_fast: Boolean
     raxmlng_seed: Integer
     raxmlng_blopt: String?
@@ -42,6 +47,7 @@ params {
     validate_params: Boolean
     help_full: Boolean
     show_hidden: Boolean
+    unresolved_rank_pattern: String?
     min_weight: Float?
     cluster_identity: Float
     raxtax_filter_rank: Integer
@@ -77,6 +83,7 @@ workflow NFCORE_TAXMARKER {
         taxonomy,
         sequences,
         params.seqgrep,
+        params.unresolved_rank_pattern,
         params.upstream,
         params.gtdb_bac120_metadata,
         params.gtdb_ar53_metadata,
@@ -93,6 +100,7 @@ workflow NFCORE_TAXMARKER {
         params.folds_per_job,
         params.export_n_per_species,
         params.run_reference,
+        params.run_divided_tree_search,
         params.hmm,
         params.hmm_name,
         params.align_chunk_size,

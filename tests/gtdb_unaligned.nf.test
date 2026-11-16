@@ -60,6 +60,49 @@ nextflow_pipeline {
 
     }
 
+    test("-profile test_gtdb_unaligned, no HMM: aligned with MAFFT") {
+
+        when {
+            params {
+                outdir   = "$outputDir"
+                hmm      = null
+                hmm_name = null
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def tasks = workflow.trace.tasks().collect { it.name }
+            def mislabels = path("$outputDir/mislabels/user-alignment.mislabels.tsv").text
+            def lines = path("$outputDir/alignment/user-alignment.afa").readLines()
+            def seqLines = lines.findAll { !it.startsWith('>') }
+            def widths = lines.join('\n').split('>').findAll { it.trim() }.collect { it.readLines().drop(1).join('').length() }
+            def excluded = path("$outputDir/gapfilter/user-alignment.excluded.tsv").readLines().size() - 1
+            def scored = (path("$outputDir/sativaepang/user-alignment.summary.txt").text =~ /sequences scored: (\d+)/)[0][1] as int
+
+            assertAll(
+                { assert tasks.any { it.contains('MAFFT_ALIGN') } },
+                { assert !tasks.any { it.contains('HMMER') } },
+                // MAFFT output is filtered by non-gap proportion (like a given alignment), not by profile coverage.
+                { assert tasks.any { it.contains('GAPFILTER') } },
+                { assert !tasks.any { it.contains('PROFILECOVER') } },
+                // The 64 sequences left by clustering and the raxtax prefilter, as in the hmmalign run,
+                // published as one alignment under the same name, with gaps and one width.
+                { assert lines.count { it.startsWith('>') } == 64 },
+                { assert widths.toSet().size() == 1 },
+                { assert seqLines.any { it.contains('-') } },
+                // Placement ran on the MAFFT alignment: what the gap filter kept is what was scored.
+                { assert excluded < 64 },
+                { assert scored == 64 - excluded },
+                // raxtax flags these before alignment, so they are there with or without placement.
+                { assert mislabels.contains('DupHaloA') },
+                { assert mislabels.contains('DupSulfoA') },
+            )
+        }
+
+    }
+
     test("-profile test_gtdb_unaligned, raxtax disabled") {
 
         when {
@@ -143,9 +186,9 @@ nextflow_pipeline {
 
             assertAll(
                 // Regression guard: --skip_gapfilter is set here for the branch that
-                // ISN'T active (unaligned input takes the hmm/PROFILECOVER branch;
+                // ISN'T active (unaligned input with an HMM takes the PROFILECOVER branch;
                 // GAPFILTER would never have run regardless, since it only ever sees
-                // alignment_passthrough). Before the fix, the skipped branch's "else"
+                // alignment_native). Before the fix, the skipped branch's "else"
                 // fell back to the *unconditional* ch_taxonomy_checked (all 121
                 // sequences) paired with an empty alignment channel -- a cardinality
                 // mismatch that .mix() then let leak through as a second, stray

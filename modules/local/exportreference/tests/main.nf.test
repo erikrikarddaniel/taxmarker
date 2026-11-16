@@ -249,6 +249,41 @@ nextflow_process {
 
     }
 
+    test("prefix-less lineages shorter than the deepest one are not given a species name") {
+
+        when {
+            process {
+                """
+                def dir = file("\${workDir}/exportreference_prefixless")
+                dir.mkdirs()
+                def taxa = [
+                    OK:      'Bacteria;Phylum;Family;Gx;Gx one',
+                    TRIMMED: 'Bacteria;Phylum;Family;Gy',
+                    HIGHER:  'Bacteria;Phylum;Family',
+                ]
+                def seqs = file("\${dir}/input.fna")
+                seqs.text = taxa.keySet().collect { n -> ">\${n}\\nACGT\\n" }.join('')
+                def tax = file("\${dir}/checked.tax")
+                tax.text = taxa.collect { n, t -> "\${n}\\t\${t}\\n" }.join('')
+                input[0] = [ [ id:'export_test' ], seqs, tax, [], tax, [] ]
+                input[1] = [ 1 ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            def ids = { ch -> path(ch[0][1]).linesGzip.findAll { it.startsWith('>') } }
+            assertAll(
+                // Every sequence is exported ...
+                { assert ids(process.out.general).size() == 3 },
+                // ... but the last two ranks of a lineage that was cut short are a genus and a family, not a species.
+                { assert ids(process.out.addspecies) == [ '>OK Gx one' ] },
+            )
+        }
+
+    }
+
     test("weight x length ranking - stub") {
 
         options "-stub"
