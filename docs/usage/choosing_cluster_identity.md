@@ -1,6 +1,6 @@
 # nf-core/taxmarker: Choosing `--cluster_identity`
 
-> The numbers on this page come from one run on bacterial 16S sequences from GTDB release 232.
+> The numbers on this page come from runs with different settings on bacterial 16S sequences from GTDB release 232.
 > The tables use runs where the placement used the RAxML-NG model of the reference tree, except the raxtax comparison, which used earlier runs placed under GTR+G.
 > The flag counts change with the model, most at species level (see the end of this page).
 
