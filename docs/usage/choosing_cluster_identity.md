@@ -187,7 +187,7 @@ The reduction in memory and time is a side effect of that choice, not the reason
 ## How much the flags depend on the model
 
 Placing under the model of the reference tree instead of GTR+G changes the flags, and the change is large at species level.
-At `0.97` 17-18% of the flags differ (10% at phylum and 37% at species level), mostly flags with a low placement weight.
+At `0.97`, 17-18% of the flags differ (10% at phylum and 37% at species level), mostly flags with a low placement weight.
 At `1.0`, 34% of the flags of the first run are not found under the corrected model and 38% of the new flags are entirely new; at genus and species level it is 40-45%.
 These flags do not have low placement weights: the median is 1.0.
 Repeating one `0.97` placement fold changed the top placement of 1.5% of its sequences, all of them ties between equally weighted positions in the tree.
