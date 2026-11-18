@@ -51,7 +51,7 @@ With `--run_reference` the reference tree does the same, unless `--raxmlng_refer
 A fixed model, for example `--raxmlng_model GTR+G4`, is used as given and skips the selection.
 The selection can pick a FreeRate model such as `+R9` or `+R10`.
 The leave-one-out placement then needs more memory than with a Gamma model: on 7,051 sequences about 39 GB per job against about 24 GB, in one test with GTDB archaea.
-For large inputs, where the divided search is meant to be used, consider naming a `+G4` model.
+A `+G4` model needs less memory, but it lost about half of the strong flags in one test on a bacterial subset (see [Reference tree model](../usage.md#reference-tree-model)).
 Model selection for `AA` and `AUTO` is not supported with the divided search, and the pipeline stops at the start if one of them is asked for.
 The top part needs at least four sequences for the selection, which RAxML-NG requires.
 With a very small `--tree_part_reps` it can have fewer, and the pipeline then stops with a message.

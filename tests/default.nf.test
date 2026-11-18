@@ -148,18 +148,16 @@ nextflow_pipeline {
             assertAll(
                 { assert log.contains("--model GTR+G4") },
                 { assert !log.contains("Model selection") },
-                { assert !log.contains("simplified") },
             )
         }
     }
 
-    test("-profile test, raxmlng fast search") {
+    test("-profile test, the fast search is the default") {
 
         when {
             params {
                 outdir          = "$outputDir"
                 skip_clustering = true
-                raxmlng_fast    = true
             }
         }
 
@@ -217,6 +215,17 @@ nextflow_pipeline {
         }
     }
 
+    // The commands of the tasks of a process of the divided search.
+    def commands = { workDir, String process ->
+        def found = []
+        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f ->
+            if (f.name == '.command.run' && f.readLines().find { it.startsWith('### name:') }?.contains(process)) {
+                found << new File(f.parentFile, '.command.sh').text
+            }
+        }
+        found
+    }
+
     test("-profile test, divided tree search") {
 
         when {
@@ -236,10 +245,13 @@ nextflow_pipeline {
             assert workflow.success
             def log = new File("$outputDir/raxmlng/user-alignment.raxml.log").text
             def searches = workflow.trace.succeeded().findAll { it.name.contains('RAXMLNG_SEARCH') }
+            def partCommands = commands(workDir, 'DIVIDED_TREE_SEARCH:RAXMLNG_SEARCH')
             assertAll(
                 // The tree and model that reach the placement step come from the evaluation of the grafted tree.
                 { assert log.contains("--evaluate") },
                 { assert searches.size() > 1 },
+                { assert partCommands.size() > 1 },
+                { assert partCommands.every { c -> c.contains("--fast") } },
                 { assert new File("$outputDir/raxmlng/user-alignment.raxml.bestTree").text.trim().endsWith(";") },
                 { assert new File("$outputDir/raxmlng/user-alignment.raxml.bestModel").text.startsWith("GTR") },
                 { assert new File("$outputDir/mislabels/user-alignment.mislabels.tsv").exists() },
@@ -253,16 +265,6 @@ nextflow_pipeline {
         new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f -> if (f.name.endsWith('.raxml.moose.bestModel')) { found << f } }
         assert found.size() == 1
         found[0].text.split(',')[0].trim()
-    }
-    // The commands of the tasks of a process of the divided search.
-    def commands = { workDir, String process ->
-        def found = []
-        new File(workDir.toString()).eachFileRecurse(groovy.io.FileType.FILES) { f ->
-            if (f.name == '.command.run' && f.readLines().find { it.startsWith('### name:') }?.contains(process)) {
-                found << new File(f.parentFile, '.command.sh').text
-            }
-        }
-        found
     }
     // The --model of the evaluation commands of the divided search.
     def evaluated = { workDir ->
