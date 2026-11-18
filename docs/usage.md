@@ -92,7 +92,7 @@ See [Profile coverage and fragment rescue](usage/profile_coverage.md) for the `-
 
 The reference tree is built with RAxML-NG under a topology constraint from the taxonomy.
 By default RAxML-NG first selects a substitution model, which can take a quarter or more of the tree building time on large alignments.
-Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+G4`, to skip the selection.
+Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+FO+I+R10`, to skip the selection.
 Any model string that RAxML-NG accepts for `--model` works.
 `--raxmlng_model` applies to the tree the placement test scores against.
 The tree of `--run_reference` takes `--raxmlng_reference_model` and, when that is not set, the same model as `--raxmlng_model`.
