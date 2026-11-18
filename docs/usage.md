@@ -81,6 +81,7 @@ Sequence name characters other than letters, digits, `_`, `.`, `-`, `|` and `/` 
 
 Before alignment, raxtax and placement, the pipeline reduces the input to one representative sequence per (cluster, taxon) pair, collapsing near-duplicate sequences of the same taxon.
 See [Weighted clustering](usage/weighted_clustering.md) for the `--sequence_weights`/`--min_weight`/`--cluster_identity` parameters, exactly how VSEARCH decides what counts as a duplicate, and `--upstream GTDB` for computing `--sequence_weights` automatically from GTDB genome metadata.
+See [Choosing `--cluster_identity`](usage/choosing_cluster_identity.md) for what a lower value saves and what it costs in flags.
 
 ## Partial sequences
 
@@ -91,7 +92,7 @@ See [Profile coverage and fragment rescue](usage/profile_coverage.md) for the `-
 
 The reference tree is built with RAxML-NG under a topology constraint from the taxonomy.
 By default RAxML-NG first selects a substitution model, which can take a quarter or more of the tree building time on large alignments.
-Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+G4`, to skip the selection.
+Pass a model with `--raxmlng_model`, for example `--raxmlng_model GTR+FO+I+R10`, to skip the selection.
 Any model string that RAxML-NG accepts for `--model` works.
 `--raxmlng_model` applies to the tree the placement test scores against.
 The tree of `--run_reference` takes `--raxmlng_reference_model` and, when that is not set, the same model as `--raxmlng_model`.
