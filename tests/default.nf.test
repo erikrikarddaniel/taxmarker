@@ -370,7 +370,7 @@ nextflow_pipeline {
 
         then {
             assert workflow.failed
-            assert workflow.stdout.join("\n").contains("--run_divided_tree_search selects a model only for DNA")
+            assert (workflow.stdout + workflow.stderr).join("\n").contains("--run_divided_tree_search selects a model only for DNA")
         }
     }
 
@@ -389,7 +389,7 @@ nextflow_pipeline {
 
         then {
             assert workflow.failed
-            assert workflow.stdout.join("\n").contains("--run_divided_tree_search selects a model only for DNA")
+            assert (workflow.stdout + workflow.stderr).join("\n").contains("--run_divided_tree_search selects a model only for DNA")
         }
     }
 
@@ -404,7 +404,7 @@ nextflow_pipeline {
 
         then {
             assert workflow.failed
-            assert workflow.stdout.join("\n").contains("--raxmlng_model must not be empty")
+            assert (workflow.stdout + workflow.stderr).join("\n").contains("--raxmlng_model must not be empty")
         }
     }
 
