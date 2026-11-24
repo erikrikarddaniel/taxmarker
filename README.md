@@ -34,11 +34,6 @@ Using evolutionary placement, it identifies sequences in the alignment that do n
   <img alt="nf-core/taxmarker workflow metro map" src="docs/images/nf-core-taxmarker_metro_map_light.svg">
 </picture>
 
-> [!NOTE]
-> The diagram and list below describe the pipeline's current **aim**, not everything that's implemented yet.
-> The reference-export step doesn't exist yet.
-> See the [nf-core/taxmarker proposal](https://github.com/nf-core/proposals/issues/165) and issue [#9](https://github.com/erikrikarddaniel/nf-core-sativa/issues/9) (reference export) for current status.
-
 1. Resolve taxonomy: from `--taxonomy` if given, otherwise derived from `--sequences` record headers instead (GTDB-style: `>id taxonomy;string`); if both are present, the file wins, with a warning rather than silently ignoring the header text
 2. Check that names in the two are consistent and do not contain problematic characters
 3. Reduce the input to one representative sequence per (cluster, taxon) pair before anything downstream sees it: an optional absolute weight cutoff (`--sequence_weights`, `--min_weight`), then [VSEARCH](https://github.com/torognes/vsearch) clustering (`--cluster_identity`, default `1.0` -- a safe no-op pure dereplication), then per-cluster/per-taxon selection by sequence length and weight (disable entirely with `--skip_clustering`). Sequences absent from `--sequence_weights` default to weight 1, degrading gracefully to "pick the longest sequence per taxon" with no weight table at all; `--upstream GTDB` (with `--gtdb_bac120_metadata`/`--gtdb_ar53_metadata`) computes `--sequence_weights` automatically from GTDB genome-quality/category/taxonomy-agreement metadata instead -- see [issue #15](https://github.com/nf-core/taxmarker/issues/15) for the design

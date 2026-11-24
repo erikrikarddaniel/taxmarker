@@ -48,7 +48,7 @@
                     "python": "3.12.12"
                 },
                 "Workflow": {
-                    "nf-core/taxmarker": "v1.0.0dev"
+                    "nf-core/taxmarker": "v1.0.0"
                 }
             },
             [
