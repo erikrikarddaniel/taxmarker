@@ -88,8 +88,6 @@ If both `--taxonomy` and embedded header text are present, the file wins, and a 
 
 Now, you can run the pipeline using:
 
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
-
 ```bash
 nextflow run nf-core/taxmarker \
    -profile <docker/singularity/.../institute> \
