@@ -84,6 +84,9 @@ The table is tab-separated, with a header line and these columns:
 A sativa-epang row with `lwr` 0.51 and `original_label_exclusion` near 1 is a stem placement: the sequence was placed on the branch between the proposed taxon and its parent.
 Sativa splits the weight of such a placement 0.49/0.51 between the two (a hardcoded value), so the 0.51 does not come from the data.
 The sequence is confidently outside its declared taxon, but it is not clear which neighbouring taxon it belongs to.
+Every flagged sequence is left out of the exported sequence files (`*.n<N>.*`, `*.all.*`) and the reference phylogeny, stem placements included, and a flagged cluster representative takes the other members of its cluster with it.
+The pipeline does not yet tell flags caused by long-branch attraction from reliable ones ([#32](https://github.com/nf-core/taxmarker/issues/32)): a sequence on a very long branch can attract flags, and a divergent but correctly labelled sequence can be flagged.
+So the export errs towards leaving a correctly labelled sequence out, which can remove sparsely covered lineages.
 
 ### Export
 

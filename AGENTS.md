@@ -4,7 +4,7 @@ This file provides guidance to coding agents (e.g. Claude Code) when working wit
 
 ## Project Overview
 
-**nf-core/taxmarker** is a Nextflow bioinformatics pipeline, a re-implementation of the Sativa algorithm (Kozlov et al. 2016), that identifies taxonomically mislabelled sequences by evolutionary placement: it builds a phylogeny from a declared taxonomy, places each sequence back into it after removing it (leave-one-out), and flags sequences whose phylogenetic signal doesn't agree with their declared taxonomy. It is built from the nf-core template (currently synced to v4.1.0) and uses Nextflow DSL2. The pipeline is currently in early development (v1.0.0dev, not yet released or transferred to the nf-core org).
+**nf-core/taxmarker** is a Nextflow bioinformatics pipeline, a re-implementation of the Sativa algorithm (Kozlov et al. 2016), that identifies taxonomically mislabelled sequences by evolutionary placement: it builds a phylogeny from a declared taxonomy, places each sequence back into it after removing it (leave-one-out), and flags sequences whose phylogenetic signal doesn't agree with their declared taxonomy. It is built from the nf-core template (synced to the template of nf-core/tools 4.2.2) and uses Nextflow DSL2. It was first released as v1.0.0.
 
 Requires Nextflow ≥ 26.04.0.
 
