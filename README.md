@@ -113,7 +113,9 @@ The Sativa tool was originally written by Alexey Kozlov et al. (see citation bel
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+- [Auguste Gardette](https://github.com/Aaramis)
+- [Sofoklis Keisaris](https://github.com/Sofokli5)
+- [@stev004](https://github.com/stev004)
 
 ## Contributions and Support
 
