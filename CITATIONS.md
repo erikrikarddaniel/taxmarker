@@ -42,6 +42,14 @@
 
 > Rognes T, Flouri T, Nichols B, Quince C, Mahé F. VSEARCH: a versatile open source tool for metagenomics. PeerJ. 2016 Oct 18;4:e2584. doi: 10.7717/peerj.2584. PubMed PMID: 27781170.
 
+- [EMBOSS](https://pubmed.ncbi.nlm.nih.gov/10827456/)
+
+> Rice P, Longden I, Bleasby A. EMBOSS: the European Molecular Biology Open Software Suite. Trends Genet. 2000 Jun;16(6):276-7. doi: 10.1016/s0168-9525(00)02024-2. PubMed PMID: 10827456.
+
+- [SeqKit](https://pubmed.ncbi.nlm.nih.gov/27706213/)
+
+> Shen W, Le S, Li Y, Hu F. SeqKit: A Cross-Platform and Ultrafast Toolkit for FASTA/Q File Manipulation. PLoS One. 2016 Oct 5;11(10):e0163962. doi: 10.1371/journal.pone.0163962. PubMed PMID: 27706213; PubMed Central PMCID: PMC5051824.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)
