@@ -4,12 +4,10 @@ process SATIVAEPANG_MISREPORT {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    // quay.io/biocontainers/python:3.11 has no build-hash-suffixed tag to pin to (unlike
-    // real bioconda-recipe images); pin by digest instead so the underlying image can't
-    // silently drift between runs.
+    // biocontainers/python has no build-hash-suffixed tags; pin the digest so the image can't drift.
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/python:3.11' :
-        'quay.io/biocontainers/python@sha256:b322907f8e52b2055ccad4e46848d28a4a5631b403116cc80ddf61ec8601e05e' }"
+        'https://depot.galaxyproject.org/singularity/python:3.12.12' :
+        'quay.io/biocontainers/python@sha256:4cc84261c4b7a77a23cfbaa5b5316416a507b42ac8cde330b002631666d99ca2' }"
 
     input:
     tuple val(meta), path(mis), path(taskdir)

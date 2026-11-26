@@ -19,14 +19,14 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                    "versions.yml:md5,0648ee041aad9fcfbd9b50c62d50cb69"
                 ]
             }
         ],
-        "timestamp": "2026-10-22T12:05:39.781168105",
+        "timestamp": "2026-11-26T13:55:14.481242695",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "no flagged sequences": {
@@ -49,14 +49,14 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                    "versions.yml:md5,0648ee041aad9fcfbd9b50c62d50cb69"
                 ]
             }
         ],
-        "timestamp": "2026-10-22T12:08:32.208651736",
+        "timestamp": "2026-11-26T13:54:49.967982885",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "taxonomy paths differ only in depth -- mismatch_rank is never null": {
@@ -79,14 +79,14 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                    "versions.yml:md5,0648ee041aad9fcfbd9b50c62d50cb69"
                 ]
             }
         ],
-        "timestamp": "2026-10-22T12:08:46.547589088",
+        "timestamp": "2026-11-26T13:55:05.844627983",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "stem placement: lwr 0.510 with an exclusion near 1": {
@@ -109,14 +109,14 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                    "versions.yml:md5,0648ee041aad9fcfbd9b50c62d50cb69"
                 ]
             }
         ],
-        "timestamp": "2026-10-23T11:30:35.616721009",
+        "timestamp": "2026-11-26T13:55:22.383302882",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "below-threshold confidence excluded from mislabels but still scored": {
@@ -139,14 +139,14 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                    "versions.yml:md5,0648ee041aad9fcfbd9b50c62d50cb69"
                 ]
             }
         ],
-        "timestamp": "2026-10-22T12:08:39.405069851",
+        "timestamp": "2026-11-26T13:54:58.2678675",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "stub": {
@@ -169,14 +169,14 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                    "versions.yml:md5,0648ee041aad9fcfbd9b50c62d50cb69"
                 ]
             }
         ],
-        "timestamp": "2026-09-21T21:38:39.121541118",
+        "timestamp": "2026-11-26T13:55:30.776218764",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.6"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     },
     "one flagged sequence": {
@@ -199,14 +199,14 @@
                     ]
                 ],
                 "versions": [
-                    "versions.yml:md5,cc879da594d63557d5353eb3d5538fc1"
+                    "versions.yml:md5,0648ee041aad9fcfbd9b50c62d50cb69"
                 ]
             }
         ],
-        "timestamp": "2026-10-22T12:08:25.155577678",
+        "timestamp": "2026-11-26T13:54:42.08431117",
         "meta": {
-            "nf-test": "0.9.4",
-            "nextflow": "26.04.4"
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
         }
     }
 }
