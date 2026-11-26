@@ -16,9 +16,11 @@ Initial release of nf-core/taxmarker, created with the [nf-core](https://nf-co.r
 | HMMER        |             | 3.4         |
 | MAFFT        |             | 7.520       |
 | MultiQC      |             | 1.35        |
+| pigz         |             | 2.8         |
 | Python       |             | 3.11        |
 | RAxML-NG     |             | 2.0.3       |
 | raxtax       |             | 1.6.0       |
+| samtools     |             | 1.23.1      |
 | sativa-epang |             | 0.10.2      |
 | SeqKit       |             | 2.13.0      |
 | VSEARCH      |             | 2.31.0      |
