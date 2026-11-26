@@ -97,7 +97,7 @@ So the export errs towards leaving a correctly labelled sequence out, which can 
   - `*.mislabels.tsv`: a copy of the [mislabels table](#mislabels). Written whenever raxtax or the placement step runs.
   - With `--export_n_per_species`, four files for each number N (`--run_reference` also writes them, for N = 1):
     - `*.n<N>.addSpecies.fna.gz`: reference for DADA2's `addSpecies()`, headers `>ID Genus species`.
-    - `*.n<N>.assignTaxonomy.fna.gz`: reference for DADA2's `assignTaxonomy()`, headers `>rank1;rank2;...;species`.
+    - `*.n<N>.assignTaxonomy.fna.gz`: reference for DADA2's `assignTaxonomy()`, headers `>rank1;rank2;...;species;`.
     - `*.n<N>.general.fna.gz`: the same sequences with their original headers.
     - `*.n<N>.names.txt`: the names of the exported sequences, one per line, as used in the other files of the run.
   - With `--run_reference`, a reference phylogeny for placing unknown sequences:

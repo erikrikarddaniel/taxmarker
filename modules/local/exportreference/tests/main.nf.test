@@ -85,8 +85,8 @@ nextflow_process {
                 // A species name not starting with its genus gets the genus prepended.
                 { assert add1.findAll { it.startsWith('>') } == [ '>RS_X~C Gx alpha', '>RS_Y~1 Hy beta' ] },
                 { assert assign1.findAll { it.startsWith('>') } == [
-                    '>Bacteria;P;C;O;F;Gx;Gx alpha',
-                    '>Bacteria;P;C;O;F;Hy;beta',
+                    '>Bacteria;P;C;O;F;Gx;Gx alpha;',
+                    '>Bacteria;P;C;O;F;Hy;beta;',
                 ] },
             )
         }
@@ -279,6 +279,13 @@ nextflow_process {
                 { assert ids(process.out.general).size() == 3 },
                 // ... but the last two ranks of a lineage that was cut short are a genus and a family, not a species.
                 { assert ids(process.out.addspecies) == [ '>OK Gx one' ] },
+                // DADA2's assignTaxonomy pads a short lineage by appending to its header: without the
+                // trailing ';' the padding sticks to the last rank (Family_DADA2_UNSPECIFIED).
+                { assert ids(process.out.assigntaxonomy) == [
+                    '>Bacteria;Phylum;Family;',
+                    '>Bacteria;Phylum;Family;Gx;Gx one;',
+                    '>Bacteria;Phylum;Family;Gy;',
+                ] },
             )
         }
 
