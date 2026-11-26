@@ -130,7 +130,8 @@ for n in counts:
                 print(f">{description}\\n{seq}", file=general)
                 if species_name(taxon):
                     print(f">{seq_id} {species_name(taxon)}\\n{seq}", file=add_species)
-                print(f">{';'.join(labels(taxon))}\\n{seq}", file=assign_taxonomy)
+                # Trailing ';': DADA2 appends the padding for a shorter lineage straight onto the header.
+                print(f">{';'.join(labels(taxon))};\\n{seq}", file=assign_taxonomy)
                 print(name, file=names)
 
 with open('versions.yml', 'w') as fh:

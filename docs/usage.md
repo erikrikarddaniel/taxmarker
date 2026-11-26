@@ -134,7 +134,7 @@ The word `all` can be used as a number, e.g. `1,5,all`, to export every sequence
 The files are:
 
 - `*.n<N>.addSpecies.fna.gz`: `>ID Genus species`, for DADA2's `addSpecies()`.
-- `*.n<N>.assignTaxonomy.fna.gz`: `>rank1;rank2;...;species`, rank prefixes such as `d__` removed, for DADA2's `assignTaxonomy()`.
+- `*.n<N>.assignTaxonomy.fna.gz`: `>rank1;rank2;...;species;`, rank prefixes such as `d__` removed, for DADA2's `assignTaxonomy()`.
 - `*.n<N>.general.fna.gz`: the original headers, unchanged.
 - `*.n<N>.names.txt`: the names of the exported sequences, one per line.
 
