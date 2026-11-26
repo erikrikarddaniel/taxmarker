@@ -111,5 +111,5 @@ All container profiles (`docker`, `singularity`, `apptainer`, etc.) default to `
 
 - `nf-test.config` defines test directories and triggers (files that force a full test run when changed).
 - Tests run with `-profile test` by default; other pipeline-level profiles exercise specific input shapes: `test_fasta`, `test_clustal`, `test_gtdb`, `test_gtdb_unaligned`, `test_gtdb_embedded`, `test_full`.
-- Test fixtures are fetched remotely from the `taxmarker` branch of `erikrikarddaniel/test-datasets` (`params.pipelines_testdata_base_path`) — no test data is committed to this repo.
+- Test fixtures are fetched remotely from the `taxmarker` branch of `nf-core/test-datasets` (`params.pipelines_testdata_base_path`) — no test data is committed to this repo.
 - Snapshot files (`*.snap`) track expected outputs — update them with `nf-test test --update-snapshot` after intentional output changes.
