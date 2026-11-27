@@ -135,6 +135,8 @@ nextflow_pipeline {
             def trainTips = tips("$outputDir/raxmlng/user-alignment.raxml.bestTree")
 
             assertAll(
+                // --run_reference alone also gets the mislabels copy in export/.
+                { assert path("$outputDir/export/user-alignment.mislabels.tsv").text == path("$outputDir/mislabels/user-alignment.mislabels.tsv").text },
                 // The reference holds exactly the sequences of the one-per-species export,
                 // which --run_reference writes without --export_n_per_species.
                 { assert refNames.toSet() == n1Names.toSet() },
@@ -301,7 +303,8 @@ nextflow_pipeline {
                 { assert mislabels =~ /DupSulfoA[^\n]*\traxtax/ },
                 // Only the swapped-label pair disagrees at genus with high confidence.
                 { assert mislabels.readLines().size() - 1 == 2 },
-                { assert path("$outputDir/export/user-alignment.mislabels.tsv").text == mislabels },
+                // No export was asked for.
+                { assert !new File("$outputDir/export").exists() },
                 // ...but the phylogenetic placement subworkflow never runs at all: no
                 // reference tree, no leave-one-out placement, no scoring. This is the
                 // whole point of --skip_sativa -- a pure taxonomy-resolution/alignment/

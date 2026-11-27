@@ -4,10 +4,9 @@ process TAXONOMYTREE {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    // biocontainers/python has no build-hash-suffixed tags; pin the digest so the image can't drift.
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/python:3.12.12' :
-        'quay.io/biocontainers/python@sha256:4cc84261c4b7a77a23cfbaa5b5316416a507b42ac8cde330b002631666d99ca2' }"
+        'quay.io/biocontainers/python:3.12.12' }"
 
     input:
     tuple val(meta), path(taxonomy)

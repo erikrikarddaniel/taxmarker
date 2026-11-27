@@ -19,6 +19,8 @@ nextflow_pipeline {
             def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
             assert workflow.success
             assertAll(
+                // No export was asked for, so there is no export/ directory.
+                { assert !new File("$outputDir/export").exists() },
                 { assert snapshot(
                     // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
                     removeNextflowVersion("$outputDir/pipeline_info/nf_core_taxmarker_software_mqc_versions.yml"),
@@ -390,6 +392,21 @@ nextflow_pipeline {
         then {
             assert workflow.failed
             assert (workflow.stdout + workflow.stderr).join("\n").contains("--run_divided_tree_search selects a model only for DNA")
+        }
+    }
+
+    test("-profile test, a missing --sequences is refused") {
+
+        when {
+            params {
+                outdir    = "$outputDir"
+                sequences = null
+            }
+        }
+
+        then {
+            assert workflow.failed
+            assert (workflow.stdout + workflow.stderr).join("\n").contains("Missing required parameter(s): sequences")
         }
     }
 

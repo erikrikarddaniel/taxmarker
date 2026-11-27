@@ -385,7 +385,9 @@ workflow TAXMARKER {
         .mix(ch_sativa_mislabels)
         .map { _meta, tsv -> tsv }
     ch_mislabels.collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/mislabels", keepHeader: true, skip: 1)
-    ch_mislabels.collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/export", keepHeader: true, skip: 1)
+    if (export_counts) {
+        ch_mislabels.collectFile(name: 'user-alignment.mislabels.tsv', storeDir: "${outdir}/export", keepHeader: true, skip: 1)
+    }
 
     //
     // MODULE: MultiQC
