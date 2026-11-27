@@ -62,7 +62,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - `mislabels/`
   - `*.mislabels.tsv`: putative mislabels, one row per flagged sequence, from sativa-epang and from the raxtax prefilter.
 - `export/`
-  - `*.mislabels.tsv`: a copy of the same table, next to the other final products.
+  - `*.mislabels.tsv`: a copy of the same table, next to the other final products, with `--export_n_per_species` or `--run_reference`.
 
 </details>
 
@@ -94,7 +94,7 @@ So the export errs towards leaving a correctly labelled sequence out, which can 
 <summary>Output files</summary>
 
 - `export/`
-  - `*.mislabels.tsv`: a copy of the [mislabels table](#mislabels). Written whenever raxtax or the placement step runs.
+  - `*.mislabels.tsv`: a copy of the [mislabels table](#mislabels), with `--export_n_per_species` or `--run_reference`.
   - With `--export_n_per_species`, four files for each number N (`--run_reference` also writes them, for N = 1):
     - `*.n<N>.addSpecies.fna.gz`: reference for DADA2's `addSpecies()`, headers `>ID Genus species`.
     - `*.n<N>.assignTaxonomy.fna.gz`: reference for DADA2's `assignTaxonomy()`, headers `>rank1;rank2;...;species;`.
