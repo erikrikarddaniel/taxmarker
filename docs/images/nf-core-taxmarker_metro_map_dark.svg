@@ -270,8 +270,8 @@
        id="path2500-5-22-59-1"
        style="display:inline;fill:none;stroke:#24b064;stroke-width:2.846;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:5.692, 2.846;stroke-dashoffset:0;stroke-opacity:1"
        inkscape:label="line_90_short"
-       d="m 52.818158,93.707149 15.840383,-3e-6 3.934135,5e-6 c 2.645833,0 5.291667,-2.64583 5.291666,-5.29167 l 10e-7,-3.878728 10e-7,-25.309978"
-       sodipodi:nodetypes="ccsscc" />
+       d="m 52.818158,93.707149 h 10.514094 c 10.43279,0 14.55209,-9.6963 14.55209,-14.55208 v -19.928296"
+       sodipodi:nodetypes="ccsc" />
     <path
        style="display:inline;fill:none;stroke:#24b064;stroke-width:2.64583;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 103.089,56.665482 -22.225006,-2e-6"
